@@ -1,0 +1,23 @@
+{% extends "includes/layout.njk" %}
+
+{% block mainContent %}
+<div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+      <h1>{{messages("validation.heading")}}</h1>
+
+        {% if validationResult._type == "ValidationSuccess" %}
+          <p> Success </p>
+            <div class="section">
+                <a href="http://localhost/" role="button" class="button">{{messages("site.continue")}}</a>
+            </div>
+         {% elif validationResult._type == "ValidationFailure" %}
+              <p> Failure </p>
+              {% for saxerror in validationResult.error %}
+                <p>{{saxerror.lineNumber}} {{saxerror.errorMessage}}</p>
+              {% endfor %}
+         {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

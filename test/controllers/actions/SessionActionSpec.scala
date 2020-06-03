@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers.actions
 
 import base.SpecBase
@@ -13,11 +29,11 @@ class SessionActionSpec extends SpecBase {
     def onPageLoad() = action { request => Results.Ok }
   }
 
-  "Session Action" when {
+  "Session Action" - {
 
-    "there's no active session" must {
+    "when there's no active session" - {
 
-      "redirect to the session expired page" in {
+      "must redirect to the session expired page" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
@@ -34,9 +50,9 @@ class SessionActionSpec extends SpecBase {
       }
     }
 
-    "there's an active session" must {
+    "when there is an active session" - {
 
-      "perform the action" in {
+      "must perform the action" in {
 
         val application = applicationBuilder(userAnswers = None).build()
 
