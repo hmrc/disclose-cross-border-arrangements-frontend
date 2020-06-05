@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package models
 
 import generators.ModelGenerators
@@ -6,7 +22,11 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
 import play.api.libs.json._
 
-class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckPropertyChecks with OptionValues with ModelGenerators {
+class RichJsValueSpec extends FreeSpec
+  with MustMatchers
+  with ScalaCheckPropertyChecks
+  with OptionValues
+  with ModelGenerators {
 
   implicit def dontShrink[A]: Shrink[A] = Shrink.shrinkAny
 
@@ -210,6 +230,7 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
     }
 
   "remove" - {
+
     "must return an error if the path is empty" in {
 
       val value = Json.obj()
@@ -217,26 +238,20 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
       value.set(JsPath, Json.obj()) mustEqual JsError("path cannot be empty")
     }
 
+    "must return a success and the object if the path does not contain a value" in {
 
-    "must return an error if the path does not contain a value" in {
-
-      val gen = for {
+      val gen: Gen[(JsObject, JsPath)] = for {
         originalKey   <- nonEmptyAlphaStr
         originalValue <- nonEmptyAlphaStr
         pathKey       <- nonEmptyAlphaStr suchThat (_ != originalKey)
-      } yield (originalKey, originalValue, pathKey)
+        emptyPath     = JsPath \ pathKey
+      } yield (Json.obj(originalKey -> originalValue), emptyPath)
 
       forAll(gen) {
-        case (originalKey, originalValue, pathKey) =>
+        case (jsObject, emptyPath) =>
 
-          val value = Json.obj(originalKey -> originalValue)
-
-          val path = JsPath \ pathKey
-
-          value.remove(path) mustEqual JsError("cannot find value at path")
-
+          jsObject.remove(emptyPath) mustEqual JsSuccess(jsObject)
       }
-
     }
 
     "must remove a value given a keyPathNode and return the new object" in {
@@ -294,7 +309,7 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
       }
     }
 
-    "remove a value from one of many arrays" in {
+    "must remove a value from one of many arrays" in {
 
       val input = Json.obj(
         "key" -> JsArray(Seq(Json.toJson(1), Json.toJson(2))),
@@ -310,7 +325,7 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
     }
   }
 
-  "remove a value when there are nested arrays" in {
+  "must remove a value when there are nested arrays" in {
 
     val input = Json.obj(
       "key" -> JsArray(Seq(JsArray(Seq(Json.toJson(1), Json.toJson(2))), Json.toJson(2))),
@@ -327,9 +342,10 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
     )
   }
 
-  "remove the value if the last value is deleted from an array" in {
+  "must remove the value if the last value is deleted from an array" in {
+
     val input = Json.obj(
-      "key" -> JsArray(Seq(Json.toJson(1))),
+      "key"  -> JsArray(Seq(Json.toJson(1))),
       "key2" -> JsArray(Seq(Json.toJson(1), Json.toJson(2)))
     )
 
@@ -337,7 +353,7 @@ class RichJsValueSpec extends FreeSpec with MustMatchers with ScalaCheckProperty
 
     input.remove(path) mustBe JsSuccess(
       Json.obj(
-        "key" -> JsArray(),
+        "key"  -> JsArray(),
         "key2" -> JsArray(Seq(Json.toJson(1), Json.toJson(2)))
       )
     )

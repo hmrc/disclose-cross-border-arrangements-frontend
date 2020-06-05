@@ -1,10 +1,26 @@
+/*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package filters
 
 import java.util.UUID
 
 import akka.stream.Materializer
 import com.google.inject.Inject
-import org.scalatest.{MustMatchers, OptionValues, WordSpec}
+import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
 import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
 import play.api.{Application, BuiltInComponents, BuiltInComponentsFromContext, NoHttpFiltersComponents}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -29,7 +45,7 @@ object SessionIdFilterSpec {
 
 }
 
-class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues  with OneAppPerSuiteWithComponents {
+class SessionIdFilterSpec extends FreeSpec with MustMatchers with OptionValues with OneAppPerSuiteWithComponents {
 
   override def components: BuiltInComponents = new BuiltInComponentsFromContext(context) with NoHttpFiltersComponents {
 
@@ -73,9 +89,9 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues  
       .build()
   }
 
-  "session id filter" must {
+  "session id filter" - {
 
-    "add a sessionId if one doesn't already exist" in {
+    "must add a sessionId if one doesn't already exist" in {
 
       val result = route(app, FakeRequest(GET, "/test")).value
 
@@ -87,7 +103,7 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues  
       session(result).data.get(SessionKeys.sessionId) mustBe defined
     }
 
-    "not override a sessionId if one doesn't already exist" in {
+    "must not override a sessionId if one doesn't already exist" in {
 
       val result = route(app, FakeRequest(GET, "/test").withSession(SessionKeys.sessionId -> "foo")).value
 
@@ -97,14 +113,14 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues  
       (body \ "fromSession").as[String] mustEqual "foo"
     }
 
-    "not override other session values from the response" in {
+    "must not override other session values from the response" in {
 
       val result = route(app, FakeRequest(GET, "/test2")).value
 
       session(result).data must contain("foo" -> "bar")
     }
 
-    "not override other session values from the request" in {
+    "must not override other session values from the request" in {
 
       val result = route(app, FakeRequest(GET, "/test").withSession("foo" -> "bar")).value
       session(result).data must contain("foo" -> "bar")

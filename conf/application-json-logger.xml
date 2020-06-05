@@ -6,6 +6,7 @@
     </appender>
 
     <logger name="uk.gov" level="WARN"/>
+    <logger name="io.apigee.trireme.core" level="DEBUG"/>
 
     <root level="WARN">
         <appender-ref ref="STDOUT"/>

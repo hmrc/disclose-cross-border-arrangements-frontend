@@ -1,0 +1,51 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+
+
+{% block pageTitle %}
+  {{ title(messages("invalidXML.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back"),
+      href: routes.controllers.UploadFormController.onPageLoad().url
+    })
+  }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("invalidXML.heading") }}
+        </h1>
+
+        <p class="govuk-body">
+            {{ messages("invalidXML.p1", fileName) }}
+        </p>
+
+        <h2 class="govuk-heading-m">
+            {{ messages("invalidXML.h2") }}
+        </h2>
+
+        <p class="govuk-body">
+            {{ messages("invalidXML.p2") }}
+            <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link">{{ messages("invalidXML.p2.a") }}</a>.
+        </p>
+
+        <p class="govuk-body">
+            {{ messages("invalidXML.p3") }}
+            <a href="#" class="govuk-link">{{ messages("invalidXML.p3.a") }}</a>.
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

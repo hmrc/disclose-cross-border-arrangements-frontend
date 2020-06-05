@@ -1,0 +1,30 @@
+{% extends "govuk/template.njk" %}
+{%- set htmlLang = request.language -%}
+
+{% block head %}
+  {% include "includes/head.njk" %}
+  {% block additionalHeaders %}{% endblock %}
+{% endblock %}
+
+{% block header %}
+  {{ govukHeader({
+    homepageUrl: "/disclose-cross-border-arrangements-frontend",
+    serviceName: messages("site.service_name"),
+    serviceUrl: "/disclose-cross-border-arrangements-frontend",
+    containerClasses: "govuk-width-container",
+    assetsPath: "/assets"
+  }) }}
+{% endblock %}
+
+{% block beforeContent %}
+{% endblock %}
+
+{% block content %}
+  {% block mainContent %}{% endblock %}
+{% endblock %}
+
+{% block bodyEnd %}
+  {% block scripts %}
+    {% include "includes/scripts.njk" %}
+  {% endblock %}
+{% endblock %}

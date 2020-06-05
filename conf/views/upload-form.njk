@@ -1,0 +1,49 @@
+{% extends "includes/layout.njk" %}
+
+{% from "govuk/components/button/macro.njk"        import govukButton %}
+{% from "macros/title.njk"                         import title %}
+
+{% block mainContent %}
+<div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+<h1>Please upload a file</h1>
+
+<form action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
+
+    {{ csrf() | safe }}
+
+    {% for key, value in upscanInitiateResponse.formFields %}
+    <input type="hidden" name="{{key}}" value="{{value}}"/>
+    {% endfor %}
+
+    <div class="js-visible mt-3">
+
+        <div class="form-group">
+            <label class="form-label" for="file-input">
+                <span class="">File to upload</span>
+            </label>
+            <div class="form-control-wrapper">
+                <input
+                        type="file"
+                        id="file-input"
+                        name="file"
+                        accept=".xml"
+                />
+            </div>
+        </div>
+
+    </div>
+
+    <div class="section">
+    {{ govukButton({
+                text: messages("site.continue"),
+                attributes: {id:"submit"}
+              }) }}
+    </div>
+</form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

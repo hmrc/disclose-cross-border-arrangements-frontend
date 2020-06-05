@@ -1,0 +1,39 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+
+{% block additionalHeaders %}
+{% if status._type == "InProgress" %}
+<meta http-equiv="refresh" content="1"/>
+{% endif %}
+{% endblock %}
+
+{% block mainContent %}
+<div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+    <h1>Verifying uploaded file</h1>
+
+    {% if status._type == "InProgress" %}
+        <p>Waiting for the file to be scanned</p>
+    {% elif status._type == "UploadedSuccessfully" %}
+        <p>Upload of <b>{{status.name}}</b> successful! http://localhost:9570{{status.downloadUrl}}</p>
+    {% elif status._type == "Failed" %}
+        <p>File has been rejected.</p>
+    {% endif %}
+
+    {% if status._type == "UploadedSuccessfully" %}
+            <div class="section">
+                <a href="{{routes.controllers.FileValidationController.onPageLoad(uploadId.value).url}}">
+                    <button class="button">{{messages("site.verify")}}</button>
+                </a>
+            </div>
+    {% else %}
+            <div class="section">
+                <button class="button" disabled="disabled">{{messages("site.verify")}}</button>
+            </div>
+    {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
