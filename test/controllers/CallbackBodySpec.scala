@@ -19,7 +19,7 @@ package controllers
 import java.net.URL
 import java.time.Instant
 
-import models.upscan.{CallbackBody, ErrorDetails, FailedCallbackBody, ReadyCallbackBody, Reference, UploadSessionDetails, UploadDetails}
+import models.upscan._
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsSuccess, Json}
 

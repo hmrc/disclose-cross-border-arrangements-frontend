@@ -48,11 +48,11 @@ class UploadFormController @Inject()(
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements-frontend//error"
       val callbackUrl = appConfig.callbackEndpointTarget
-      val intiateBody = UpscanInitiateRequest(callbackUrl,successRedirectUrl, errorRedirectUrl)
+      val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
         for {
-          upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(intiateBody)
+          upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
           _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
         } yield {
           renderer.render(
@@ -64,7 +64,7 @@ class UploadFormController @Inject()(
   }
 
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
-    implicit request =>{
+    implicit request => {
       Logger.debug("Show result called")
       for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
         {
