@@ -20,7 +20,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 
-case class ValidationSuccess (downloadUrl : String) extends XMLValidationStatus
+case class ValidationSuccess(downloadUrl : String) extends XMLValidationStatus
 
 object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]

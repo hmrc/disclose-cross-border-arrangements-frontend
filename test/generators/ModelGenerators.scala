@@ -16,9 +16,10 @@
 
 package generators
 
-import models._
-import org.scalacheck.Arbitrary.arbitrary
+import models.upscan.{Failed, InProgress, NotStarted, UploadStatus}
 import org.scalacheck.{Arbitrary, Gen}
 
 trait ModelGenerators {
+  implicit lazy val arbitraryUploadStatus: Arbitrary[UploadStatus] =
+    Arbitrary(Gen.oneOf(NotStarted, InProgress, Failed))
 }

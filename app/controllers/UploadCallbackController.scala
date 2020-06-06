@@ -16,10 +16,8 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import javax.inject.{Inject, Singleton}
 import models.upscan.CallbackBody
-import play.api.Configuration
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.MessagesControllerComponents
 import services.UpscanCallbackDispatcher
@@ -28,20 +26,14 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class UploadCallbackController @Inject()( configuration: Configuration,
-                                          appConfig: FrontendAppConfig,
-                                          override implicit val messagesApi: MessagesApi,
+class UploadCallbackController @Inject()( override implicit val messagesApi: MessagesApi,
                                           val controllerComponents: MessagesControllerComponents,
                                           val upscanCallbackDispatcher : UpscanCallbackDispatcher)(
   implicit val ec : ExecutionContext)  extends FrontendBaseController with I18nSupport {
 
   val callback = Action.async(parse.json) { implicit request =>
-
     withJsonBody[CallbackBody] { feedback: CallbackBody =>
-
       upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
-
     }
   }
 }
-

@@ -16,16 +16,14 @@
 
 package services
 
-import com.google.inject.ImplementedBy
 import javax.inject.Inject
 import models.upscan._
 import play.api.Logger
 import reactivemongo.bson.BSONObjectID
 import repositories.UploadSessionRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[MongoBackedUploadProgressTracker])
 trait UploadProgressTracker {
 
   def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Boolean]
@@ -36,7 +34,6 @@ trait UploadProgressTracker {
 
 }
 
-import scala.concurrent.{ExecutionContext, Future}
 
 class MongoBackedUploadProgressTracker @Inject()(repository : UploadSessionRepository)(implicit ec : ExecutionContext) extends UploadProgressTracker {
 

@@ -1,4 +1,5 @@
 import org.xml.sax.helpers.DefaultHandler
+import play.api.Logger
 
 import scala.xml.SAXParseException
 
@@ -38,7 +39,7 @@ object Validator extends App {
           with ExceptionErrorHandler
     }.loadFile("conf/sitemap.xml")
   } catch {
-    case throwable: Throwable =>
-    println(s"********************************** EXCEPTION ****************** ${throwable.getMessage}")
+    case t: Throwable =>
+      Logger.error("XML Validation has thrown an exception", t)
   }
 }

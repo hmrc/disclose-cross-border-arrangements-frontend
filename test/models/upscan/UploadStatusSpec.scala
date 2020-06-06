@@ -24,7 +24,7 @@ class UploadStatusSpec extends WordSpec with MustMatchers {
 
   val statuses = List(NotStarted, Failed, InProgress)
 
-  "UploadStats json Reads" must {
+  "UploadStatus json Reads" must {
 
     statuses.foreach { status =>
       s"return $status" when {
