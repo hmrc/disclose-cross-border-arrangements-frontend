@@ -81,6 +81,22 @@ class BusinessRuleValidationService @Inject()() {
       )
   }
 
+  def validateDisclosureImportInstruction(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      arrangementID <- arrangementID
+      disclosureID <- disclosureID
+    } yield
+        disclosureImportInstruction match {
+          case "DAC6NEW" => Validation(
+            key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
+            value = arrangementID.isEmpty && disclosureID.isEmpty)
+        }
+
+
+
+  }
+
 
 }
 
@@ -134,4 +150,21 @@ object BusinessRuleValidationService {
           .map(dateFormat.parse)
       }
     })
+
+  val disclosureImportInstruction: ReaderT[Option, NodeSeq, String] =
+    ReaderT[Option, NodeSeq, String](xml => {
+      Some((xml \\ "DisclosureImportInstruction").text)
+    })
+
+  val disclosureID: ReaderT[Option, NodeSeq, String] =
+    ReaderT[Option, NodeSeq, String](xml => {
+      Some((xml \\ "DisclosureID").text)
+    })
+
+  val arrangementID: ReaderT[Option, NodeSeq, String] =
+    ReaderT[Option, NodeSeq, String](xml => {
+      Some((xml \\ "ArrangementID").text)
+    })
+
+
 }
