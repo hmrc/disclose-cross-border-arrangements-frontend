@@ -1217,4 +1217,101 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.validateMainBenefitTestHasASpecifiedHallmark()(xml).get.value mustBe true
   }
+
+  "must extract presence of DAC6D1OtherInfo" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6C1bii</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.hasDAC6D1OtherInfo(xml).value mustBe true
+  }
+
+  "must extract absence of DAC6D1OtherInfo" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6C1bii</Hallmark>
+              </ListHallmarks>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.hasDAC6D1OtherInfo(xml).value mustBe false
+  }
+
+  "must correctly validate that other info is provided when hallmark present" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6D1Other</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDAC6D1OtherInfoHasNecessaryHallmark()(xml).get.value mustBe true
+  }
+
+  "must correctly invalidate that other info is provided when hallmark absent" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6C4</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDAC6D1OtherInfoHasNecessaryHallmark()(xml).get.value mustBe false
+  }
 }

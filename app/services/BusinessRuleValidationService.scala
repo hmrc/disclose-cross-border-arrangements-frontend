@@ -18,10 +18,12 @@ package services
 
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Date, GregorianCalendar}
+
 import cats.data.ReaderT
 import cats.implicits._
 import javax.inject.Inject
 import models.Validation
+import services.BusinessRuleValidationService.hasDAC6D1OtherInfo
 
 import scala.xml.NodeSeq
 
@@ -132,6 +134,18 @@ class BusinessRuleValidationService @Inject()() {
     )
   }
 
+  def validateDAC6D1OtherInfoHasNecessaryHallmark(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      hasDAC6D1OtherInfo <- hasDAC6D1OtherInfo
+      hallmarks <- hallmarks
+    } yield Validation(
+      key = "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo",
+      value = if(hasDAC6D1OtherInfo)
+        hallmarks.contains("DAC6D1Other")
+      else true
+    )
+  }
+
 }
 
 object BusinessRuleValidationService {
@@ -219,4 +233,10 @@ object BusinessRuleValidationService {
     ReaderT[Option, NodeSeq, Seq[String]](xml => {
       Some((xml \\ "Hallmark").map(_.text))
     })
+
+  val hasDAC6D1OtherInfo: ReaderT[Option, NodeSeq, Boolean] =
+    ReaderT[Option, NodeSeq, Boolean](xml => {
+      Some((xml \\ "DAC6D1OtherInfo").length > 0)
+    })
+
 }
