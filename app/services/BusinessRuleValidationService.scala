@@ -91,6 +91,9 @@ class BusinessRuleValidationService @Inject()() {
           case "DAC6NEW" => Validation(
             key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
             value = arrangementID.isEmpty && disclosureID.isEmpty)
+          case "DAC6ADD" => Validation(
+            key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+            value = arrangementID.nonEmpty && disclosureID.isEmpty)
         }
 
 
