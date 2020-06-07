@@ -86,6 +86,7 @@ class BusinessRuleValidationService @Inject()() {
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
+      messageRefID <- messageRefID
     } yield
         disclosureImportInstruction match {
           case "DAC6NEW" => Validation(
@@ -94,6 +95,9 @@ class BusinessRuleValidationService @Inject()() {
           case "DAC6ADD" => Validation(
             key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
             value = arrangementID.nonEmpty && disclosureID.isEmpty)
+          case "DAC6REP" => Validation(
+            key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+            value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
         }
 
 
@@ -167,6 +171,11 @@ object BusinessRuleValidationService {
   val arrangementID: ReaderT[Option, NodeSeq, String] =
     ReaderT[Option, NodeSeq, String](xml => {
       Some((xml \\ "ArrangementID").text)
+    })
+
+  val messageRefID: ReaderT[Option, NodeSeq, String] =
+    ReaderT[Option, NodeSeq, String](xml => {
+      Some((xml \\ "MessageRefId").text)
     })
 
 

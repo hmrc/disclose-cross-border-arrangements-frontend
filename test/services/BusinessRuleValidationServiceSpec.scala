@@ -795,4 +795,112 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     service.validateDisclosureImportInstruction()(xml).get.value mustBe false
   }
 
+  "must correctly extract MessageRefID when present" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.messageRefID(xml).value mustBe "GB0000000XXX"
+  }
+
+  "must correctly validate with Rep Disclosure with ArrangementID and DisclosureID and MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe true
+  }
+
+  "must correctly validate with Rep Disclosure with ArrangementID no DisclosureID and with MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with Rep Disclosure with ArrangementID and DisclosureID and no MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with Rep Disclosure with no ArrangementID and with DisclosureID and MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
 }
