@@ -16,6 +16,8 @@
 
 package services
 
+import java.util.{Calendar, GregorianCalendar}
+
 import base.SpecBase
 import fixtures.XMLFixture
 import org.scalatest.concurrent.IntegrationPatience
@@ -369,6 +371,189 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.validateIntermediaryDiscloserHasIntermediary()(xml).get.value mustBe true
+  }
+
+  "must correctly extract TaxpayerImplementingDates" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <Disclosing>
+            <Liability>
+              <RelevantTaxpayerDiscloser>
+                <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                <Capacity>DAC61105</Capacity>
+              </RelevantTaxpayerDiscloser>
+            </Liability>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2020-06-21</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </Disclosing>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.taxPayerImplementingDates(xml).value mustBe Seq(
+      new GregorianCalendar(2020, Calendar.MAY, 14).getTime,
+      new GregorianCalendar(2020, Calendar.JUNE, 21).getTime,
+    )
+  }
+
+  "must correctly invalidate mixed TaxpayerImplementingDates" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <Disclosing>
+            <Liability>
+              <RelevantTaxpayerDiscloser>
+                <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                <Capacity>DAC61105</Capacity>
+              </RelevantTaxpayerDiscloser>
+            </Liability>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2018-05-14</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2018-06-26</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </Disclosing>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateAllTaxpayerImplementingDatesAreAfterStart()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with TaxpayerImplementingDate equal to start" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <Disclosing>
+            <Liability>
+              <RelevantTaxpayerDiscloser>
+                <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                <Capacity>DAC61105</Capacity>
+              </RelevantTaxpayerDiscloser>
+            </Liability>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer>
+                <TaxpayerImplementingDate>2018-06-25</TaxpayerImplementingDate>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </Disclosing>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateAllTaxpayerImplementingDatesAreAfterStart()(xml).get.value mustBe true
+  }
+
+  "must correctly extract ImplementingDates" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-01-21</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.disclosureInformationImplementingDates(xml).value mustBe Seq(
+      new GregorianCalendar(2020, Calendar.JANUARY, 14).getTime,
+      new GregorianCalendar(2018, Calendar.JANUARY, 21).getTime,
+    )
+  }
+
+  "must correctly extract ImplementingDates when absent" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+          </DisclosureInformation>
+          <DisclosureInformation>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    BusinessRuleValidationService.disclosureInformationImplementingDates(xml).value mustBe Seq.empty
+  }
+
+  "must correctly invalidate mixed ImplementingDates" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-01-21</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateAllImplementingDatesAreAfterStart()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with ImplementingDate equal to start" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateAllImplementingDatesAreAfterStart()(xml).get.value mustBe true
   }
 
 }

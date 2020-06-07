@@ -16,9 +16,10 @@
 
 package services
 
-import cats.data._
-import cats.implicits._
+import java.text.SimpleDateFormat
+import java.util.{Calendar, Date, GregorianCalendar}
 import cats.data.ReaderT
+import cats.implicits._
 import javax.inject.Inject
 import models.Validation
 
@@ -60,10 +61,33 @@ class BusinessRuleValidationService @Inject()() {
       )
   }
 
+  def validateAllTaxpayerImplementingDatesAreAfterStart(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      taxPayerImplementingDates <- taxPayerImplementingDates
+    } yield
+      Validation(
+        key = "businessrules.taxPayerImplementingDates.needToBeAfterStart",
+        value = taxPayerImplementingDates.forall(implDate => !implDate.before(implementationStartDate))
+      )
+  }
+
+  def validateAllImplementingDatesAreAfterStart(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      disclosureInformationImplementingDates <- disclosureInformationImplementingDates
+    } yield
+      Validation(
+        key = "businessrules.implementingDates.needToBeAfterStart",
+        value = disclosureInformationImplementingDates.forall(implDate => !implDate.before(implementationStartDate))
+      )
+  }
+
 
 }
 
 object BusinessRuleValidationService {
+  val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+  val implementationStartDate: Date = new GregorianCalendar(2018, Calendar.JUNE, 25).getTime
+
   val isInitialDisclosureMA: ReaderT[Option, NodeSeq, Boolean] =
     ReaderT[Option, NodeSeq, Boolean](xml => {
       (xml \\ "InitialDisclosureMA").text match {
@@ -91,5 +115,23 @@ object BusinessRuleValidationService {
   val noOfRelevantTaxPayers: ReaderT[Option, NodeSeq, Int] =
     ReaderT[Option, NodeSeq, Int](xml => {
       Some((xml \\ "RelevantTaxpayer").length)
+    })
+
+  val taxPayerImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "TaxpayerImplementingDate")
+          .map(_.text)
+          .map(dateFormat.parse)
+      }
+    })
+
+  val disclosureInformationImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "ImplementingDate")
+          .map(_.text)
+          .map(dateFormat.parse)
+      }
     })
 }
