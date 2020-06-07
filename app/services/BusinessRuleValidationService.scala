@@ -49,6 +49,17 @@ class BusinessRuleValidationService @Inject()() {
       )
   }
 
+  def validateIntermediaryDiscloserHasIntermediary(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      hasIntermediaryDiscloser <- hasIntermediaryDiscloser
+      noOfIntermediaries <- noOfIntermediaries
+    } yield
+      Validation(
+        key = "businessrules.intermediaryDiscloser.needIntermediary",
+        value = if(hasIntermediaryDiscloser) noOfIntermediaries > 0 else true
+      )
+  }
+
 
 }
 
@@ -65,6 +76,16 @@ object BusinessRuleValidationService {
   val hasRelevantTaxpayerDiscloser: ReaderT[Option, NodeSeq, Boolean] =
     ReaderT[Option, NodeSeq, Boolean](xml =>
       Some((xml \\ "RelevantTaxpayerDiscloser").length > 0)
+    )
+
+  val hasIntermediaryDiscloser: ReaderT[Option, NodeSeq, Boolean] =
+    ReaderT[Option, NodeSeq, Boolean](xml =>
+      Some((xml \\ "IntermediaryDiscloser").length > 0)
+    )
+
+  val noOfIntermediaries: ReaderT[Option, NodeSeq, Int] =
+    ReaderT[Option, NodeSeq, Int](xml =>
+      Some((xml \\ "Intermediary").length)
     )
 
   val noOfRelevantTaxPayers: ReaderT[Option, NodeSeq, Int] =
