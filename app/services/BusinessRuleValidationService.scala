@@ -98,12 +98,27 @@ class BusinessRuleValidationService @Inject()() {
           case "DAC6REP" => Validation(
             key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
             value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
+          case "DAC6DEL" => Validation(
+            key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+            value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
+          case _ =>  Validation(
+            key = "businessrules.disclosure.notAValidDisclosureInstruction",
+            value = false) //TODO: This is because I haven't used an enum
         }
-
-
-
   }
 
+  def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      initialDisclosureMA <- isInitialDisclosureMA
+      relevantTaxPayers <- noOfRelevantTaxPayers
+      taxPayerImplementingDate <- taxPayerImplementingDates
+    } yield Validation(
+      key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
+      value = if(initialDisclosureMA && relevantTaxPayers > 0)
+                relevantTaxPayers == taxPayerImplementingDate.length
+              else true
+    )
+  }
 
 }
 

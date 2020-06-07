@@ -903,4 +903,170 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     service.validateDisclosureImportInstruction()(xml).get.value mustBe false
   }
 
+  "must correctly validate with Del Disclosure with ArrangementID and DisclosureID and MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe true
+  }
+
+  "must correctly validate with Del Disclosure with ArrangementID no DisclosureID and with MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with Del Disclosure with ArrangementID and DisclosureID and no MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
+  "must correctly validate with Del Disclosure with no ArrangementID and with DisclosureID and MessageRefID" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateDisclosureImportInstruction()(xml).get.value mustBe false
+  }
+
+  "must correctly validate an initial disclosure MA with Relevant Tax Payers has a TaxPayer Implementation Dates" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
+  }
+
+  "must correctly invalidate an initial disclosure MA with Relevant Tax Payers has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe false
+  }
+
+  "must correctly validate an non initial disclosure MA with Relevant Tax Payers has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
+  }
+
 }
