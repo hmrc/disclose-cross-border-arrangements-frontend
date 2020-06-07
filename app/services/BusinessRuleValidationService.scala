@@ -23,7 +23,6 @@ import cats.data.ReaderT
 import cats.implicits._
 import javax.inject.Inject
 import models.Validation
-import services.BusinessRuleValidationService.hasDAC6D1OtherInfo
 
 import scala.xml.NodeSeq
 
@@ -144,6 +143,21 @@ class BusinessRuleValidationService @Inject()() {
         hallmarks.contains("DAC6D1Other")
       else true
     )
+  }
+
+  def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
+    for {
+       v1 <- validateInitialDisclosureHasRelevantTaxPayer()
+       v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()
+       v3 <- validateIntermediaryDiscloserHasIntermediary()
+       v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
+       v5 <- validateAllTaxpayerImplementingDatesAreAfterStart()
+       v6 <- validateDisclosureImportInstruction()
+       v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
+       v8 <- validateMainBenefitTestHasASpecifiedHallmark()
+       v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
+    } yield
+      Seq(v1,v2,v3,v4,v5,v6,v7,v8,v9).filterNot(_.value)
   }
 
 }
