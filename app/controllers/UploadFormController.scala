@@ -46,7 +46,7 @@ class UploadFormController @Inject()(
     implicit request =>
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
-      val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements-frontend//error"
+      val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements//error"
       val callbackUrl = appConfig.callbackEndpointTarget
       val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 

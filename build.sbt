@@ -27,7 +27,7 @@ lazy val root = (project in file("."))
     name := appName,
     scalaVersion := "2.12.10",
     RoutesKeys.routesImport += "models._",
-    PlayKeys.playDefaultPort := 9067,
+    PlayKeys.playDefaultPort := 9758,
     ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*handlers.*;.*repositories.*;" +
       ".*BuildInfo.*;.*javascript.*;.*Routes.*;.*GuiceInjector;" +
       ".*ControllerConfiguration;.*LanguageSwitchController",
