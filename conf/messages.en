@@ -10,9 +10,9 @@ site.edit.hidden = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Continue
-site.service_name = disclose-cross-border-arrangements-frontend
+site.service_name = Disclose cross-border arrangements for DAC6
 site.textarea.char_limit = (Limit is {0} characters)
-site.title.suffix = - disclose-cross-border-arrangements-frontend - GOV.UK
+site.title.suffix = - GOV.UK
 
 error.title.prefix = Error:
 error.summary.title = There is a problem
@@ -36,10 +36,6 @@ phaseBanner.3 = will help us to improve it.
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
-
-index.title = disclose-cross-border-arrangements-frontend
-index.heading = disclose-cross-border-arrangements-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
@@ -153,9 +149,11 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = disclose-cross-border-arrangements-frontend
-index.heading = disclose-cross-border-arrangements-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.title = Disclose cross-border arrangements for DAC6
+index.heading = Disclose cross-border arrangements for DAC6
+index.guidance = Upload an XML file to tell us about an arrangement.
+index.continue = Disclose a cross-border arrangement
+index.link = View uploaded files
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset

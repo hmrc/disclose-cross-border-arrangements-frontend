@@ -16,8 +16,10 @@
 
 package controllers
 
+import controllers.actions.IdentifierAction
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
@@ -25,11 +27,15 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import scala.concurrent.ExecutionContext
 
 class IndexController @Inject()(
+                                 identify: IdentifierAction,
                                  val controllerComponents: MessagesControllerComponents,
                                  renderer: Renderer
                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = Action.async { implicit request =>
-    renderer.render("index.njk").map(Ok(_))
+  def onPageLoad: Action[AnyContent] = (identify).async { implicit request =>
+
+    val viewFiles: String = "http://localhost/" //ToDo get url for viewing files
+    renderer.render("index.njk",
+      Json.obj("viewFilesLink" -> Json.toJson(viewFiles))).map(Ok(_))
   }
 }
