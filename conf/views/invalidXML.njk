@@ -26,24 +26,17 @@
           {{ messages("invalidXML.heading") }}
         </h1>
 
-        <p class="govuk-body">
-            {{ messages("invalidXML.p1", fileName) }}
-        </p>
+        <div class="govuk-body">
 
-        <h2 class="govuk-heading-m">
-            {{ messages("invalidXML.h2") }}
-        </h2>
+        <p>{{ messages("invalidXML.p1", fileName) }}</p>
 
-        <p class="govuk-body">
-            {{ messages("invalidXML.p2") }}
-            <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link">{{ messages("invalidXML.p2.a") }}</a>.
-        </p>
+        <p>{{ messages("invalidXML.p2") }}</p>
 
-        <p class="govuk-body">
-            {{ messages("invalidXML.p3") }}
-            <a href="#" class="govuk-link">{{ messages("invalidXML.p3.a") }}</a>.
-        </p>
+        <p><a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link">{{ messages("invalidXML.p3") }}</a></p>
 
+        <p><a href="#" class="govuk-link" rel="noreferrer noopener" target="_blank">{{ messages("invalidXML.p4") }}</a></p>
+
+        </div>
       </div>
     </div>
   </div>
