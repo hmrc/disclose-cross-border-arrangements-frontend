@@ -99,7 +99,8 @@ class UploadFormControllerSpec extends SpecBase
         "message" -> s"Code: errorCode, RequestId: errorReqId",
         "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated",
           "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=play26frontend",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend")
+          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend",
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
       )
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 

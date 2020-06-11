@@ -52,6 +52,7 @@ trait SpecBase extends FreeSpec with MustMatchers with GuiceOneAppPerSuite with 
   def fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("", "")
 
   val mockRenderer: NunjucksRenderer = mock[NunjucksRenderer]
+  val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
