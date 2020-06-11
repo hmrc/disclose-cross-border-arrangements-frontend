@@ -10,10 +10,8 @@
 
 {% block beforeContent %}
   {{ govukBackLink({
-      text: messages("site.back"),
-      href: routes.controllers.UploadFormController.onPageLoad().url
-    })
-  }}
+      text: messages("site.back")
+      }) }}
 {% endblock %}
 
 {% block content %}
