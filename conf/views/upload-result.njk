@@ -28,6 +28,7 @@
         <p>Upload of <b>{{status.name}}</b> successful! http://localhost:9570{{status.downloadUrl}}</p>
     {% elif status._type == "Failed" %}
         <p>File has been rejected.</p>
+
     {% endif %}
 
     {% if status._type == "UploadedSuccessfully" %}
