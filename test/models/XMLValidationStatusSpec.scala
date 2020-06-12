@@ -51,8 +51,8 @@ class XMLValidationStatusSpec extends SpecBase {
 
       val expectedResult = ValidationFailure(
         Seq(
-          SaxParseError(50, "It's an error"),
-          SaxParseError(52, "Oh no!")
+          GenericError("It's an error", Some(50)),
+          GenericError("Oh no!", Some(52))
         ))
 
       Json.parse(json).as[XMLValidationStatus] mustBe expectedResult

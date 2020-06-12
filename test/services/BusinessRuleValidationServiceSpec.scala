@@ -20,6 +20,7 @@ import java.util.{Calendar, GregorianCalendar}
 
 import base.SpecBase
 import fixtures.XMLFixture
+import models.Validation
 import org.scalatest.concurrent.IntegrationPatience
 
 class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatience {
@@ -1314,4 +1315,57 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.validateDAC6D1OtherInfoHasNecessaryHallmark()(xml).get.value mustBe false
   }
+  "must return correct errors for xml with mutiple errors: " +
+    " error 1 = initial disclosure marketable arrangement does not have one or more relevant taxpayers " +
+    " error 2 = other info is provided when hallmark absent" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <Hallmarks>
+            <ListHallmarks>
+              <Hallmark>DAC6C4</Hallmark>
+            </ListHallmarks>
+            <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+          </Hallmarks>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateFile()(xml) mustBe
+    Some(List(Validation("businessrules.initialDisclosure.needRelevantTaxPayer",false),
+              Validation("businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo",false)))
+  }
+
+  "must return no errors for valid xml" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6D1Other</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateFile()(xml) mustBe Some(List())
+  }
+
 }

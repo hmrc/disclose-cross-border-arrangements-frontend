@@ -19,22 +19,34 @@ package services
 import java.net.URL
 
 import base.SpecBase
+import cats.data.ReaderT
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{ValidationFailure, ValidationSuccess}
+import models.{GenericError, Validation, ValidationFailure, ValidationSuccess}
+import org.junit.Before
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
+import org.mockito.Matchers.any
+import org.mockito.Matchers.anyObject
+import org.mockito.MockitoAnnotations
 
-class XMLValidationServiceSpec extends SpecBase {
+import scala.xml.NodeSeq
+
+
+class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
 
   val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
   val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
+  val mockBusinessRuleValidationService = mock[BusinessRuleValidationService]
 
   val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-    bind[XMLDacXSDValidationParser].toInstance(MockitoSugar.mock[XMLDacXSDValidationParser])
+    bind[XMLDacXSDValidationParser].toInstance(MockitoSugar.mock[XMLDacXSDValidationParser]),
+    bind[BusinessRuleValidationService].toInstance(mockBusinessRuleValidationService),
+
+
   ).build()
 
   trait SitemapParserSetup {
@@ -56,9 +68,10 @@ class XMLValidationServiceSpec extends SpecBase {
 
   "XmlValidation Service" - {
     "must return a ValidationFailure with one error" in new SitemapParserSetup {
+      when(mockBusinessRuleValidationService.validateFile()(any())).thenReturn(Some(List()))
       val validationFailure: ValidationFailure = sut.validateXml(sitemapUrl).asInstanceOf[ValidationFailure]
       validationFailure.error.length mustBe 1
-      validationFailure.error.head.lineNumber mustBe 7
+      validationFailure.error.head.lineNumber mustBe Some(7)
       validationFailure.error.head.errorMessage.startsWith("cvc-complex-type.2.4.a") mustBe true
     }
 
@@ -66,6 +79,13 @@ class XMLValidationServiceSpec extends SpecBase {
       val validationSuccess: ValidationSuccess = sut.validateXml(sitemap2Url).asInstanceOf[ValidationSuccess]
       validationSuccess.downloadUrl mustBe sitemap2Url
     }
-  }
 
+
+    "must return a ValidationFailure when passed xsd validation but fails on business rules" in new SitemapParserSetup {
+      val result = sut.validateXml(sitemap2Url) //.asInstanceOf[ValidationSuccess]
+
+      val expectedError = GenericError("generic error", Some(1))
+      result mustBe ValidationFailure(Seq(expectedError))
+    }
+  }
 }

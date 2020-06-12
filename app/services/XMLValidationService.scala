@@ -24,13 +24,15 @@ import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
+import scala.xml.NodeSeq
 
-class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser ){
+class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser,
+                                     businessRuleValidationService: BusinessRuleValidationService ){
   def validateXml (downloadSrc: String) : XMLValidationStatus = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
@@ -40,14 +42,21 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser ){
       override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
     }
 
-    new scala.xml.factory.XMLLoader[scala.xml.Elem] {
+  val elements = new scala.xml.factory.XMLLoader[scala.xml.Elem] {
       override def parser: SAXParser = xmlValidationParser.validatingParser
       override def adapter =
         new scala.xml.parsing.NoBindingFactoryAdapter
           with AccumulatorState
+
+
     }.load(new URL(downloadSrc))
 
-    if (list.isEmpty) ValidationSuccess(downloadSrc) else ValidationFailure(list)
+   val businessValidationErrors = businessRuleValidationService.validateFile()(elements)
+                                    .map(errors => errors.map(_.toGenericError)).getOrElse(List())
+
+   val xsdErrors = list.map(parseError => parseError.toGenericError)
+   val combinedErrors = xsdErrors ++ businessValidationErrors
+   if (list.isEmpty) ValidationSuccess(downloadSrc) else ValidationFailure(combinedErrors)
   }
 }
 
