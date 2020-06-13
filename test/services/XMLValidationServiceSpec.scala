@@ -56,14 +56,14 @@ class XMLValidationServiceSpec extends SpecBase {
 
   "XmlValidation Service" - {
     "must return a ValidationFailure with one error" in new SitemapParserSetup {
-      val validationFailure: ValidationFailure = sut.validateXml(sitemapUrl).asInstanceOf[ValidationFailure]
+      val validationFailure: ValidationFailure = sut.validateXML(sitemapUrl).asInstanceOf[ValidationFailure]
       validationFailure.error.length mustBe 1
       validationFailure.error.head.lineNumber mustBe 7
       validationFailure.error.head.errorMessage.startsWith("cvc-complex-type.2.4.a") mustBe true
     }
 
     "must return a ValidationSuccess with no errors" in new SitemapParserSetup {
-      val validationSuccess: ValidationSuccess = sut.validateXml(sitemap2Url).asInstanceOf[ValidationSuccess]
+      val validationSuccess: ValidationSuccess = sut.validateXML(sitemap2Url).asInstanceOf[ValidationSuccess]
       validationSuccess.downloadUrl mustBe sitemap2Url
     }
   }

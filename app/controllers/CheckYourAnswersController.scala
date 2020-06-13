@@ -18,21 +18,25 @@ package controllers
 
 import com.google.inject.Inject
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import pages.URLPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import services.XMLValidationService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.SummaryList
 import utils.CheckYourAnswersHelper
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CheckYourAnswersController @Inject()(
                                             override val messagesApi: MessagesApi,
                                             identify: IdentifierAction,
                                             getData: DataRetrievalAction,
                                             requireData: DataRequiredAction,
+                                            xmlValidationService: XMLValidationService,
+                                            idService: IDService,
                                             val controllerComponents: MessagesControllerComponents,
                                             renderer: Renderer
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -48,5 +52,27 @@ class CheckYourAnswersController @Inject()(
         "check-your-answers.njk",
         Json.obj("list" -> answers)
       ).map(Ok(_))
+  }
+
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request =>
+      request.userAnswers.get(URLPage).map {
+        url =>
+          println(s"\n\nurl: $url\n\n")
+          val xml = xmlValidationService.loadXML(url)
+          println(s"\n\n\n\nxml: $xml\n\n\n")
+          val importInstruction = (xml \ "DisclosureImportInstruction").text
+          //load xml
+          //submit to the back end
+          //send confirmation emails
+          //redirect to confirmation controller
+
+          ???
+
+      }.getOrElse{
+        //Take back to upload
+        Future.successful(Redirect(""))
+      }
+
   }
 }
