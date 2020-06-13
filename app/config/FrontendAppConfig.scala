@@ -47,6 +47,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val upscanRedirectBase: String = configuration.get[String]("microservice.services.upscan.redirect-base")
   val callbackEndpointTarget   = configuration.get[String]("upscan.callback-endpoint")
 
+  val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
+
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
 

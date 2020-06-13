@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import javax.inject.Inject
-import models.{Add, ImportInstruction, New, Replace}
+import java.lang.Exception
 
-class IDService @Inject()() {
+import scala.xml.transform.{RewriteRule, RuleTransformer}
+import scala.xml.{Elem, Node, NodeSeq, Text}
 
-  def generateIDsForInstruction(importInstruction: ImportInstruction) = {
-    importInstruction match {
-      case New => ???
-      case Add => ???
-      case Replace => ???
-    }
+object SubmissionUtil {
+
+  def constructSubmission(fileName: String, document: Elem): NodeSeq = {
+    val submission =
+      <submission><fileName>{fileName}</fileName><file></file></submission>
+
+    new RuleTransformer(new RewriteRule {
+      override def transform(n: Node): Seq[Node] = n match {
+        case elem : Elem if elem.label == "file" =>
+          elem.copy(child = document)
+        case other => other
+      }
+    }).transform(submission).head
   }
-
-
 }

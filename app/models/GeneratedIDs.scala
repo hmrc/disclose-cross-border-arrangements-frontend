@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import javax.inject.Inject
-import models.{Add, ImportInstruction, New, Replace}
+import play.api.libs.json.{Json, Reads, __}
 
-class IDService @Inject()() {
+case class GeneratedIDs(arrangementID: Option[String], disclosureID: Option[String])
 
-  def generateIDsForInstruction(importInstruction: ImportInstruction) = {
-    importInstruction match {
-      case New => ???
-      case Add => ???
-      case Replace => ???
-    }
+object GeneratedIDs {
+  import play.api.libs.functional.syntax._
+
+  implicit val reads: Reads[GeneratedIDs] = {
+    ((__ \\ "arrangementID").readNullable[String] and
+      (__ \\ "disclosureID").readNullable[String])(GeneratedIDs.apply _)
   }
-
-
 }

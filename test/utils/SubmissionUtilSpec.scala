@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package services
+package utils
 
-import javax.inject.Inject
-import models.{Add, ImportInstruction, New, Replace}
+import base.SpecBase
 
-class IDService @Inject()() {
+class SubmissionUtilSpec extends SpecBase {
 
-  def generateIDsForInstruction(importInstruction: ImportInstruction) = {
-    importInstruction match {
-      case New => ???
-      case Add => ???
-      case Replace => ???
+  "Submission Util" - {
+    "must construct a submission document from a fileName and document" in {
+      val xml =
+        <test><value>This should be preserved</value></test>
+
+      val expectedReturn =
+        <submission><fileName>test-file.xml</fileName><file><test><value>This should be preserved</value></test></file></submission>
+
+      SubmissionUtil.constructSubmission("test-file.xml", xml) mustBe expectedReturn
     }
   }
-
 
 }

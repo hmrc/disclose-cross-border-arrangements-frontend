@@ -17,8 +17,9 @@
 package controllers
 
 import com.google.inject.Inject
+import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import pages.URLPage
+import pages.{URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -29,6 +30,7 @@ import uk.gov.hmrc.viewmodels.SummaryList
 import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.xml.Elem
 
 class CheckYourAnswersController @Inject()(
                                             override val messagesApi: MessagesApi,
@@ -36,7 +38,7 @@ class CheckYourAnswersController @Inject()(
                                             getData: DataRetrievalAction,
                                             requireData: DataRequiredAction,
                                             xmlValidationService: XMLValidationService,
-                                            idService: IDService,
+                                            crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
                                             val controllerComponents: MessagesControllerComponents,
                                             renderer: Renderer
                                           )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -56,22 +58,19 @@ class CheckYourAnswersController @Inject()(
 
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      request.userAnswers.get(URLPage).map {
-        url =>
-          println(s"\n\nurl: $url\n\n")
-          val xml = xmlValidationService.loadXML(url)
-          println(s"\n\n\n\nxml: $xml\n\n\n")
-          val importInstruction = (xml \ "DisclosureImportInstruction").text
-          //load xml
-          //submit to the back end
-          //send confirmation emails
-          //redirect to confirmation controller
+      (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
+        case (Some(url), Some(fileName)) =>
+          val xml: Elem = xmlValidationService.loadXML(url)
+          for {
+            ids <- crossBorderArrangementsConnector.submitDocument(fileName, xml)
+            //Add ids to user answers
+            //TODO: send confirmation emails
 
-          ???
+          } yield {
+            Redirect("") //TODO: redirect to confirmation controller
+          }
 
-      }.getOrElse{
-        //Take back to upload
-        Future.successful(Redirect(""))
+        case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
 
   }
