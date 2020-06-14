@@ -34,7 +34,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
 
       "must correct line number when other info is provided when hallmark absent" in {
 
-          val failedValidation = Validation(
+        val failedValidation = Validation(
           key = "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo",
           value = false
         )
@@ -42,9 +42,8 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
         val result = lineNumberHelper.getLineNumbersOfErrors(Seq(failedValidation), otherInfoPopulatedXml)
         result mustBe Seq(failedValidation.copy(lineNumber = Some(14)))
       }
-    }
 
-    "must correct line number when other initialDisclosureMa is true and no relevantTaxpayers provided" in {
+      "must correct line number when other initialDisclosureMa is true and no relevantTaxpayers provided" in {
 
       val failedValidation = Validation(
         key = "businessrules.initialDisclosure.needRelevantTaxPayer",
@@ -56,7 +55,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
       }
 
 
-    "must correct line number when RelevantTaxpayerDiscloser does not have a RelevantTaxPayer" in {
+      "must correct line number when RelevantTaxpayerDiscloser does not have a RelevantTaxPayer" in {
 
       val failedValidation = Validation(
         key = "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer",
@@ -67,7 +66,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
         result mustBe Seq(failedValidation.copy(lineNumber = Some(10)))
       }
 
-    "must correct line number when IntermediaryDiscloser does not have an Intermediary" in {
+      "must correct line number when IntermediaryDiscloser does not have an Intermediary" in {
 
       val failedValidation = Validation(
         key = "businessrules.intermediaryDiscloser.needIntermediary",
@@ -79,9 +78,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
       }
 
 
-
-
-    "must correct line number when implementingDates are not after start date" in {
+      "must correct line number when implementingDates are not after start date" in {
 
       val failedValidation = Validation(
         key = "businessrules.taxPayerImplementingDates.needToBeAfterStart",
@@ -92,7 +89,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
         result mustBe Seq(failedValidation.copy(lineNumber = Some(17)))
       }
 
-    "must correct line number when for DisclosureImportInstruction error" in {
+      "must correct line number when for DisclosureImportInstruction error" in {
 
       val failedValidation = Validation(
         key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
@@ -103,7 +100,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
         result mustBe Seq(failedValidation.copy(lineNumber = Some(8)))
       }
 
- "must correct line number when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
+      "must correct line number when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
 
       val failedValidation = Validation(
         key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
@@ -111,11 +108,11 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
       )
 
         val result = lineNumberHelper.getLineNumbersOfErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe Seq(failedValidation.copy(lineNumber = Some(10)))
+        result mustBe Seq(failedValidation.copy(lineNumber = Some(8)))
       }
 
 
-   "must correct line number when main benefit test does not have a specified hallmark" in {
+      "must correct line number when main benefit test does not have a specified hallmark" in {
 
       val failedValidation = Validation(
         key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
@@ -127,7 +124,7 @@ class LineNumberHelperSpec extends SpecBase with TestXml {
       }
 
 
-
+    }
 
 
   }
