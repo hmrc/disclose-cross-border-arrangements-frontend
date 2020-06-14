@@ -17,6 +17,6 @@
 package models
 
 case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = None) {
-  def toGenericError: GenericError = GenericError(key, lineNumber)
+  def toSaxParseError: SaxParseError = SaxParseError(1, key)
 
 }

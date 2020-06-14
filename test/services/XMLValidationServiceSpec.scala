@@ -29,24 +29,18 @@ import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
-import org.mockito.Matchers.any
-import org.mockito.Matchers.anyObject
-import org.mockito.MockitoAnnotations
 
-import scala.xml.NodeSeq
+import scala.xml.Elem
+
 
 
 class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
 
   val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
   val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
-  val mockBusinessRuleValidationService = mock[BusinessRuleValidationService]
 
   val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-    bind[XMLDacXSDValidationParser].toInstance(MockitoSugar.mock[XMLDacXSDValidationParser]),
-    bind[BusinessRuleValidationService].toInstance(mockBusinessRuleValidationService),
-
-
+    bind[XMLDacXSDValidationParser].toInstance(MockitoSugar.mock[XMLDacXSDValidationParser])
   ).build()
 
   trait SitemapParserSetup {
@@ -68,24 +62,15 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
 
   "XmlValidation Service" - {
     "must return a ValidationFailure with one error" in new SitemapParserSetup {
-      when(mockBusinessRuleValidationService.validateFile()(any())).thenReturn(Some(List()))
-      val validationFailure: ValidationFailure = sut.validateXml(sitemapUrl).asInstanceOf[ValidationFailure]
+      val validationFailure: ValidationFailure = sut.validateXml(sitemapUrl)._2.asInstanceOf[ValidationFailure]
       validationFailure.error.length mustBe 1
-      validationFailure.error.head.lineNumber mustBe Some(7)
+      validationFailure.error.head.lineNumber mustBe 7
       validationFailure.error.head.errorMessage.startsWith("cvc-complex-type.2.4.a") mustBe true
     }
 
     "must return a ValidationSuccess with no errors" in new SitemapParserSetup {
-      val validationSuccess: ValidationSuccess = sut.validateXml(sitemap2Url).asInstanceOf[ValidationSuccess]
-      validationSuccess.downloadUrl mustBe sitemap2Url
+      sut.validateXml(sitemap2Url)._2 mustBe ValidationSuccess(sitemap2Url)
     }
 
-
-    "must return a ValidationFailure when passed xsd validation but fails on business rules" in new SitemapParserSetup {
-      val result = sut.validateXml(sitemap2Url) //.asInstanceOf[ValidationSuccess]
-
-      val expectedError = GenericError("generic error", Some(1))
-      result mustBe ValidationFailure(Seq(expectedError))
-    }
   }
 }

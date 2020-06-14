@@ -28,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.XMLValidationService
+import services.{ValidationEngine, XMLValidationService}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,6 +42,7 @@ class FileValidationController @Inject()(
                                           appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
                                           service: XMLValidationService,
+                                          validationEngine: ValidationEngine,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -52,7 +53,7 @@ class FileValidationController @Inject()(
       for {
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = service.validateXml(downloadUrl)
+        validation = validationEngine.validateFile(downloadUrl)
       } yield {
         validation match {
           case ValidationSuccess(_) =>

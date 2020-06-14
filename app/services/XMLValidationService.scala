@@ -29,11 +29,10 @@ import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
-import scala.xml.NodeSeq
+import scala.xml.{Elem, NodeSeq}
 
-class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser,
-                                     businessRuleValidationService: BusinessRuleValidationService ){
-  def validateXml (downloadSrc: String) : XMLValidationStatus = {
+class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
+  def validateXml (downloadSrc: String) : (Elem, XMLValidationStatus) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
     trait AccumulatorState extends DefaultHandler {
@@ -42,7 +41,7 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser,
       override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
     }
 
-  val elements = new scala.xml.factory.XMLLoader[scala.xml.Elem] {
+    val elem = new scala.xml.factory.XMLLoader[scala.xml.Elem] {
       override def parser: SAXParser = xmlValidationParser.validatingParser
       override def adapter =
         new scala.xml.parsing.NoBindingFactoryAdapter
@@ -51,12 +50,7 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser,
 
     }.load(new URL(downloadSrc))
 
-   val businessValidationErrors = businessRuleValidationService.validateFile()(elements)
-                                    .map(errors => errors.map(_.toGenericError)).getOrElse(List())
-
-   val xsdErrors = list.map(parseError => parseError.toGenericError)
-   val combinedErrors = xsdErrors ++ businessValidationErrors
-   if (list.isEmpty) ValidationSuccess(downloadSrc) else ValidationFailure(combinedErrors)
+   if (list.isEmpty) (elem, ValidationSuccess(downloadSrc)) else (elem, ValidationFailure(list))
   }
 }
 

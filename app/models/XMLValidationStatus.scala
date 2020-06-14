@@ -41,7 +41,7 @@ object GenericError {
   implicit val format = Json.format[GenericError]
 }
 
-case class ValidationFailure (error: Seq[GenericError]) extends XMLValidationStatus
+case class ValidationFailure(error: Seq[SaxParseError]) extends XMLValidationStatus
 
 object ValidationFailure {
   implicit val format = Json.format[ValidationFailure]
@@ -63,7 +63,7 @@ object XMLValidationStatus {
       "_type" -> "ValidationSuccess"
     )
     case ValidationFailure (error) => Json.obj(
-      "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
+      "error" -> JsArray(error.map(Json.toJson[SaxParseError](_))),
       "_type" -> "ValidationFailure"
     )
   }
