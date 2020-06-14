@@ -169,9 +169,7 @@ object BusinessRuleValidationService {
 
   val isInitialDisclosureMA: ReaderT[Option, NodeSeq, Boolean] =
     ReaderT[Option, NodeSeq, Boolean](xml => {
-      val foo = (xml \\ "InitialDisclosureMA")
-
-        foo.text match {
+      (xml \\ "InitialDisclosureMA").text match {
         case "true" => Some(true)
         case "false" => Some(false)
         case _ => Some(false)
