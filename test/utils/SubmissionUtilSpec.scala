@@ -17,18 +17,28 @@
 package utils
 
 import base.SpecBase
+import org.scalatest.StreamlinedXmlEquality
 
-class SubmissionUtilSpec extends SpecBase {
+class SubmissionUtilSpec extends SpecBase with StreamlinedXmlEquality {
 
   "Submission Util" - {
     "must construct a submission document from a fileName and document" in {
       val xml =
-        <test><value>This should be preserved</value></test>
+        <test>
+          <value>This should be preserved</value>
+        </test>
 
       val expectedReturn =
-        <submission><fileName>test-file.xml</fileName><file><test><value>This should be preserved</value></test></file></submission>
+        <submission>
+          <fileName>test-file.xml</fileName>
+          <file>
+            <test>
+              <value>This should be preserved</value>
+            </test>
+          </file>
+        </submission>
 
-      SubmissionUtil.constructSubmission("test-file.xml", xml) mustBe expectedReturn
+      SubmissionUtil.constructSubmission("test-file.xml", xml) mustEqual expectedReturn
     }
   }
 

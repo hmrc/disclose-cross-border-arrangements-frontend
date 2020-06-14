@@ -24,7 +24,7 @@ object GeneratedIDs {
   import play.api.libs.functional.syntax._
 
   implicit val reads: Reads[GeneratedIDs] = {
-    ((__ \\ "arrangementID").readNullable[String] and
-      (__ \\ "disclosureID").readNullable[String])(GeneratedIDs.apply _)
+    ((__ \ "arrangementID").readNullable[String] and
+      (__ \ "disclosureID").readNullable[String])(GeneratedIDs.apply _)
   }
 }
