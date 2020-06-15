@@ -172,10 +172,9 @@ validation.title = Validator placeholder
 validation.heading = Validator placeholder
 
 invalidXML.title = There is a problem
-invalidXML.heading = Your file does not contain valid XML
+invalidXML.heading = There is a problem with your file
 invalidXML.p1 = Your file {0} does not contain valid XML.
-invalidXML.h2 = What to do next
-invalidXML.p2 = If you uploaded the wrong file,
-invalidXML.p2.a = upload a different file
-invalidXML.p3 = If you uploaded the correct file, make sure your XML is structured correctly by reading part X: how to create valid XML of the
-invalidXML.p3.a = technical guidance for XML files
+invalidXML.p2 = You can restructure the XML and upload it again.
+invalidXML.p3 = Upload a different file
+invalidXML.p4 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
+
