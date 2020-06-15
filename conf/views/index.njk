@@ -17,11 +17,17 @@
           {{ messages("index.heading") }}
         </h1>
 
+        <p class="govuk-body"> {{ messages("index.guidance")}} </p>
+
         {{ govukButton({
-                          text: messages("site.continue"),
+                          text: messages("index.continue"),
                           href: routes.controllers.UploadFormController.onPageLoad().url,
                           attributes: {id:"submit"}
                         }) }}
+
+         <p class="govuk-body">
+            <a href=" {{ viewFilesLink }}" class="govuk-link"> {{ messages("index.link") }}</a>
+         </p>
       </div>
     </div>
   </div>
