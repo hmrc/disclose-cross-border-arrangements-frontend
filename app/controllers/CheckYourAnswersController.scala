@@ -19,11 +19,12 @@ package controllers
 import com.google.inject.Inject
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import pages.{URLPage, ValidXMLPage}
+import pages.{GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import services.XMLValidationService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.SummaryList
@@ -37,6 +38,7 @@ class CheckYourAnswersController @Inject()(
                                             identify: IdentifierAction,
                                             getData: DataRetrievalAction,
                                             requireData: DataRequiredAction,
+                                            sessionRepository: SessionRepository,
                                             xmlValidationService: XMLValidationService,
                                             crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
                                             val controllerComponents: MessagesControllerComponents,
@@ -63,7 +65,8 @@ class CheckYourAnswersController @Inject()(
           val xml: Elem = xmlValidationService.loadXML(url)
           for {
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, xml)
-            //Add ids to user answers
+            userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
+            _              <- sessionRepository.set(userAnswersWithIDs)
             //TODO: send confirmation emails
 
           } yield {
