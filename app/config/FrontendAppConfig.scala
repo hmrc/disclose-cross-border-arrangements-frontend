@@ -40,12 +40,20 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val loginUrl: String = configuration.get[String]("urls.login")
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
 
+
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
+  
   //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
   val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
-  val upscanRedirectBase: String = configuration.get[String]("microservice.services.upscan.redirect-base")
-  val callbackEndpointTarget   = configuration.get[String]("upscan.callback-endpoint")
+
+  val callbackEndpointTargetUrl   = configuration.get[String]("upscan.callback-endpoint")
+
+  val serviceBase: String = servicesConfig.baseUrl("disclose-crossborder-arrangements-frontend")
+
+  val errorRedirectUrl   = serviceBase + "/disclose-cross-border-arrangements/error"
+
+  val callbackEndpointTarget   = serviceBase + callbackEndpointTargetUrl
 
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
