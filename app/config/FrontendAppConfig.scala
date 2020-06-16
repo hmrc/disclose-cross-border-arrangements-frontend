@@ -49,7 +49,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   val callbackEndpointTargetUrl   = configuration.get[String]("upscan.callback-endpoint")
 
-  val serviceBase: String = servicesConfig.baseUrl("disclose-crossborder-arrangements-frontend")
+  val serviceBase: String = servicesConfig.baseUrl("disclose-cross-border-arrangements-frontend")
 
   val errorRedirectUrl   = serviceBase + "/disclose-cross-border-arrangements/error"
 
