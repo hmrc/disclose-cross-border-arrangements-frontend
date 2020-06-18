@@ -18,7 +18,7 @@ package config
 
 import com.google.inject.{Inject, Singleton}
 import controllers.routes
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.Lang
 import play.api.mvc.Call
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -42,18 +42,23 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
 
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
-  
+  Logger.debug(s"The upscan host is $upscanInitiateHost")
+
   //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
   val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
 
   val callbackEndpointTargetUrl   = configuration.get[String]("upscan.callback-endpoint")
+  Logger.debug(s"The callback endpoint is  host is $callbackEndpointTarget")
 
   val serviceBase: String = servicesConfig.baseUrl("disclose-cross-border-arrangements-frontend")
+  Logger.debug(s"The servicebase is  host is $serviceBase")
 
   val errorRedirectUrl   = serviceBase + "/disclose-cross-border-arrangements/error"
+  Logger.debug(s"The callback endpoint is  host is $errorRedirectUrl")
 
   val callbackEndpointTarget   = serviceBase + callbackEndpointTargetUrl
+  Logger.debug(s"The callback endpoint urls is  host is $callbackEndpointTargetUrl")
 
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
