@@ -1,7 +1,14 @@
 {% extends "includes/layout.njk" %}
 
 {% from "govuk/components/button/macro.njk"        import govukButton %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back")
+      }) }}
+{% endblock %}
 
 {% block mainContent %}
 <div class="govuk-main-wrapper">
