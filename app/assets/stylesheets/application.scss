@@ -1,4 +1,5 @@
 $govuk-assets-path: "/disclose-cross-border-arrangements/assets/lib/govuk-frontend/govuk/assets/";
 
 @import "lib/govuk-frontend/govuk/all";
+@import "partials/header";
 @import "language-toggles.scss";
