@@ -34,8 +34,6 @@ class IndexController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (identify).async { implicit request =>
 
-    val viewFiles: String = "http://localhost/" //ToDo get url for viewing files
-    renderer.render("index.njk",
-      Json.obj("viewFilesLink" -> Json.toJson(viewFiles))).map(Ok(_))
+    renderer.render("index.njk").map(Ok(_))
   }
 }
