@@ -39,17 +39,4 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   def submitDocument(fileName: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] =
     httpClient.POST[String, GeneratedIDs](submitUrl, constructSubmission(fileName, xmlDocument).toString(), headers)
 
-/*  def createFormData( fileName: String,
-                      xmlDocument: NodeSeq
-                    ): MultipartFormData[NodeSeq] =
-    MultipartFormData[NodeSeq](
-      dataParts = Map.empty,
-      files = Seq(FilePart[NodeSeq]("submissionDocument", fileName, Some("application/xml"), xmlDocument)),
-      badParts = Nil
-    )
-
-  private val headers = Seq(
-    HeaderNames.CONTENT_TYPE -> "multipart/form-data"
-  )*/
-
 }

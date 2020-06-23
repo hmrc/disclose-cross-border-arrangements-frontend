@@ -21,12 +21,13 @@ sealed trait ImportInstruction
 case object New extends ImportInstruction
 case object Add extends ImportInstruction
 case object Replace extends ImportInstruction
+case object Delete extends ImportInstruction
 
 object ImportInstruction {
   def apply(name: String): ImportInstruction = name match {
     case "DAC6NEW" => New
     case "DAC6ADD" => Add
     case "DAC6REP" => Replace
-    //case _ => new IllegalArgumentException("Unrecognised Import Instruction")
+    case "DAC6DEL" => Delete
   }
 }
