@@ -67,6 +67,7 @@ class UploadFormController @Inject()(
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
     implicit request => {
       Logger.debug("Show result called")
+
       for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
         {
           uploadResult match {
@@ -102,5 +103,6 @@ class UploadFormController @Inject()(
           ).map (Ok (_) )
     }
   }
+
 
 }

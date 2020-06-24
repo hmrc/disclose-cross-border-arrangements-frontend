@@ -18,9 +18,7 @@ package controllers
 
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
-import pages.InvalidXMLPage
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
@@ -35,16 +33,8 @@ class VirusErrorController @Inject()(
                                       renderer: Renderer
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
-    implicit request =>
-      val fileName = request.userAnswers.flatMap(_.get(InvalidXMLPage)) match {
-        case Some(fileName) => fileName
-        case None => ""
-      }
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async { implicit request =>
 
-      renderer.render(
-        "virusError.njk",
-        Json.obj("fileName" -> Json.toJson(fileName))
-      ).map(Ok(_))
+    renderer.render("virusError.njk").map(Ok(_))
   }
 }
