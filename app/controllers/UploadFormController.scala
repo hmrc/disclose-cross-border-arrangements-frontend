@@ -84,13 +84,20 @@ class UploadFormController @Inject()(
   }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      renderer.render(
-        "upload-error.njk",
-        Json.obj("pageTitle" -> "Upload Error",
-          "heading"-> errorMessage,
+    implicit request => errorCode match {
+      case "EntityTooLarge" =>
+        renderer.render(
+          "fileTooLargeError.njk",
+          Json.obj("guidanceLink" -> Json.toJson(appConfig.xmlTechnicialGuidanceUrl))
+        ).map (Ok (_))
+      case _ =>
+          renderer.render (
+          "upload-error.njk",
+          Json.obj ("pageTitle" -> "Upload Error",
+          "heading" -> errorMessage,
           "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-      ).map(Ok(_))
+          ).map (Ok (_) )
+    }
   }
 
 }

@@ -52,6 +52,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
 
+  lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
+
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
 
