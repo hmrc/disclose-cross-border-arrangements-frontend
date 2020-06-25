@@ -48,7 +48,7 @@ class UploadFormController @Inject()(
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
-      val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanProtocol == true)
+      val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanProtocol == "https")
       val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
