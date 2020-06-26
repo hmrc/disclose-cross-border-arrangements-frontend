@@ -177,3 +177,8 @@ invalidXML.p2 = You can restructure the XML and upload it again.
 invalidXML.p3 = Upload a different file
 invalidXML.p4 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
 
+fileToLargeError.title = There is a problem with your file
+fileToLargeError.heading = There is a problem with your file
+fileToLargeError.instruction = Your file must be 100MB or less.
+fileToLargeError.uploadNewFileLink = Upload a different file
+fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in new tab)
