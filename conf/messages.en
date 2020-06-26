@@ -181,4 +181,4 @@ fileToLargeError.title = There is a problem with your file
 fileToLargeError.heading = There is a problem with your file
 fileToLargeError.instruction = Your file must be 100MB or less.
 fileToLargeError.uploadNewFileLink = Upload a different file
-fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in a new window or tab)
+fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in new tab)
