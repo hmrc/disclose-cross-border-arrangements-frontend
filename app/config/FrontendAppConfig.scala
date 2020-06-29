@@ -53,6 +53,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
 
+val upscanUseSSL: Boolean = upscanProtocol == "https"
+
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
 
