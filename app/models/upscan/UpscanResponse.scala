@@ -101,7 +101,7 @@ object ReadyCallbackBody {
     readyCallbackBody =>
       Json.obj(
         "reference" -> Json.toJsFieldJsValueWrapper(readyCallbackBody.reference),
-        "downloadUrl" -> readyCallbackBody.downloadUrl.toString,
+        "downloadUrl" -> readyCallbackBody.downloadUrl.toExternalForm,
         "uploadDetails" -> Json.toJsFieldJsValueWrapper(readyCallbackBody.uploadDetails)
       )
   }
