@@ -26,7 +26,6 @@ case class UploadSessionDetails(_id : BSONObjectID,
                                 status : UploadStatus)
 
 object UploadSessionDetails {
-
   val status = "status"
 
   implicit val objectIdFormats: Format[BSONObjectID] = ReactiveMongoFormats.objectIdFormats
