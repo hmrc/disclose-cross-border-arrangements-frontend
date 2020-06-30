@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.UpscanConnector
 import javax.inject.Singleton
-import models.upscan.{UploadId, UpscanInitiateRequest}
+import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import play.api.Logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -67,10 +67,14 @@ class UploadFormController @Inject()(
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
     implicit request => {
       Logger.debug("Show result called")
+
       for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
         {
           uploadResult match {
+
+            case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(result) =>
+
               renderer.render(
                 "upload-result.njk",
                 Json.obj("uploadId" -> Json.toJson(uploadId),
@@ -99,5 +103,6 @@ class UploadFormController @Inject()(
           ).map (Ok (_) )
     }
   }
+
 
 }

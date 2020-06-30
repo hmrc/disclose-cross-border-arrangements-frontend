@@ -182,3 +182,9 @@ fileToLargeError.heading = There is a problem with your file
 fileToLargeError.instruction = Your file must be 100MB or less.
 fileToLargeError.uploadNewFileLink = Upload a different file
 fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in new tab)
+
+virusError.title = There is a problem with your file
+virusError.heading = There is a problem with your file
+virusError.p1 = We found a virus in your file.
+virusError.link.reupload = Upload a different file
+virusError.link.guidance = Read the technical guidance for XML files (opens in a new tab)
