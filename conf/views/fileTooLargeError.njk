@@ -1,9 +1,18 @@
 {% extends "includes/layout.njk" %}
 
 {% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 
 {% block pageTitle %}
   {{ title(messages("fileToLargeError.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back"),
+      href: routes.controllers.UploadFormController.onPageLoad().url
+    })
+  }}
 {% endblock %}
 
 {% block mainContent %}
