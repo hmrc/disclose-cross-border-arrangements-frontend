@@ -42,7 +42,7 @@ class UploadCallbackSpec extends SpecBase {
 
       val expectedResult = ReadyCallbackBody(
         Reference("ref"),
-        new URL("http://test.com"),
+        "http://test.com",
         UploadDetails(Instant.ofEpochMilli(1591464117), "", "", "")
       )
 

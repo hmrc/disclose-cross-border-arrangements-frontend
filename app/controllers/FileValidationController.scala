@@ -82,7 +82,7 @@ class FileValidationController @Inject()(
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
-        case UploadedSuccessfully(name, downloadUrl) => (name, appConfig.upscanBucketHost + downloadUrl)
+        case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
         case _ => throw new RuntimeException("File not uploaded successfully")
       }
       case _ => throw new RuntimeException("File not uploaded successfully")
