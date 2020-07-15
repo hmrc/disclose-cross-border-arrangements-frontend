@@ -4,9 +4,11 @@
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
 {% from "govuk/components/button/macro.njk"        import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
 
 {% block pageTitle %}
-  {{ title(messages("deleteDisclosure.title")) }}
+  {{ title(messages("summaryPage.deleteDisclosure.title")) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -22,18 +24,23 @@
       <div class="govuk-grid-column-two-thirds">
 
         <h1 class="govuk-heading-xl">
-          {{ messages("deleteDisclosure.heading") }}
+          {{ messages("summaryPage.deleteDisclosure.heading") }}
         </h1>
 
         {{ govukSummaryList({
-          rows: list
+          rows: uploadedFileInfo
+        }) }}
+
+        {{ govukWarningText({
+          text: messages("summaryPage.warning"),
+          iconFallbackText: "Warning"
         }) }}
 
         <form action="{{ routes.controllers.DeleteDisclosureController.onSubmit.url }}" method="post">
             {{ csrf() | safe }}
 
             {{ govukButton({
-              text: messages("site.confirmAndSend"),
+              text: messages("summaryPage.delete.button"),
               preventDoubleClick: true,
               attributes: {id:"submit"}
             }) }}

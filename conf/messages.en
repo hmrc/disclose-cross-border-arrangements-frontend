@@ -230,3 +230,14 @@ createConfirmation.h2 = What happens next
 createConfirmation.p1 = We have sent you a confirmation email.
 createConfirmation.p2 = Share the arrangement reference number with anyone else involved in the arrangement.
 createConfirmation.p3 = Your disclosure ID is {0}. You will need this if you want to make any changes to the disclosure.
+
+## Summary - Delete Disclosure
+summaryPage.deleteDisclosure.title = Are you sure you want to delete this disclosure?
+summaryPage.deleteDisclosure.heading = Are you sure you want to delete this disclosure?
+summaryPage.delete.button = Delete this disclosure
+summaryPage.deleteFile = What are you deleting?
+summaryPage.deleteDisclosure.text = Disclosure {0} for arrangement {1}
+
+## Summary - General
+summaryPage.uploadedFile = Uploaded file
+summaryPage.warning = You cannot undo this.

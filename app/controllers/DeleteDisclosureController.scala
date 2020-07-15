@@ -16,16 +16,19 @@
 
 package controllers
 
+import connectors.CrossBorderArrangementsConnector
 import controllers.actions._
 import javax.inject.Inject
 import pages.{GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
-import services.XMLValidationService
-import connectors.CrossBorderArrangementsConnector
 import repositories.SessionRepository
+import services.XMLValidationService
+import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.SummaryList
+import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
@@ -45,11 +48,30 @@ class DeleteDisclosureController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      renderer.render("deleteDisclosure.njk").map(Ok(_))
+      val helper = new CheckYourAnswersHelper(request.userAnswers)
+      val uploadedFileInfo: Seq[SummaryList.Row] = buildDetails(helper)
+
+      renderer.render(
+        "deleteDisclosure.njk",
+        Json.obj(
+          "uploadedFileInfo" -> uploadedFileInfo
+        )
+      ).map(Ok(_))
   }
 
+  private def buildDetails(helper: CheckYourAnswersHelper): Seq[SummaryList.Row] = {
+
+    val pagesToCheck = (helper.uploadedFile, helper.disclosureToDelete) // add disclosure ID & Arrangement
+
+    pagesToCheck match {
+      case (Some(_),_) => Seq(helper.uploadedFile.get, helper.disclosureToDelete)
+    }
+  }
+
+  //TODO add deletion into controller
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
@@ -58,11 +80,9 @@ class DeleteDisclosureController @Inject()(
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _ <- sessionRepository.set(userAnswersWithIDs)
             //TODO: send confirmation emails
-
           } yield {
-            Redirect("") //TODO: redirect to confirmation controller
+            Redirect("") //TODO: redirect to deletion confirmation controller
           }
-
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
   }
