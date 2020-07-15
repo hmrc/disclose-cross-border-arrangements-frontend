@@ -31,6 +31,8 @@ GET        /file-error                                  controllers.InvalidXMLCo
 
 GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
 
+GET        /delete-disclosure           controllers.DeleteDisclosureController.onPageLoad()
+
 GET        /replaceConfirmation                         controllers.ReplaceConfirmationController.onPageLoad()
 
 GET        /send-disclosure/upload-confirmation         controllers.UploadConfirmationController.onPageLoad()
