@@ -215,6 +215,9 @@ uploadConfirmation.p1 = We have sent you a confirmation email.
 uploadConfirmation.p2 = You will need the disclosure ID if you need to make any changes to the disclosure.
 uploadConfirmation.p3 = If we have any questions about the disclosure, we will contact you.
 
+deleteDisclosure.title = Are you sure you want to delete this disclosure?
+deleteDisclosure.heading = Are you sure you want to delete this disclosure?
+
 confirmation.li1 = Go to
 confirmation.li1.a = disclose cross-border arrangements
 confirmation.li2.a = What did you think of this service?

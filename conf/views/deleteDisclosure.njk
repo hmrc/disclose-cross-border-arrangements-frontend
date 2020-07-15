@@ -1,9 +1,18 @@
 {% extends "includes/layout.njk" %}
 
 {% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
+{% from "govuk/components/button/macro.njk"        import govukButton %}
 
 {% block pageTitle %}
   {{ title(messages("deleteDisclosure.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back")
+      }) }}
 {% endblock %}
 
 {% block mainContent %}
@@ -15,6 +24,20 @@
         <h1 class="govuk-heading-xl">
           {{ messages("deleteDisclosure.heading") }}
         </h1>
+
+        {{ govukSummaryList({
+          rows: list
+        }) }}
+
+        <form action="{{ routes.controllers.DeleteDisclosureController.onSubmit.url }}" method="post">
+            {{ csrf() | safe }}
+
+            {{ govukButton({
+              text: messages("site.confirmAndSend"),
+              preventDoubleClick: true,
+              attributes: {id:"submit"}
+            }) }}
+        </form>
 
       </div>
     </div>
