@@ -37,6 +37,6 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   )
 
   def submitDocument(fileName: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] =
-    httpClient.POST[String, GeneratedIDs](submitUrl, constructSubmission(fileName, xmlDocument).toString(), headers)
+    httpClient.POSTString[GeneratedIDs](submitUrl, constructSubmission(fileName, xmlDocument).toString(), headers)
 
 }
