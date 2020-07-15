@@ -1,0 +1,43 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/panel/macro.njk"         import govukPanel %}
+
+{% block pageTitle %}
+  {{ title(messages("uploadConfirmation.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        {{ govukPanel({
+          titleText: messages("uploadConfirmation.panel.title"),
+          html: arrangementID
+        }) }}
+
+        <p class="govuk-body">{{ messages("uploadConfirmation.p1") }}</p>
+
+        <h2 class="govuk-heading-m">
+          {{ messages("uploadConfirmation.h2") }}
+        </h2>
+
+        <p class="govuk-body">{{ messages("uploadConfirmation.p2") }}</p>
+        <p class="govuk-body">{{ messages("uploadConfirmation.p3") }}</p>
+
+        <ul class="govuk-list">
+            <li>{{ messages("uploadConfirmation.li1") }}
+              <a class="govuk-link" href="{{ routes.controllers.UploadFormController.onPageLoad().url }}">{{messages("uploadConfirmation.li1.a")}}</a>.
+            </li>
+            <li>
+              <a class="govuk-link" href="#">{{ messages("uploadConfirmation.li2.a") }}</a> {{ messages("uploadConfirmation.li2") }}
+            </li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

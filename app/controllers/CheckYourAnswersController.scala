@@ -74,7 +74,7 @@ class CheckYourAnswersController @Inject()(
             //TODO: send confirmation emails
 
           } yield {
-            Redirect("") //TODO: redirect to confirmation controller
+            Redirect(routes.UploadConfirmationController.onPageLoad()) //TODO: redirect to confirmation controller
           }
 
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
