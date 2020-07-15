@@ -21,7 +21,7 @@ import models.upscan.CallbackBody
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.MessagesControllerComponents
 import services.UpscanCallbackDispatcher
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
