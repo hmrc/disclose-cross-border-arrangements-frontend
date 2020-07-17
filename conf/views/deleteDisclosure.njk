@@ -28,8 +28,11 @@
         </h1>
 
         {{ govukSummaryList({
+          classes: 'govuk-summary-list--no-border',
           rows: uploadedFileInfo
         }) }}
+
+        <hr>
 
         {{ govukWarningText({
           text: messages("summaryPage.warning"),
