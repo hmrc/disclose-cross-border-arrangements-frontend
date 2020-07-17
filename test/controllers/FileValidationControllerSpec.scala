@@ -42,7 +42,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
   val mockRepository = mock[UploadSessionRepository]
   val mockSessionRepository = mock[SessionRepository]
 
-
   override def beforeEach() = {
     reset(mockSessionRepository)
   }
