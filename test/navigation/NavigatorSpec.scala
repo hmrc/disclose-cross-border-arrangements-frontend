@@ -57,6 +57,21 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
               .mustBe(routes.InvalidXMLController.onPageLoad())
         }
       }
+
+
+      "must go from file validation page to 'Check your answer before sending file' page if XML is Valid" in {
+
+        forAll(arbitrary[UserAnswers]) {
+          answers =>
+            val updatedAnswers =
+              answers
+                .set(ValidXMLPage, "fileName.xml")
+                .success
+                .value
+            navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers)
+              .mustBe(routes.CheckYourAnswersController.onPageLoad())
+        }
+      }
     }
 
     "in Check mode" - {

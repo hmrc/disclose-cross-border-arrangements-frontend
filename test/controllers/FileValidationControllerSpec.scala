@@ -19,9 +19,10 @@ package controllers
 import base.SpecBase
 import models.{UserAnswers, ValidationFailure, ValidationSuccess}
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
+import models.{UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{times, verify, when, _}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
@@ -29,7 +30,6 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.twirl.api.Html
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.ValidationEngine
@@ -66,23 +66,24 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       UploadedSuccessfully("afile",downloadURL)
     )
 
-    "must return OK and the correct view for a GET" in {
+    "must redirect to Check your answers and the correct view for a GET" in {
 
       val uploadId = UploadId("123")
+      val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
+      val expectedData = Json.obj("validXML"-> "afile", "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(""))
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+      when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(ValidationSuccess(downloadURL))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val controller = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
 
-      status(result) mustBe OK
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-      templateCaptor.getValue mustEqual "file-validation.njk"
+      status(result) mustBe SEE_OTHER
+      verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
+      userAnswersCaptor.getValue.data mustEqual expectedData
     }
 
     "must redirect to invalid XML page if XML validation fails" in {

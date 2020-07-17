@@ -28,6 +28,7 @@ import repositories.SessionRepository
 import services.XMLValidationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.SummaryList
+import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,13 +49,18 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val helper = new CheckYourAnswersHelper(request.userAnswers)
+      val xml: Elem = (request.userAnswers.get(URLPage)) match {
+        case (Some(url)) => xmlValidationService.loadXML(url)
+      }
 
-      val answers: Seq[SummaryList.Row] = Seq()
+      val helper = new CheckYourAnswersHelper(request.userAnswers)
+      val fileInfo = helper.displaySummaryFromInstruction(xml)
 
       renderer.render(
         "check-your-answers.njk",
-        Json.obj("list" -> answers)
+        Json.obj(
+          "fileInfo" -> fileInfo
+        )
       ).map(Ok(_))
   }
 
