@@ -49,10 +49,7 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val xml: Elem = (request.userAnswers.get(URLPage)) match {
-        case (Some(url)) => xmlValidationService.loadXML(url)
-      }
-
+      val xml: Elem = request.userAnswers.get(URLPage).map(url => xmlValidationService.loadXML(url)).get
       val helper = new CheckYourAnswersHelper(request.userAnswers)
       val fileInfo = helper.displaySummaryFromInstruction(xml)
 

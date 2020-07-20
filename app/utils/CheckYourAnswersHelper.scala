@@ -74,7 +74,7 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
         value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID))
         )
       )
-      case _ => Seq() //TODO - refactor
+      case _ => Seq() //TODO - add DAC6DEL to cover all scenarios
     }
   }
 }
