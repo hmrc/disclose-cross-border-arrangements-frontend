@@ -1,0 +1,40 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% block pageTitle %}
+  {{ title(messages("replaceConfirmation.title")) }}
+
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ govukPanel({
+            titleText: messages("replaceConfirmation.heading")
+          }) }}
+        </h1>
+        <p class="govuk-body">
+            {{ messages("replaceConfirmation.p1") }}
+        </p>
+        <h2 class="govuk-heading-m">{{ messages("replaceConfirmation.heading.two") }}</h2>
+         <p class="govuk-body">{{ messages("replaceConfirmation.p2") }}</p>
+        <ul class="govuk-list">
+          <li> <a href="/">{{ messages("replaceConfirmation.p5") }}</a> {{ messages("replaceConfirmation.p6") }}</li>
+          <li>{{ messages("replaceConfirmation.p3") }}
+             <a class="disclose-link" href={{discloseBorderArrangements}}>{{messages("replaceConfirmation.p4")}}</a>
+           </li>
+        </ul>
+      </div>
+    <div class="govuk-grid-column-two-thirds">
+          <p><a href="/">{{ messages("replaceConfirmation.p7") }}</a></p>
+        </div>
+    </div>
+  </div>
+
+{% endblock %}
