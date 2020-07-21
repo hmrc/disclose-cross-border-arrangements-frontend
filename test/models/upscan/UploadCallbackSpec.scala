@@ -16,7 +16,6 @@
 
 package models.upscan
 
-import java.net.URL
 import java.time.Instant
 
 import base.SpecBase

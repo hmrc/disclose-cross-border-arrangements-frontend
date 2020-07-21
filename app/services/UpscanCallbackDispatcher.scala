@@ -19,7 +19,6 @@ package services
 import javax.inject.Inject
 import models.upscan._
 import org.slf4j.LoggerFactory
-import play.api.Logger
 
 import scala.concurrent.Future
 
