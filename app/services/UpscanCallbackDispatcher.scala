@@ -28,7 +28,9 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
     Logger.debug("\n\nHandling the callback\n\n")
     val uploadStatus = callback match {
       case s: ReadyCallbackBody =>
-        UploadedSuccessfully(s.uploadDetails.fileName, s.downloadUrl.getFile)
+        UploadedSuccessfully(s.uploadDetails.fileName, s.downloadUrl)
+      case s: FailedCallbackBody if s.failureDetails.failureReason == "QUARANTINE" =>
+        Quarantined
       case s: FailedCallbackBody =>
         Failed
     }

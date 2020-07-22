@@ -22,10 +22,10 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.InvalidXMLPage
+import pages.{InvalidXMLPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.{ValidationEngine, XMLValidationService}
@@ -57,10 +57,17 @@ class FileValidationController @Inject()(
       } yield {
         validation match {
           case ValidationSuccess(_) =>
-            renderer.render(
-              "file-validation.njk",
-              Json.obj("validationResult" -> Json.toJson(validation))
-            ).map(Ok(_))
+            {for {
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
+              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              _              <- sessionRepository.set(updatedAnswersWithURL)
+            } yield {
+              renderer.render(
+                "file-validation.njk",
+                Json.obj("validationResult" -> Json.toJson(validation))
+              ).map(Ok(_))
+            }}.flatten
+
           case ValidationFailure(_) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
@@ -70,13 +77,13 @@ class FileValidationController @Inject()(
             }
         }
       }
-    }.flatMap(identity)
+    }.flatten
   }
 
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
-        case UploadedSuccessfully(name, downloadUrl) => (name, appConfig.upscanBucketHost + downloadUrl)
+        case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
         case _ => throw new RuntimeException("File not uploaded successfully")
       }
       case _ => throw new RuntimeException("File not uploaded successfully")

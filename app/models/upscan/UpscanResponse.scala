@@ -91,7 +91,7 @@ case class ErrorDetails(failureReason: String,
 
 case class ReadyCallbackBody(
                               reference: Reference,
-                              downloadUrl: URL,
+                              downloadUrl: String,
                               uploadDetails: UploadDetails
                             ) extends CallbackBody
 
@@ -101,7 +101,7 @@ object ReadyCallbackBody {
     readyCallbackBody =>
       Json.obj(
         "reference" -> Json.toJsFieldJsValueWrapper(readyCallbackBody.reference),
-        "downloadUrl" -> readyCallbackBody.downloadUrl.toString,
+        "downloadUrl" -> readyCallbackBody.downloadUrl,
         "uploadDetails" -> Json.toJsFieldJsValueWrapper(readyCallbackBody.uploadDetails)
       )
   }
@@ -110,7 +110,7 @@ object ReadyCallbackBody {
     (__ \ "reference").read[Reference] and
     (__ \ "downloadUrl").read[String] and
     (__ \ "uploadDetails").read[UploadDetails]
-    )((ref, url, ud) => ReadyCallbackBody(ref, new URL(url), ud))
+    )((ref, url, ud) => ReadyCallbackBody(ref, url, ud))
 }
 
 case class FailedCallbackBody( reference: Reference,

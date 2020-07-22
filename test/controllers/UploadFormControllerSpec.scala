@@ -99,7 +99,8 @@ class UploadFormControllerSpec extends SpecBase
         "message" -> s"Code: errorCode, RequestId: errorReqId",
         "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated",
           "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=play26frontend",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend")
+          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend",
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
       )
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 
@@ -107,6 +108,31 @@ class UploadFormControllerSpec extends SpecBase
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
       templateCaptor.getValue mustEqual "upload-error.njk"
       argumentCaptor.getValue mustEqual expectedArgument
+    }
+
+    "must show File to large error when the errorCode is EntityTooLarge" in {
+      val controller = application.injector.instanceOf[UploadFormController]
+
+      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
+      val expectedArgument = Json.obj(
+        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated",
+          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=play26frontend",
+          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend",
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements"),
+          "guidanceLink" -> "???"
+      )
+
+      val result = controller.showError("EntityTooLarge", "Your proposed upload exceeds the maximum allowed size", "errorReqId")(FakeRequest("", ""))
+
+      status(result) mustBe OK
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
+      templateCaptor.getValue mustEqual "fileTooLargeError.njk"
+      argumentCaptor.getValue mustEqual expectedArgument
+
     }
 
     }

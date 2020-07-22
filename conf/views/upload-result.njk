@@ -1,5 +1,6 @@
 {% extends "includes/layout.njk" %}
 
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
 
 {% block additionalHeaders %}
@@ -7,6 +8,13 @@
 <meta http-equiv="refresh" content="1"/>
 {% endif %}
 {% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back")
+      }) }}
+{% endblock %}
+
 
 {% block mainContent %}
 <div class="govuk-main-wrapper">
@@ -20,6 +28,7 @@
         <p>Upload of <b>{{status.name}}</b> successful! http://localhost:9570{{status.downloadUrl}}</p>
     {% elif status._type == "Failed" %}
         <p>File has been rejected.</p>
+
     {% endif %}
 
     {% if status._type == "UploadedSuccessfully" %}

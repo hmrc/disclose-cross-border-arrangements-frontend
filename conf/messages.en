@@ -10,9 +10,9 @@ site.edit.hidden = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Continue
-site.service_name = disclose-cross-border-arrangements-frontend
+site.service_name = Disclose cross-border arrangements for DAC6
 site.textarea.char_limit = (Limit is {0} characters)
-site.title.suffix = - disclose-cross-border-arrangements-frontend - GOV.UK
+site.title.suffix = - GOV.UK
 
 error.title.prefix = Error:
 error.summary.title = There is a problem
@@ -36,10 +36,6 @@ phaseBanner.3 = will help us to improve it.
 
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
-
-index.title = disclose-cross-border-arrangements-frontend
-index.heading = disclose-cross-border-arrangements-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
@@ -153,9 +149,10 @@ error.number = Please enter a valid number
 error.required = Please enter a value
 error.summary.title = There is a problem
 
-index.title = disclose-cross-border-arrangements-frontend
-index.heading = disclose-cross-border-arrangements-frontend
-index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
+index.title = Disclose cross-border arrangements for DAC6
+index.heading = Disclose cross-border arrangements for DAC6
+index.guidance = Upload an XML file to tell us about an arrangement.
+index.continue = Disclose a cross-border arrangement
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
@@ -174,10 +171,20 @@ validation.title = Validator placeholder
 validation.heading = Validator placeholder
 
 invalidXML.title = There is a problem
-invalidXML.heading = Your file does not contain valid XML
+invalidXML.heading = There is a problem with your file
 invalidXML.p1 = Your file {0} does not contain valid XML.
-invalidXML.h2 = What to do next
-invalidXML.p2 = If you uploaded the wrong file,
-invalidXML.p2.a = upload a different file
-invalidXML.p3 = If you uploaded the correct file, make sure your XML is structured correctly by reading part X: how to create valid XML of the
-invalidXML.p3.a = technical guidance for XML files
+invalidXML.p2 = You can restructure the XML and upload it again.
+invalidXML.p3 = Upload a different file
+invalidXML.p4 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
+
+fileToLargeError.title = There is a problem with your file
+fileToLargeError.heading = There is a problem with your file
+fileToLargeError.instruction = Your file must be 100MB or less.
+fileToLargeError.uploadNewFileLink = Upload a different file
+fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in new tab)
+
+virusError.title = There is a problem with your file
+virusError.heading = There is a problem with your file
+virusError.p1 = We found a virus in your file.
+virusError.link.reupload = Upload a different file
+virusError.link.guidance = Read the technical guidance for XML files (opens in a new tab)

@@ -6,9 +6,12 @@ GET        /assets/*file                                controllers.Assets.versi
 
 GET        /language/:lang                              controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
+GET        /sign-out                                    controllers.SignOutController.signOut
+
 GET        /this-service-has-been-reset                 controllers.SessionExpiredController.onPageLoad
 
 GET        /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad
+POST       /check-your-answers                          controllers.CheckYourAnswersController.onSubmit
 
 GET        /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
@@ -25,3 +28,5 @@ GET        /error                                       controllers.UploadFormCo
 GET        /validator                                   controllers.FileValidationController.onPageLoad(uploadId: models.upscan.UploadId)
 
 GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
+
+GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()

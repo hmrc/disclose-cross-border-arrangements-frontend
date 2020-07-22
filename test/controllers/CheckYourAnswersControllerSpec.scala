@@ -17,13 +17,18 @@
 package controllers
 
 import base.SpecBase
+import connectors.CrossBorderArrangementsConnector
+import models.{GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import pages.{URLPage, ValidXMLPage}
 import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
+import play.api.inject.bind
+import services.XMLValidationService
 
 import scala.concurrent.Future
 
@@ -65,6 +70,41 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       status(result) mustEqual SEE_OTHER
 
       redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad().url
+
+      application.stop()
+    }
+
+    "when submitted the uploaded file must be submitted to the backend" in {
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(ValidXMLPage, "file-name.xml")
+        .success
+        .value
+        .set(URLPage, "url")
+        .success
+        .value
+
+      val mockXmlValidationService =  mock[XMLValidationService]
+      val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+
+      val application = applicationBuilder(Some(userAnswers))
+      .overrides(
+        bind[XMLValidationService].toInstance(mockXmlValidationService),
+        bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+      ).build()
+
+      when(mockXmlValidationService.loadXML(any[String]())).
+        thenReturn(<test><value>Success</value></test>)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
+
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      verify(mockCrossBorderArrangementsConnector, times(1))
+        .submitDocument(any(), any())(any())
 
       application.stop()
     }

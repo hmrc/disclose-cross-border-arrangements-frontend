@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.UpscanConnector
 import javax.inject.Singleton
-import models.upscan.{UploadId, UpscanInitiateRequest}
+import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import play.api.Logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -44,10 +44,11 @@ class UploadFormController @Inject()(
 
   def onPageLoad: Action[AnyContent] = Action.async  {
     implicit request =>
+
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
-      val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements-frontend//error"
-      val callbackUrl = appConfig.callbackEndpointTarget
+      val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
+      val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
       val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
@@ -66,10 +67,14 @@ class UploadFormController @Inject()(
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
     implicit request => {
       Logger.debug("Show result called")
+
       for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
         {
           uploadResult match {
+
+            case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(result) =>
+
               renderer.render(
                 "upload-result.njk",
                 Json.obj("uploadId" -> Json.toJson(uploadId),
@@ -83,13 +88,21 @@ class UploadFormController @Inject()(
   }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      renderer.render(
-        "upload-error.njk",
-        Json.obj("pageTitle" -> "Upload Error",
-          "heading"-> errorMessage,
+    implicit request => errorCode match {
+      case "EntityTooLarge" =>
+        renderer.render(
+          "fileTooLargeError.njk",
+          Json.obj("guidanceLink" -> Json.toJson(appConfig.xmlTechnicialGuidanceUrl))
+        ).map (Ok (_))
+      case _ =>
+          renderer.render (
+          "upload-error.njk",
+          Json.obj ("pageTitle" -> "Upload Error",
+          "heading" -> errorMessage,
           "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-      ).map(Ok(_))
+          ).map (Ok (_) )
+    }
   }
+
 
 }

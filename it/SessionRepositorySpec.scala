@@ -1,19 +1,16 @@
-import org.scalatest.Matchers
+import models.upscan._
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.test.Helpers.running
+import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.{AsyncDriver, MongoConnection}
+import reactivemongo.bson.BSONObjectID
+import repositories.UploadSessionRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import play.api.test.Helpers.running
-import play.modules.reactivemongo.ReactiveMongoApi
-import repositories.UploadSessionRepository
-import models.upscan._
-import reactivemongo.bson.BSONObjectID
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 
 class SessionRepositorySpec extends
 PlaySpec with

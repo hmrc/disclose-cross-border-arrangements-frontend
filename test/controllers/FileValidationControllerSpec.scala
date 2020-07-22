@@ -22,6 +22,7 @@ import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccess
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -32,18 +33,25 @@ import play.twirl.api.Html
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.{ValidationEngine, XMLValidationService}
+import services.XMLValidationService
+import org.mockito.Mockito._
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
-class FileValidationControllerSpec extends SpecBase with MockitoSugar {
+class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  val mockFileValidation = mock[XMLValidationService]
+  val mockValidationEngine = mock[ValidationEngine]
+    val mockRepository = mock[UploadSessionRepository]
+  val mockSessionRepository = mock[SessionRepository]
+
+
+  override def beforeEach() = {
+    reset(mockSessionRepository)
+  }
 
   "FileValidationController" - {
-
-    val mockFileValidation = mock[XMLValidationService]
-    val mockValidationEngine = mock[ValidationEngine]
-    val mockRepository = mock[UploadSessionRepository]
-    val mockSessionRepository = mock[SessionRepository]
 
     val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
       .overrides(
@@ -67,9 +75,10 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar {
       val uploadId = UploadId("123")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-     // when(mockFileValidation.validateXml(org.mockito.Matchers.anyString())).thenReturn(None)
+     // when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(None)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(""))
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
@@ -88,7 +97,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar {
       val expectedData = Json.obj("invalidXML"-> "afile")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      //when(mockFileValidation.validateXml(org.mockito.Matchers.anyString())).thenReturn(Some(ListBuffer()))
+      //when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(Some(ListBuffer()))
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationFailure(Seq()))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -105,7 +114,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar {
       val uploadId = UploadId("123")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(None))
-     // when(mockFileValidation.validateXml(org.mockito.Matchers.anyString())).thenReturn(None)
+     // when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(None)
 
       val controller = application.injector.instanceOf[FileValidationController]
 

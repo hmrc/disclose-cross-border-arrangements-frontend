@@ -1,4 +1,6 @@
 {% extends "govuk/template.njk" %}
+{% from "macros/hmrc-header/macro.njk"            import hmrcHeader %}
+{%- set assetPath = "/assets/lib/govuk-frontend/govuk/assets" -%}
 {%- set htmlLang = request.language -%}
 
 {% block head %}
@@ -7,12 +9,13 @@
 {% endblock %}
 
 {% block header %}
-  {{ govukHeader({
-    homepageUrl: "/disclose-cross-border-arrangements-frontend",
+  {{ hmrcHeader({
+    homepageUrl: "/disclose-cross-border-arrangements",
     serviceName: messages("site.service_name"),
-    serviceUrl: "/disclose-cross-border-arrangements-frontend",
+    serviceUrl: "/disclose-cross-border-arrangements",
     containerClasses: "govuk-width-container",
-    assetsPath: "/assets"
+    assetsPath: "/assets",
+    signOutHref: routes.controllers.SignOutController.signOut().url
   }) }}
 {% endblock %}
 

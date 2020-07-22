@@ -1,0 +1,38 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+
+{% block pageTitle %}
+  {{ title(messages("virusError.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back"),
+      href: routes.controllers.UploadFormController.onPageLoad().url
+    })
+  }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("virusError.heading") }}
+        </h1>
+
+        <p class="govuk-body">
+            {{ messages("virusError.p1") }}
+        </p>
+
+        <p class="govuk-body"> <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link">{{ messages("virusError.link.reupload") }}</a></p>
+        <p class="govuk-body"> <a href="{{lostUTRUrl}}" class="govuk-link" rel="noreferrer noopener" target="_blank">{{messages("virusError.link.guidance")}}</a></p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

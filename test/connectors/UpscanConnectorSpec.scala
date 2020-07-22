@@ -46,7 +46,7 @@ class UpscanConnectorSpec extends SpecBase
 
   "getUpscanFormData" - {
     "should return an UpscanInitiateResponse" - {
-      "when upscan returns a valid sucessful response" in {
+      "when upscan returns a valid successful response" in {
         val body = PreparedUpload(Reference("Reference"), UploadForm("downloadUrl", Map("formKey" -> "formValue")))
         server.stubFor(
           post(urlEqualTo(connector.upscanInitiatePath))

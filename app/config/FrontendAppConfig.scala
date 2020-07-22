@@ -18,7 +18,7 @@ package config
 
 import com.google.inject.{Inject, Singleton}
 import controllers.routes
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.i18n.Lang
 import play.api.mvc.Call
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
@@ -35,17 +35,25 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   val betaFeedbackUrl = s"$contactHost/contact/beta-feedback"
   val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated"
+  val signOutUrl: String             = configuration.get[String]("urls.logout")
+
 
   lazy val authUrl: String = configuration.get[Service]("auth").baseUrl
   lazy val loginUrl: String = configuration.get[String]("urls.login")
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
+
 
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
   //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
   val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
   val upscanRedirectBase: String = configuration.get[String]("microservice.services.upscan.redirect-base")
-  val callbackEndpointTarget   = configuration.get[String]("upscan.callback-endpoint")
+
+  val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
+
+  lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
+
+val upscanUseSSL: Boolean = upscanProtocol == "https"
 
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
