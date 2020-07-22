@@ -18,28 +18,14 @@ package services
 
 import base.SpecBase
 import cats.data.ReaderT
-import models.{GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
-import org.scalatestplus.mockito.MockitoSugar
+import cats.implicits._
+import helpers.LineNumberHelper
+import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import org.mockito.Matchers._
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.Application
-import play.api.inject.bind
-import org.mockito.Matchers._
-import org.mockito.Matchers.{eq => Meq, _}
-import services.BusinessRuleValidationService.{isInitialDisclosureMA, noOfRelevantTaxPayers}
 
-import scala.collection.mutable.ListBuffer
-import scala.xml.{Elem, Node, NodeSeq}
-
-import java.text.SimpleDateFormat
-import java.util.{Calendar, Date, GregorianCalendar}
-
-import cats.data.ReaderT
-import cats.implicits._
-import javax.inject.Inject
-import models.Validation
-
-import scala.xml.NodeSeq
+import scala.xml.{Elem, NodeSeq}
 
 class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
@@ -51,6 +37,8 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
     val doesFileHaveBusinessErrors = false
 
     val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
+
+    val lineNumberHelper: LineNumberHelper = new LineNumberHelper
 
     val mockBusinessRuleValidationService: BusinessRuleValidationService = new BusinessRuleValidationService {
 
@@ -77,7 +65,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
       }
     }
 
-    val validationEngine = new ValidationEngine(mockXmlValidationService, mockBusinessRuleValidationService)
+    val validationEngine = new ValidationEngine(mockXmlValidationService, mockBusinessRuleValidationService, lineNumberHelper)
 
     val source = "src"
     val elem: Elem = <dummyElement>Test</dummyElement>
@@ -128,10 +116,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         validationEngine.validateFile(source, businessRulesCheckRequired = false) mustBe ValidationFailure(expectedErrors)
       }
 
-
-
-    }
-
+   }
 
   }
 

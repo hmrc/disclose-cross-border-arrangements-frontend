@@ -16,6 +16,7 @@
 
 package services
 
+import helpers.LineNumberHelper
 import javax.inject.Inject
 import models.{ValidationFailure, ValidationSuccess, XMLValidationStatus}
 
@@ -23,7 +24,8 @@ import scala.collection.mutable.ListBuffer
 import scala.xml.Elem
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
-                                 businessRuleValidationService: BusinessRuleValidationService ){
+                                 businessRuleValidationService: BusinessRuleValidationService,
+                                 lineNumberHelper: LineNumberHelper){
 
   def validateFile(source: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
 
@@ -46,7 +48,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     if(businessRulesCheckRequired) {
       businessRuleValidationService.validateFile()(elem) match {
         case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(errors.map(error => error.toSaxParseError))
+        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
+                                               error => error.toSaxParseError))
         case None => ValidationSuccess(source)
       }
     }else ValidationSuccess(source)
