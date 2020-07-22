@@ -27,7 +27,6 @@ import renderer.Renderer
 import repositories.SessionRepository
 import services.XMLValidationService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
-import uk.gov.hmrc.viewmodels.SummaryList
 import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -48,24 +47,16 @@ class DeleteDisclosureController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
+      val xml: Elem = request.userAnswers.get(URLPage).map(url => xmlValidationService.loadXML(url)).get
       val helper = new CheckYourAnswersHelper(request.userAnswers)
-      val uploadedFileInfo: Seq[SummaryList.Row] = buildDetails(helper)
+      val fileToDelete = helper.displaySummaryFromInstruction(xml)
 
       renderer.render(
         "deleteDisclosure.njk",
         Json.obj(
-          "uploadedFileInfo" -> uploadedFileInfo
+          "fileToDelete" -> fileToDelete
         )
       ).map(Ok(_))
-  }
-
-  private def buildDetails(helper: CheckYourAnswersHelper): Seq[SummaryList.Row] = {
-
-    val pagesToCheck = (helper.uploadedFile, helper.disclosureToDelete) // add disclosure ID & Arrangement
-
-    pagesToCheck match {
-      case (Some(_),_) => Seq(helper.uploadedFile.get, helper.disclosureToDelete)
-    }
   }
 
   //TODO add deletion into controller

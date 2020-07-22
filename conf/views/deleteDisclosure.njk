@@ -8,7 +8,7 @@
 
 
 {% block pageTitle %}
-  {{ title(messages("summaryPage.deleteDisclosure.title")) }}
+  {{ title(messages("checkYourAnswers.deleteDisclosure.title")) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -24,7 +24,7 @@
       <div class="govuk-grid-column-two-thirds">
 
         <h1 class="govuk-heading-xl">
-          {{ messages("summaryPage.deleteDisclosure.heading") }}
+          {{ messages("checkYourAnswers.deleteDisclosure.heading") }}
         </h1>
 
         {{ govukSummaryList({
@@ -43,7 +43,7 @@
             {{ csrf() | safe }}
 
             {{ govukButton({
-              text: messages("summaryPage.delete.button"),
+              text: messages("checkYourAnswers.delete.button"),
               preventDoubleClick: true,
               attributes: {id:"submit"}
             }) }}

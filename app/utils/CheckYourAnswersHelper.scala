@@ -75,9 +75,14 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
         value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
         )
       )
-      case _ => Seq() //TODO - add DAC6DEL to cover all scenarios
+      case _ => Seq(uploadedFile.get, Row(
+        key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID,arrangementID), classes = Seq("delete-disclosure-text"))
+        )
+      )
     }
   }
+
 }
 
 object CheckYourAnswersHelper {
