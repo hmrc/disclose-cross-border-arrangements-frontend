@@ -47,7 +47,8 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
           Action(
             content = msg"site.edit",
             href = routes.UploadFormController.onPageLoad().url,
-            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"checkYourAnswers.uploadedFile"))
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"checkYourAnswers.uploadedFile")),
+            attributes = Map("id" -> "change-link")
           )
         )
       )
@@ -60,18 +61,18 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
 
     importInstruction match {
       case "DAC6NEW" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-        value = Value(msg"checkYourAnswers.new.text")
+        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"checkYourAnswers.new.text", classes = Seq("new-arrangement-text"))
         )
       )
       case "DAC6ADD" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-        value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID))
+        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID), classes = Seq("additional-disclosure-text"))
         )
       )
       case "DAC6REP" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-        value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID))
+        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
         )
       )
       case _ => Seq() //TODO - add DAC6DEL to cover all scenarios
@@ -79,12 +80,6 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
   }
 }
 
-
-
-
-
-
 object CheckYourAnswersHelper {
-
   private val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 }
