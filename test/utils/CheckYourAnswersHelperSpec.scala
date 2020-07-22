@@ -40,7 +40,8 @@ class CheckYourAnswersHelperSpec extends SpecBase {
         Action(
           content = msg"site.edit",
           href = routes.UploadFormController.onPageLoad().url,
-          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"checkYourAnswers.uploadedFile"))
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"checkYourAnswers.uploadedFile")),
+          attributes = Map("id" -> "change-link")
         )
       )
     )
@@ -60,8 +61,8 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
       helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
         Row(
-          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-          value = Value(msg"checkYourAnswers.new.text"))
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.new.text", classes = Seq("new-arrangement-text")))
       )
     }
 
@@ -78,8 +79,8 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
       helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
         Row(
-          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-          value = Value(msg"checkYourAnswers.additional.text".withArgs("GBA20200701AAA000"))
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.additional.text".withArgs("GBA20200701AAA000"), classes = Seq("additional-disclosure-text"))
         ))
     }
 
@@ -96,8 +97,8 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
       helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
         Row(
-          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third")),
-          value = Value(msg"checkYourAnswers.replacement.text".withArgs("GBD20200701AAA001", "GBA20200701AAA000"))
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.replacement.text".withArgs("GBD20200701AAA001", "GBA20200701AAA000"), classes = Seq("replacement-disclosure-text"))
         ))
     }
   }
