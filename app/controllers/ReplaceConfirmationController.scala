@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class replaceConfirmationController @Inject()(
+class ReplaceConfirmationController @Inject()(
     override val messagesApi: MessagesApi,
     frontEndAppConfig: FrontendAppConfig,
     identify: IdentifierAction,

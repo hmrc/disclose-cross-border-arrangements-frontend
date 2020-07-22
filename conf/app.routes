@@ -31,4 +31,4 @@ GET        /file-error                                  controllers.InvalidXMLCo
 
 GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
 
-GET        /replaceConfirmation                       controllers.replaceConfirmationController.onPageLoad()
+GET        /replaceConfirmation                       controllers.ReplaceConfirmationController.onPageLoad()
