@@ -52,9 +52,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
       val mockXML: Elem =
         <DAC6_Arrangement>
-          <ArrangementID>GBA20200701AAA000</ArrangementID>
           <DAC6Disclosures>
-            <DisclosureID>GBD20200701AAA001</DisclosureID>
             <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
           </DAC6Disclosures>
         </DAC6_Arrangement >
@@ -72,7 +70,6 @@ class CheckYourAnswersHelperSpec extends SpecBase {
         <DAC6_Arrangement>
           <ArrangementID>GBA20200701AAA000</ArrangementID>
           <DAC6Disclosures>
-            <DisclosureID>GBD20200701AAA001</DisclosureID>
             <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
           </DAC6Disclosures>
         </DAC6_Arrangement >
