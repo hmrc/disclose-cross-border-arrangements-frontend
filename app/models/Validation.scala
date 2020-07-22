@@ -38,7 +38,6 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate" => "InitialDisclosureMA"
       case  "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1"
       case "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo" => "DAC6D1OtherInfo"
-
       case  _ => "DisclosureImportInstruction"
 
 

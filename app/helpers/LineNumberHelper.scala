@@ -18,7 +18,7 @@ package helpers
 
 import models.Validation
 
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
 
 class LineNumberHelper {
 
