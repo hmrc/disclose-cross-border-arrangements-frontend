@@ -21,13 +21,13 @@ import config.FrontendAppConfig
 import connectors.UpscanConnector
 import javax.inject.Singleton
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import services.UploadProgressTracker
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +41,7 @@ class UploadFormController @Inject()(
                                       renderer: Renderer
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def onPageLoad: Action[AnyContent] = Action.async  {
     implicit request =>
@@ -66,7 +67,7 @@ class UploadFormController @Inject()(
 
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
     implicit request => {
-      Logger.debug("Show result called")
+      logger.debug("Show result called")
 
       for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
         {
