@@ -206,6 +206,7 @@ checkYourAnswers.deleteDisclosure.heading = Are you sure you want to delete this
 checkYourAnswers.delete.button = Delete this disclosure
 checkYourAnswers.deleteFile = What are you deleting?
 checkYourAnswers.deleteDisclosure.text = Disclosure {0} for arrangement {1}
+checkYourAnswers.summaryWarning = You cannot undo this.
 
 replaceConfirmation.title = Replacement received
 replaceConfirmation.heading = Replacement received

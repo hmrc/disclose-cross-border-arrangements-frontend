@@ -29,13 +29,13 @@
 
         {{ govukSummaryList({
           classes: 'govuk-summary-list--no-border',
-          rows: uploadedFileInfo
+          rows: fileToDelete
         }) }}
 
         <hr>
 
         {{ govukWarningText({
-          text: messages("summaryPage.warning"),
+          text: messages("checkYourAnswers.summaryWarning"),
           iconFallbackText: "Warning"
         }) }}
 

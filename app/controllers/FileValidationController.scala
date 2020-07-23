@@ -63,8 +63,12 @@ class FileValidationController @Inject()(
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
               _              <- sessionRepository.set(updatedAnswersWithURL)
+              xml <- Future.successful(service.loadXML(downloadUrl))
             } yield {
-              Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              (xml \ "DAC6Disclosures" \ "DisclosureImportInstruction").text match {
+                case "DAC6DEL" => Redirect(routes.DeleteDisclosureController.onPageLoad())
+                case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              }
             }
 
           case ValidationFailure(_) =>
