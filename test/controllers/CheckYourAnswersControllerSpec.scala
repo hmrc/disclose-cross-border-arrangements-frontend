@@ -23,11 +23,11 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import pages.{URLPage, ValidXMLPage}
+import play.api.inject.bind
 import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import play.api.inject.bind
 import services.XMLValidationService
 
 import scala.concurrent.Future
@@ -69,6 +69,24 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+
+      application.stop()
+    }
+
+    "must redirect to upload controller if something has gone wrong in GET" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+
+      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad().url
 
       application.stop()
     }

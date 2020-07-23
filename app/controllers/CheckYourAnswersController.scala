@@ -26,7 +26,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
 import services.XMLValidationService
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,17 +46,20 @@ class CheckYourAnswersController @Inject()(
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      request.userAnswers.get(URLPage) match {
+        case Some(url) =>
+          val xml : Elem = xmlValidationService.loadXML(url)
+          val helper = new CheckYourAnswersHelper(request.userAnswers)
+          val fileInfo = helper.displaySummaryFromInstruction(xml)
+          renderer.render(
+            "check-your-answers.njk",
+            Json.obj(
+              "fileInfo" -> fileInfo
+            )
+          ).map(Ok(_))
 
-      val xml: Elem = request.userAnswers.get(URLPage).map(url => xmlValidationService.loadXML(url)).get
-      val helper = new CheckYourAnswersHelper(request.userAnswers)
-      val fileInfo = helper.displaySummaryFromInstruction(xml)
-
-      renderer.render(
-        "check-your-answers.njk",
-        Json.obj(
-          "fileInfo" -> fileInfo
-        )
-      ).map(Ok(_))
+        case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+      }
   }
 
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
