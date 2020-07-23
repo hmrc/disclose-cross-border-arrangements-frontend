@@ -32,16 +32,13 @@ import play.api.test.Helpers._
 import play.twirl.api.Html
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.{ValidationEngine, XMLValidationService}
-import services.XMLValidationService
+import services.ValidationEngine
 import org.mockito.Mockito._
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  val mockFileValidation = mock[XMLValidationService]
   val mockValidationEngine = mock[ValidationEngine]
     val mockRepository = mock[UploadSessionRepository]
   val mockSessionRepository = mock[SessionRepository]
@@ -55,7 +52,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
       .overrides(
-        bind[XMLValidationService].toInstance(mockFileValidation),
         bind[UploadSessionRepository].toInstance(mockRepository),
         bind[SessionRepository].toInstance(mockSessionRepository),
         bind[ValidationEngine].toInstance(mockValidationEngine),
@@ -75,7 +71,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val uploadId = UploadId("123")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-     // when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(None)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(""))
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -97,7 +92,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("invalidXML"-> "afile")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      //when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(Some(ListBuffer()))
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationFailure(Seq()))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -114,7 +108,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val uploadId = UploadId("123")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(None))
-     // when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(None)
 
       val controller = application.injector.instanceOf[FileValidationController]
 

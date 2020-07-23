@@ -41,7 +41,6 @@ class FileValidationController @Inject()(
                                           val controllerComponents: MessagesControllerComponents,
                                           appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
-                                          service: XMLValidationService,
                                           validationEngine: ValidationEngine,
                                           renderer: Renderer,
                                           navigator: Navigator

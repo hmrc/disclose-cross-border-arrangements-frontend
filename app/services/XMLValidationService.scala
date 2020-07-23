@@ -24,7 +24,7 @@ import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 

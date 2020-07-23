@@ -19,18 +19,14 @@ package services
 import java.net.URL
 
 import base.SpecBase
-import cats.data.ReaderT
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{GenericError, Validation, ValidationFailure, ValidationSuccess}
-import org.junit.Before
+import models.{Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
-
-import scala.xml.Elem
 
 
 
