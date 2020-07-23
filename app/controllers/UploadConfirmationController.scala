@@ -42,7 +42,7 @@ class UploadConfirmationController @Inject()(
 
       val arrangementID = request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
-        case _ => "Default" //TODO
+        case _ => "Disclosure ID"
       }
 
       val json = Json.obj(

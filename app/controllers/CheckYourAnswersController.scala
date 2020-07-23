@@ -80,7 +80,7 @@ class CheckYourAnswersController @Inject()(
             instruction match {
               case "DAC6NEW" => Redirect(routes.UploadFormController.onPageLoad()) //TODO Redirect to correct page when ready
               case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
-              case "DAC6REP" => Redirect(routes.UploadFormController.onPageLoad()) //TODO Redirect to correct page when ready
+              case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
               case _ => Redirect(routes.UploadFormController.onPageLoad().url)
             }
           }
