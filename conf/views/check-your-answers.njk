@@ -26,8 +26,15 @@
         </h1>
 
         {{ govukSummaryList({
-          rows: list
+            classes: 'govuk-summary-list--no-border',
+            rows: fileInfo
         }) }}
+
+        <hr>
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ messages("checkYourAnswers.h2") }}</h2>
+
+        <p class="govuk-body">{{ messages("checkYourAnswers.text") }}</p>
 
         <form action="{{ routes.controllers.CheckYourAnswersController.onSubmit.url }}" method="post">
             {{ csrf() | safe }}

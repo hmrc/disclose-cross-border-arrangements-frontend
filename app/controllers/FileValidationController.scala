@@ -24,11 +24,10 @@ import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
 import pages.{InvalidXMLPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.{ValidationEngine, XMLValidationService}
+import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,16 +55,13 @@ class FileValidationController @Inject()(
       } yield {
         validation match {
           case ValidationSuccess(_) =>
-            {for {
+            for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
               _              <- sessionRepository.set(updatedAnswersWithURL)
             } yield {
-              renderer.render(
-                "file-validation.njk",
-                Json.obj("validationResult" -> Json.toJson(validation))
-              ).map(Ok(_))
-            }}.flatten
+              Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+            }
 
           case ValidationFailure(_) =>
             for {
