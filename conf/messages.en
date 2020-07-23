@@ -10,6 +10,7 @@ site.edit.hidden = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.confirmAndSend= Confirm and send
 site.service_name = Disclose cross-border arrangements for DAC6
 site.textarea.char_limit = (Limit is {0} characters)
 site.title.suffix = - GOV.UK
@@ -188,6 +189,17 @@ virusError.heading = There is a problem with your file
 virusError.p1 = We found a virus in your file.
 virusError.link.reupload = Upload a different file
 virusError.link.guidance = Read the technical guidance for XML files (opens in a new tab)
+
+checkYourAnswers.title= Check Your Answers
+checkYourAnswers.heading= Check your answers before sending your file
+checkYourAnswers.h2= Now send your file
+checkYourAnswers.text= By sending this notification you are confirming that, to the best of your knowledge, the details you are providing are correct.
+checkYourAnswers.uploadedFile= Uploaded file
+checkYourAnswers.disclosure.text= What are you disclosing?
+
+checkYourAnswers.new.text= A new arrangement
+checkYourAnswers.additional.text= New information about arrangement {0}
+checkYourAnswers.replacement.text= A replacement disclosure {0}, arrangement {1}
 
 replaceConfirmation.title = Replacement received
 replaceConfirmation.heading = Replacement received

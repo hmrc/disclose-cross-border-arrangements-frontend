@@ -10,8 +10,8 @@ GET        /sign-out                                    controllers.SignOutContr
 
 GET        /this-service-has-been-reset                 controllers.SessionExpiredController.onPageLoad
 
-GET        /check-your-answers                          controllers.CheckYourAnswersController.onPageLoad
-POST       /check-your-answers                          controllers.CheckYourAnswersController.onSubmit
+GET        /send-disclosure/check-answers               controllers.CheckYourAnswersController.onPageLoad
+POST       /send-disclosure/check-answers               controllers.CheckYourAnswersController.onSubmit
 
 GET        /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
