@@ -49,43 +49,44 @@ class FileValidationController @Inject()(
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen  requireData ).async { implicit request =>
-    {
-      request.userAnswers.get(ValidUploadIDPage)match {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen  requireData).async {
+    implicit request =>
+      request.userAnswers.get(ValidUploadIDPage) match {
         case Some(uploadID) =>   {
+          for {
+            uploadSessions <- repository.findByUploadId(UploadId(uploadID))
+            (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
+            validation = service.validateXML(downloadUrl)
+          } yield {
+            validation match {
+              case ValidationSuccess(_) =>
+                {for {
+                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, fileName))
+                  updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+                  _              <- sessionRepository.set(updatedAnswersWithURL)
+                } yield {
+                  renderer.render(
+                    "file-validation.njk",
+                    Json.obj("validationResult" -> Json.toJson(validation))
+                  ).map(Ok(_))
+                }}.flatten
 
-      for {
-        uploadSessions <- repository.findByUploadId(UploadId(uploadID))
-        (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = service.validateXML(downloadUrl)
-      } yield {
-        validation match {
-          case ValidationSuccess(_) =>
-            {for {
-              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, fileName))
-              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL)
-            } yield {
-              renderer.render(
-                "file-validation.njk",
-                Json.obj("validationResult" -> Json.toJson(validation))
-              ).map(Ok(_))
-            }}.flatten
-
-          case ValidationFailure(_) =>
-            for {
-              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidUploadIDPage, fileName))
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield {
-              Redirect(navigator.nextPage(InvalidUploadIDPage, NormalMode, updatedAnswers))
+              case ValidationFailure(_) =>
+                for {
+                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidUploadIDPage, fileName))
+                  _              <- sessionRepository.set(updatedAnswers)
+                } yield {
+                  Redirect(navigator.nextPage(InvalidUploadIDPage, NormalMode, updatedAnswers))
+                }
+              }
             }
-        }
+          }.flatten
+
+        case None => ???
       }
-    }.flatten
   }
-}}
-  private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
+
+  private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]): (String, String) = {
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
         case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
@@ -94,6 +95,4 @@ class FileValidationController @Inject()(
       case _ => throw new RuntimeException("File not uploaded successfully")
     }
   }
-
 }
-

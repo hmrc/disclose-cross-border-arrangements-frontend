@@ -69,16 +69,14 @@ class UploadFormController @Inject()(
       }.flatMap(identity)
   }
 
-  def showResult(): Action[AnyContent] =(identify andThen getData andThen requireData).async {
+  def showResult: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request =>
+      Logger.debug("Show result called")
 
-    implicit request => {
-      //val  uploadId = UploadId.generate
-      //uploadId== (request.userAnswers)
       request.userAnswers.get(ValidUploadIDPage) match {
-        case Some(uploadID) => for (uploadResult <- uploadProgressTracker.getUploadResult(UploadId(uploadID))) yield {
-          {
+        case Some(uploadID) => {
+          for (uploadResult <- uploadProgressTracker.getUploadResult(UploadId(uploadID))) yield {
             uploadResult match {
-
               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
               case Some(result) =>
 
@@ -87,30 +85,13 @@ class UploadFormController @Inject()(
                   Json.obj("uploadId" -> Json.toJson(uploadID),
                     "status" -> Json.toJson(result))
                 ).map(Ok(_))
+
               case None => Future.successful(BadRequest(s"Upload with id $uploadID not found"))
             }
-          }
-          Logger.debug("Show result called")
+          }}.flatten
 
-          for (uploadResult <- uploadProgressTracker.getUploadResult(UploadId(uploadID))) yield {
-            {
-              uploadResult match {
-
-                case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-                case Some(result) =>
-
-                  renderer.render(
-                    "upload-result.njk",
-                    Json.obj("uploadId" -> Json.toJson(uploadID),
-                      "status" -> Json.toJson(result))
-                  ).map(Ok(_))
-                case None => Future.successful(BadRequest(s"Upload with id $uploadID not found"))
-              }
-            }
-          }
-        }.flatMap(identity)
+        case None => ???
       }
-    }
   }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
@@ -129,6 +110,4 @@ class UploadFormController @Inject()(
           ).map (Ok (_) )
     }
   }
-
-
 }
