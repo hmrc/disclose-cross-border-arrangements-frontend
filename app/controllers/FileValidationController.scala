@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
@@ -29,6 +29,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.XMLValidationService
+import services.UploadProgressTracker
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,16 +42,21 @@ class FileValidationController @Inject()(
                                           val controllerComponents: MessagesControllerComponents,
                                           appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
+                                          requireData: DataRequiredAction,
                                           service: XMLValidationService,
+                                          uploadProgressTracker: UploadProgressTracker,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(uploadId: UploadId): Action[AnyContent] = (identify andThen getData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen  requireData ).async { implicit request =>
     {
+      request.userAnswers.get(ValidUploadIDPage)match {
+        case Some(uploadID) =>   {
+
       for {
-        uploadSessions <- repository.findByUploadId(uploadId)
+        uploadSessions <- repository.findByUploadId(UploadId(uploadID))
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
         validation = service.validateXML(downloadUrl)
       } yield {
@@ -78,7 +84,7 @@ class FileValidationController @Inject()(
       }
     }.flatten
   }
-
+}}
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
