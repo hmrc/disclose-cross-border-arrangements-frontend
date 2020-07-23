@@ -27,7 +27,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.ValidationEngine
+import services.{ValidationEngine, XMLValidationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,6 +43,7 @@ class FileValidationController @Inject()(
                                           repository: UploadSessionRepository,
                                           requireData: DataRequiredAction,
                                           validationEngine: ValidationEngine,
+                                          xmlValidationService: XMLValidationService,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -63,10 +64,10 @@ class FileValidationController @Inject()(
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
               _              <- sessionRepository.set(updatedAnswersWithURL)
-              xml <- Future.successful(service.loadXML(downloadUrl))
+              xml <- Future.successful(xmlValidationService.loadXML(downloadUrl))
             } yield {
               (xml \ "DAC6Disclosures" \ "DisclosureImportInstruction").text match {
-                case "DAC6DEL" => Redirect(routes.DeleteDisclosureController.onPageLoad())
+                case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }

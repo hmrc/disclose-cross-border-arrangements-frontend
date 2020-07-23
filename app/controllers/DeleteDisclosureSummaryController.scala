@@ -32,7 +32,7 @@ import utils.CheckYourAnswersHelper
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
-class DeleteDisclosureController @Inject()(
+class DeleteDisclosureSummaryController @Inject()(
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
@@ -46,20 +46,22 @@ class DeleteDisclosureController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      request.userAnswers.get(URLPage) match {
+        case Some(url) =>
+          val xml: Elem = xmlValidationService.loadXML(url)
+          val helper = new CheckYourAnswersHelper(request.userAnswers)
+          val fileToDelete = helper.displaySummaryFromInstruction(xml)
+          renderer.render(
+            "deleteDisclosure.njk",
+            Json.obj(
+              "fileToDelete" -> fileToDelete
+            )
+          ).map(Ok(_))
 
-      val xml: Elem = request.userAnswers.get(URLPage).map(url => xmlValidationService.loadXML(url)).get
-      val helper = new CheckYourAnswersHelper(request.userAnswers)
-      val fileToDelete = helper.displaySummaryFromInstruction(xml)
-
-      renderer.render(
-        "deleteDisclosure.njk",
-        Json.obj(
-          "fileToDelete" -> fileToDelete
-        )
-      ).map(Ok(_))
+        case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+      }
   }
 
-  //TODO add deletion into controller
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
