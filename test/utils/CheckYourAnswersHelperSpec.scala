@@ -98,5 +98,24 @@ class CheckYourAnswersHelperSpec extends SpecBase {
           value = Value(msg"checkYourAnswers.replacement.text".withArgs("GBD20200701AAA001", "GBA20200701AAA000"), classes = Seq("replacement-disclosure-text"))
         ))
     }
+
+    "must return arrangement ID, Disclosure ID & deletion content when import instruction is DAC6DEL" in {
+
+      val mockXML: Elem =
+        <DAC6_Arrangement>
+          <ArrangementID>GBA20200701AAA000</ArrangementID>
+          <DAC6Disclosures>
+            <DisclosureID>GBD20200701AAA001</DisclosureID>
+            <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          </DAC6Disclosures>
+        </DAC6_Arrangement >
+
+      helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
+        Row(
+          key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs("GBD20200701AAA001", "GBA20200701AAA000"), classes = Seq("delete-disclosure-text"))
+        )
+      )
+    }
   }
 }
