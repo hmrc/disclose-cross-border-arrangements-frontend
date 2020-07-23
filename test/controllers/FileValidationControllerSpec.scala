@@ -17,7 +17,6 @@
 package controllers
 
 import base.SpecBase
-import models.{UserAnswers, ValidationFailure, ValidationSuccess}
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
@@ -33,14 +32,13 @@ import play.api.test.Helpers._
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.ValidationEngine
-import org.mockito.Mockito._
 
 import scala.concurrent.Future
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   val mockValidationEngine = mock[ValidationEngine]
-    val mockRepository = mock[UploadSessionRepository]
+  val mockRepository = mock[UploadSessionRepository]
   val mockSessionRepository = mock[SessionRepository]
 
 
@@ -73,9 +71,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("validXML"-> "afile", "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(""))
-      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
-      when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(ValidationSuccess(downloadURL))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
