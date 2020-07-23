@@ -151,7 +151,7 @@ class BusinessRuleValidationService @Inject()() {
        v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()
        v3 <- validateIntermediaryDiscloserHasIntermediary()
        v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
-       v5 <- validateAllTaxpayerImplementingDatesAreAfterStart()
+       v5 <- validateAllImplementingDatesAreAfterStart()
        v6 <- validateDisclosureImportInstruction()
        v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
        v8 <- validateMainBenefitTestHasASpecifiedHallmark()

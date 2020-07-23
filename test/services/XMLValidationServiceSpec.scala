@@ -22,13 +22,15 @@ import base.SpecBase
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{ValidationFailure, ValidationSuccess}
+import models.{Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 
-class XMLValidationServiceSpec extends SpecBase {
+
+
+class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
 
   val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
   val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
@@ -56,16 +58,15 @@ class XMLValidationServiceSpec extends SpecBase {
 
   "XmlValidation Service" - {
     "must return a ValidationFailure with one error" in new SitemapParserSetup {
-      val validationFailure: ValidationFailure = sut.validateXML(sitemapUrl).asInstanceOf[ValidationFailure]
+      val validationFailure: ValidationFailure = sut.validateXml(sitemapUrl)._2.asInstanceOf[ValidationFailure]
       validationFailure.error.length mustBe 1
       validationFailure.error.head.lineNumber mustBe 7
       validationFailure.error.head.errorMessage.startsWith("cvc-complex-type.2.4.a") mustBe true
     }
 
     "must return a ValidationSuccess with no errors" in new SitemapParserSetup {
-      val validationSuccess: ValidationSuccess = sut.validateXML(sitemap2Url).asInstanceOf[ValidationSuccess]
-      validationSuccess.downloadUrl mustBe sitemap2Url
+      sut.validateXml(sitemap2Url)._2 mustBe ValidationSuccess(sitemap2Url)
     }
-  }
 
+  }
 }

@@ -16,4 +16,33 @@
 
 package models
 
-case class Validation(key: String, value: Boolean)
+case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = None) {
+
+  def toSaxParseError: SaxParseError = SaxParseError(lineNumber.getOrElse(0), key)
+
+  def setLineNumber(xmlArray: Array[String]): Validation ={
+    val index = xmlArray.indexWhere(str => str.contains(path)) + 1
+    copy(lineNumber = Some(index))
+  }
+
+  def path: String = {
+
+    key match {
+      case "businessrules.initialDisclosure.needRelevantTaxPayer" => "InitialDisclosureMA"
+      case "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer" => "RelevantTaxpayerDiscloser"
+      case "businessrules.intermediaryDiscloser.needIntermediary" => "IntermediaryDiscloser"
+      case "businessrules.taxPayerImplementingDates.needToBeAfterStart" => "TaxpayerImplementingDate"
+      case "businessrules.implementingDates.needToBeAfterStart" => "ImplementingDate"
+      case "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate" => "InitialDisclosureMA"
+      case  "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1"
+      case "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo" => "DAC6D1OtherInfo"
+      case  _ => "DisclosureImportInstruction"
+
+    }
+  }
+ }
+
+
+
+
+
