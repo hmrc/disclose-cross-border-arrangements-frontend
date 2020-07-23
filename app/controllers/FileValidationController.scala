@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidUploadIDPage, InvalidXMLPage, URLPage, ValidXMLPage}
+import pages.{InvalidUploadIDPage, InvalidXMLPage, URLPage, ValidUploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
@@ -57,7 +57,7 @@ class FileValidationController @Inject()(
         validation match {
           case ValidationSuccess(_) =>
             {for {
-              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidUploadIDPage, fileName))
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
               _              <- sessionRepository.set(updatedAnswersWithURL)
             } yield {
