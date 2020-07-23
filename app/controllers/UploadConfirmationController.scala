@@ -41,12 +41,12 @@ class UploadConfirmationController @Inject()(
     implicit request =>
 
       val arrangementID = request.userAnswers.get(GeneratedIDPage) match {
-        case Some(value) if value.arrangementID.isDefined => value.arrangementID.get
+        case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
         case _ => "Default" //TODO
       }
 
       val json = Json.obj(
-        "arrangementID" -> confirmationPanelText(arrangementID)
+        "disclosureID" -> confirmationPanelText(arrangementID)
       )
 
       renderer.render("uploadConfirmation.njk", json).map(Ok(_))
