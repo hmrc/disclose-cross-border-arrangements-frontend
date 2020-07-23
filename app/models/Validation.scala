@@ -18,7 +18,7 @@ package models
 
 case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = None) {
 
-  def toSaxParseError: SaxParseError = SaxParseError(1, key)
+  def toSaxParseError: SaxParseError = SaxParseError(lineNumber.getOrElse(0), key)
 
   def setLineNumber(xmlArray: Array[String]): Validation ={
     val index = xmlArray.indexWhere(str => str.contains(path)) + 1

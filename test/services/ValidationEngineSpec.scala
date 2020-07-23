@@ -31,7 +31,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
   val xsdError = "xsd-error"
   val businessRulesError = "business-rules-error"
-  val lineNumber = 1
+  val lineNumber = 0
 
   trait SetUp {
     val doesFileHaveBusinessErrors = false
