@@ -73,7 +73,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       application.stop()
     }
 
-    "must redirect to upload controller if something has gone wrong in GET" in {
+    "must redirect to upload form for a GET if userAnswers empty" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
