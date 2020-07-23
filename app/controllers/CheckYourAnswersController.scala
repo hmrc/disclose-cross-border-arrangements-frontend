@@ -48,7 +48,7 @@ class CheckYourAnswersController @Inject()(
     implicit request =>
       request.userAnswers.get(URLPage) match {
         case Some(url) =>
-          val xml : Elem = xmlValidationService.loadXML(url)
+          val xml: Elem = xmlValidationService.loadXML(url)
           val helper = new CheckYourAnswersHelper(request.userAnswers)
           val fileInfo = helper.displaySummaryFromInstruction(xml)
           renderer.render(
