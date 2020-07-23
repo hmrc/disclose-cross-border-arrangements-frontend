@@ -201,4 +201,13 @@ checkYourAnswers.new.text= A new arrangement
 checkYourAnswers.additional.text= New information about arrangement {0}
 checkYourAnswers.replacement.text= A replacement disclosure {0}, arrangement {1}
 
+replaceConfirmation.title = Replacement received
+replaceConfirmation.heading = Replacement received
+replaceConfirmation.heading.two = What happens next
+replaceConfirmation.p1 = We have sent you a confirmation email.
+replaceConfirmation.p2 = If we have any questions about the disclosure, we will contact you.
+replaceConfirmation.p3 = Go to 
+replaceConfirmation.p4 = disclose cross-border arrangements.
+replaceConfirmation.p5 = What did you think of this service? 
+replaceConfirmation.p6 = (takes 30 seconds)
 

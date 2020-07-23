@@ -30,3 +30,5 @@ GET        /validator                                   controllers.FileValidati
 GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
 
 GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
+
+GET        /replaceConfirmation                       controllers.ReplaceConfirmationController.onPageLoad()
