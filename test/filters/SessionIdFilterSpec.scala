@@ -82,7 +82,7 @@ class SessionIdFilterSpec extends FreeSpec with MustMatchers with OptionValues w
         bind[SessionIdFilter].to[TestSessionIdFilter]
       )
       .configure(
-        "play.filters.disabled" -> List("uk.gov.hmrc.play.bootstrap.filters.frontend.crypto.SessionCookieCryptoFilter")
+        "play.filters.disabled" -> List("uk.gov.hmrc.play.bootstrap.frontend.filters.crypto.SessionCookieCryptoFilter")
       )
       .router(components.router)
       .build()

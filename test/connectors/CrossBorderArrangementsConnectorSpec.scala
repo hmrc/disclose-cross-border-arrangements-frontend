@@ -23,12 +23,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.OK
+import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.WireMockHelper
-import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 
 class CrossBorderArrangementsConnectorSpec extends SpecBase
   with GuiceOneAppPerSuite
@@ -85,7 +84,9 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
         val result = connector.submitDocument("test-file.xml", xml)
 
         whenReady(result.failed){ e =>
-          e mustBe a[BadRequestException]
+          e mustBe a[UpstreamErrorResponse]
+          val error = e.asInstanceOf[UpstreamErrorResponse]
+          error.statusCode mustBe BAD_REQUEST
         }
       }
 
@@ -101,7 +102,9 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
         val xml = <test></test>
         val result = connector.submitDocument("test-file.xml", xml)
         whenReady(result.failed){ e =>
-          e mustBe an[Upstream5xxResponse]
+          e mustBe an[UpstreamErrorResponse]
+          val error = e.asInstanceOf[UpstreamErrorResponse]
+          error.statusCode mustBe SERVICE_UNAVAILABLE
         }
       }
     }

@@ -1,3 +1,4 @@
+import org.slf4j.LoggerFactory
 import org.xml.sax.helpers.DefaultHandler
 import play.api.Logger
 
@@ -15,6 +16,8 @@ trait ExceptionErrorHandler extends DefaultHandler {
 }
 
 object Validator extends App {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   val schemaLang = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
   val xsdFile = java.nio.file.Paths.get("conf/sitemap-v0.9.xsd")
@@ -40,6 +43,6 @@ object Validator extends App {
     }.loadFile("conf/sitemap.xml")
   } catch {
     case t: Throwable =>
-      Logger.error("XML Validation has thrown an exception", t)
+      logger.error("XML Validation has thrown an exception", t)
   }
 }

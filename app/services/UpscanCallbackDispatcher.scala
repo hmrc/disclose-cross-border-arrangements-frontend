@@ -18,14 +18,15 @@ package services
 
 import javax.inject.Inject
 import models.upscan._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 
 class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def handleCallback(callback : CallbackBody): Future[Boolean] = {
-    Logger.debug("\n\nHandling the callback\n\n")
+    logger.debug("\n\nHandling the callback\n\n")
     val uploadStatus = callback match {
       case s: ReadyCallbackBody =>
         UploadedSuccessfully(s.uploadDetails.fileName, s.downloadUrl)

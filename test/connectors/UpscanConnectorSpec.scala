@@ -26,7 +26,7 @@ import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.WireMockHelper
 
 class UpscanConnectorSpec extends SpecBase
@@ -78,7 +78,9 @@ class UpscanConnectorSpec extends SpecBase
       val result = connector.getUpscanFormData(request)
 
       whenReady(result.failed){ e =>
-        e mustBe a[BadRequestException]
+        e mustBe an[UpstreamErrorResponse]
+        val error = e.asInstanceOf[UpstreamErrorResponse]
+        error.statusCode mustBe BAD_REQUEST
       }
     }
 
@@ -93,7 +95,9 @@ class UpscanConnectorSpec extends SpecBase
 
       val result = connector.getUpscanFormData(request)
       whenReady(result.failed){ e =>
-        e mustBe an[Upstream5xxResponse]
+        e mustBe an[UpstreamErrorResponse]
+        val error = e.asInstanceOf[UpstreamErrorResponse]
+        error.statusCode mustBe SERVICE_UNAVAILABLE
       }
     }
   }

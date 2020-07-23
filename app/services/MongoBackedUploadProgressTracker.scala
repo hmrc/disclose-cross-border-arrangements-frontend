@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Inject
 import models.upscan._
-import play.api.Logger
+import org.slf4j.LoggerFactory
 import reactivemongo.bson.BSONObjectID
 import repositories.UploadSessionRepository
 
@@ -36,6 +36,7 @@ trait UploadProgressTracker {
 
 
 class MongoBackedUploadProgressTracker @Inject()(repository : UploadSessionRepository)(implicit ec : ExecutionContext) extends UploadProgressTracker {
+  private val logger = LoggerFactory.getLogger(getClass)
 
   override def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Boolean] = {
 
@@ -43,16 +44,16 @@ class MongoBackedUploadProgressTracker @Inject()(repository : UploadSessionRepos
   }
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Boolean] = {
-    Logger.debug("In the register " + fileReference.toString + "   " + uploadStatus.toString)
+    logger.debug("In the register " + fileReference.toString + "   " + uploadStatus.toString)
     repository.updateStatus(fileReference, uploadStatus)
   }
 
 
   override def getUploadResult(id: UploadId): Future[Option[UploadStatus]] = {
-    Logger.debug("Getting the upload result from the database")
+    logger.debug("Getting the upload result from the database")
     for (result <- repository.findByUploadId(id)) yield {
       result map {x =>
-          Logger.debug("The status is " + x.status)
+          logger.debug("The status is " + x.status)
            x.status
       }
     }

@@ -16,7 +16,6 @@
 
 package controllers
 
-import java.net.URL
 import java.time.Instant
 
 import models.upscan._
