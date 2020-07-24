@@ -1,0 +1,42 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% block pageTitle %}
+  {{ title(messages("deleteDisclosureConfirmation.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-panel__title">
+                  {{ govukPanel({
+                    titleText: messages("deleteDisclosureConfirmation.heading")
+                  }) }}
+                </h1>
+
+        <div class="govuk-body">
+            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureId, arrangementId) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p2") }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p3") }}
+              <a class="disclose-link" href={{homePageLink}}>
+                  {{messages("deleteDisclosureConfirmation.p4")}}
+              </a>
+            </p>
+            <p>
+              <a href="#">{{ messages("deleteDisclosureConfirmation.p5") }}</a>
+              {{ messages("deleteDisclosureConfirmation.p6") }}
+            </p>
+
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
