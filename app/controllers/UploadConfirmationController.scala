@@ -26,7 +26,7 @@ import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class UploadConfirmationController @Inject()(
     override val messagesApi: MessagesApi,
@@ -40,16 +40,20 @@ class UploadConfirmationController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val arrangementID = request.userAnswers.get(GeneratedIDPage) match {
+      val disclosureID = request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
-        case _ => "Disclosure ID"
+        case _ => ""
       }
 
-      val json = Json.obj(
-        "disclosureID" -> confirmationPanelText(arrangementID)
-      )
+      if (disclosureID.isEmpty) {
+        Future.successful(Redirect(routes.SessionExpiredController.onPageLoad()))
+      } else {
+        val json = Json.obj(
+          "disclosureID" -> confirmationPanelText(disclosureID)
+        )
 
-      renderer.render("uploadConfirmation.njk", json).map(Ok(_))
+        renderer.render("uploadConfirmation.njk", json).map(Ok(_))
+      }
   }
 
   private def confirmationPanelText(id: String)(implicit messages: Messages): Html = {
