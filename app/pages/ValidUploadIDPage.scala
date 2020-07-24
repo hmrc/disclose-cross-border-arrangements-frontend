@@ -16,9 +16,10 @@
 
 package pages
 
+import models.upscan.UploadId
 import play.api.libs.json.JsPath
 
-case object ValidUploadIDPage extends QuestionPage[String] {
+case object ValidUploadIDPage extends QuestionPage[UploadId] {
 
   override def path: JsPath = JsPath \ toString
 

@@ -40,11 +40,9 @@ class FileValidationController @Inject()(
                                           getData: DataRetrievalAction,
                                           val sessionRepository: SessionRepository,
                                           val controllerComponents: MessagesControllerComponents,
-                                          appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
                                           requireData: DataRequiredAction,
                                           service: XMLValidationService,
-                                          uploadProgressTracker: UploadProgressTracker,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -54,14 +52,14 @@ class FileValidationController @Inject()(
       request.userAnswers.get(ValidUploadIDPage) match {
         case Some(uploadID) =>   {
           for {
-            uploadSessions <- repository.findByUploadId(UploadId(uploadID))
+            uploadSessions <- repository.findByUploadId(uploadID)
             (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
             validation = service.validateXML(downloadUrl)
           } yield {
             validation match {
               case ValidationSuccess(_) =>
                 {for {
-                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, fileName))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(ValidXMLPage, fileName))
                   updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
                   _              <- sessionRepository.set(updatedAnswersWithURL)
                 } yield {
@@ -73,10 +71,10 @@ class FileValidationController @Inject()(
 
               case ValidationFailure(_) =>
                 for {
-                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidUploadIDPage, fileName))
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(InvalidXMLPage, fileName))
                   _              <- sessionRepository.set(updatedAnswers)
                 } yield {
-                  Redirect(navigator.nextPage(InvalidUploadIDPage, NormalMode, updatedAnswers))
+                  Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
                 }
               }
             }

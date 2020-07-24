@@ -21,6 +21,7 @@ import config.FrontendAppConfig
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import javax.inject.Singleton
+import models.UserAnswers
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import pages.ValidUploadIDPage
 import play.api.Logger
@@ -28,6 +29,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import services.UploadProgressTracker
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 
@@ -43,11 +45,12 @@ class UploadFormController @Inject()(
                                       requireData: DataRequiredAction,
                                       upscanInitiateConnector: UpscanConnector,
                                       uploadProgressTracker: UploadProgressTracker,
+                                      sessionRepository: SessionRepository,
                                       renderer: Renderer
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad: Action[AnyContent] = Action.async  {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
       val uploadId           = UploadId.generate
@@ -60,6 +63,8 @@ class UploadFormController @Inject()(
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
           _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
+          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, uploadId))
+          _                      <- sessionRepository.set(updatedAnswers)
         } yield {
           renderer.render(
             "upload-form.njk",
@@ -75,7 +80,7 @@ class UploadFormController @Inject()(
 
       request.userAnswers.get(ValidUploadIDPage) match {
         case Some(uploadID) => {
-          for (uploadResult <- uploadProgressTracker.getUploadResult(UploadId(uploadID))) yield {
+          for (uploadResult <- uploadProgressTracker.getUploadResult(uploadID)) yield {
             uploadResult match {
               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
               case Some(result) =>
