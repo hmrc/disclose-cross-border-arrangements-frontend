@@ -29,7 +29,7 @@ import scala.concurrent.Future
 
 class ReplaceConfirmationControllerSpec extends SpecBase with MockitoSugar {
 
-  "replaceConfirmation Controller" - {
+  "ReplaceConfirmation Controller" - {
 
     "return OK and the correct view for a GET" in {
 

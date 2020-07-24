@@ -206,8 +206,16 @@ replaceConfirmation.heading = Replacement received
 replaceConfirmation.heading.two = What happens next
 replaceConfirmation.p1 = We have sent you a confirmation email.
 replaceConfirmation.p2 = If we have any questions about the disclosure, we will contact you.
-replaceConfirmation.p3 = Go to 
-replaceConfirmation.p4 = disclose cross-border arrangements.
-replaceConfirmation.p5 = What did you think of this service? 
-replaceConfirmation.p6 = (takes 30 seconds)
 
+uploadConfirmation.title = Disclosure received
+uploadConfirmation.panel.title = Disclosure received
+uploadConfirmation.panel.html = Your disclosure ID
+uploadConfirmation.h2 = What happens next
+uploadConfirmation.p1 = We have sent you a confirmation email.
+uploadConfirmation.p2 = You will need the disclosure ID if you need to make any changes to the disclosure.
+uploadConfirmation.p3 = If we have any questions about the disclosure, we will contact you.
+
+confirmation.li1 = Go to
+confirmation.li1.a = disclose cross-border arrangements
+confirmation.li2.a = What did you think of this service?
+confirmation.li2 = (takes 30 seconds)

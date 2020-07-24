@@ -74,7 +74,15 @@ class CheckYourAnswersController @Inject()(
             //TODO: send confirmation emails
 
           } yield {
-            Redirect("") //TODO: redirect to confirmation controller
+            val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
+            val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
+
+            instruction match {
+              case "DAC6NEW" => Redirect(routes.UploadFormController.onPageLoad()) //TODO Redirect to correct page when ready
+              case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
+              case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
+              case _ => Redirect(routes.UploadFormController.onPageLoad().url)
+            }
           }
 
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))

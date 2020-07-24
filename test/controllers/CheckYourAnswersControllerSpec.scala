@@ -34,6 +34,17 @@ import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase {
 
+  val userAnswers: UserAnswers = UserAnswers(userAnswersId)
+    .set(ValidXMLPage, "file-name.xml")
+    .success
+    .value
+    .set(URLPage, "url")
+    .success
+    .value
+
+  val mockXmlValidationService: XMLValidationService =  mock[XMLValidationService]
+  val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+
   "Check Your Answers Controller" - {
 
     "must return OK and the correct view for a GET" in {
@@ -108,17 +119,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
     "when submitted the uploaded file must be submitted to the backend" in {
 
-      val userAnswers = UserAnswers(userAnswersId)
-        .set(ValidXMLPage, "file-name.xml")
-        .success
-        .value
-        .set(URLPage, "url")
-        .success
-        .value
-
-      val mockXmlValidationService =  mock[XMLValidationService]
-      val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
-
       val application = applicationBuilder(Some(userAnswers))
       .overrides(
         bind[XMLValidationService].toInstance(mockXmlValidationService),
@@ -137,6 +137,93 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       status(result) mustEqual SEE_OTHER
       verify(mockCrossBorderArrangementsConnector, times(1))
         .submitDocument(any(), any())(any())
+
+      application.stop()
+    }
+
+    "must redirect to the ??? page when user submits XML and the instructions is DAC6NEW" in {//TODO Amend when page is ready
+
+      val application = applicationBuilder(Some(userAnswers))
+        .overrides(
+          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        ).build()
+
+      val xml =
+        <DAC6_Arrangement version="First">
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
+
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.UploadConfirmationController.onPageLoad().url
+
+      application.stop()
+    }
+
+    "must redirect to the upload confirmation page when user submits XML and the instructions is DAC6ADD" in {
+
+      val application = applicationBuilder(Some(userAnswers))
+        .overrides(
+          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        ).build()
+
+      val xml =
+        <DAC6_Arrangement version="First">
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
+
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.UploadConfirmationController.onPageLoad().url
+
+      application.stop()
+    }
+
+    "must redirect to the replacement confirmation page when user submits XML and the instructions is DAC6REP" in {
+
+      val application = applicationBuilder(Some(userAnswers))
+        .overrides(
+          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        ).build()
+
+      val xml =
+        <DAC6_Arrangement version="First">
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
+
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.ReplaceConfirmationController.onPageLoad().url
 
       application.stop()
     }
