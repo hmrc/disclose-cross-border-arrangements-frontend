@@ -66,17 +66,23 @@ class UploadConfirmationControllerSpec extends SpecBase with MockitoSugar with J
       application.stop()
     }
 
-    "redirect to session expired controller if there's no disclosure ID or users go straight to this page" in {
+    "thrown an error then display the technical error page if there's no disclosure ID or users go straight to this page" in {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
       val request = FakeRequest(GET, routes.UploadConfirmationController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad().url
+      an[Exception] mustBe thrownBy {
+        status(result) mustEqual OK
+
+        verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+        templateCaptor.getValue mustEqual "internalServerError.njk"
+      }
 
       application.stop()
     }

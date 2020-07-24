@@ -17,6 +17,7 @@
 package controllers
 
 import controllers.actions._
+import handlers.ErrorHandler
 import javax.inject.Inject
 import pages.GeneratedIDPage
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
@@ -26,7 +27,7 @@ import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class UploadConfirmationController @Inject()(
     override val messagesApi: MessagesApi,
@@ -34,7 +35,8 @@ class UploadConfirmationController @Inject()(
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
+    renderer: Renderer,
+    errorHandler: ErrorHandler
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -46,7 +48,7 @@ class UploadConfirmationController @Inject()(
       }
 
       if (disclosureID.isEmpty) {
-        Future.successful(Redirect(routes.SessionExpiredController.onPageLoad()))
+        errorHandler.onServerError(request, throw new Exception("Disclosure ID is missing"))
       } else {
         val json = Json.obj(
           "disclosureID" -> confirmationPanelText(disclosureID)
