@@ -219,3 +219,11 @@ confirmation.li1 = Go to
 confirmation.li1.a = disclose cross-border arrangements
 confirmation.li2.a = What did you think of this service?
 confirmation.li2 = (takes 30 seconds)
+
+createConfirmation.title = Disclosure received
+createConfirmation.heading = Disclosure received
+createConfirmation.panel.html = Your arrangement reference number
+createConfirmation.h2 = What happens next
+createConfirmation.p1 = We have sent you a confirmation email.
+createConfirmation.p2 = Share the arrangement reference number with anyone else involved in the arrangement.
+createConfirmation.p3 = Your disclosure ID is {0}. You will need this if you want to make any changes to the disclosure.

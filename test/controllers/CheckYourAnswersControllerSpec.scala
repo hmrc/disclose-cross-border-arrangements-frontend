@@ -141,7 +141,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       application.stop()
     }
 
-    "must redirect to the ??? page when user submits XML and the instructions is DAC6NEW" in {//TODO Amend when page is ready
+    "must redirect to the creation confirmation page when user submits XML and the instructions is DAC6NEW" in {
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
@@ -152,7 +152,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val xml =
         <DAC6_Arrangement version="First">
           <DAC6Disclosures>
-            <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
           </DAC6Disclosures>
         </DAC6_Arrangement>
 
@@ -165,7 +165,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.UploadConfirmationController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.CreateConfirmationController.onPageLoad().url
 
       application.stop()
     }

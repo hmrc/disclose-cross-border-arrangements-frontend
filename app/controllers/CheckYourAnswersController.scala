@@ -78,7 +78,7 @@ class CheckYourAnswersController @Inject()(
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
 
             instruction match {
-              case "DAC6NEW" => Redirect(routes.UploadFormController.onPageLoad()) //TODO Redirect to correct page when ready
+              case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
               case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
               case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
               case _ => Redirect(routes.UploadFormController.onPageLoad().url)

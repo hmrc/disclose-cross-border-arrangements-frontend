@@ -34,3 +34,5 @@ GET        /virus-error                                 controllers.VirusErrorCo
 GET        /replaceConfirmation                         controllers.ReplaceConfirmationController.onPageLoad()
 
 GET        /send-disclosure/upload-confirmation         controllers.UploadConfirmationController.onPageLoad()
+
+GET        /createConfirmation                          controllers.CreateConfirmationController.onPageLoad()
