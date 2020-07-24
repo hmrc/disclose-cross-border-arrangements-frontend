@@ -78,7 +78,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
@@ -96,7 +96,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
@@ -112,7 +112,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       val controller = application.injector.instanceOf[FileValidationController]
 
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       a[RuntimeException] mustBe thrownBy(status(result))
     }
