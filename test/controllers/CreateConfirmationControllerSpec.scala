@@ -57,5 +57,79 @@ class CreateConfirmationControllerSpec extends SpecBase with MockitoSugar {
 
       application.stop()
     }
+
+    "throw an error then display the technical error page if there's no disclosure ID or users go straight to this page" in {
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(GeneratedIDPage, GeneratedIDs(Some("GBA20200701AAAB00"), None))
+        .success
+        .value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
+      val result = route(application, request).value
+
+      an[Exception] mustBe thrownBy {
+        status(result) mustEqual OK
+
+        verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+        templateCaptor.getValue mustEqual "internalServerError.njk"
+      }
+
+      application.stop()
+    }
+
+    "throw an error then display the technical error page if there's no arrangement ID or users go straight to this page" in {
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(GeneratedIDPage, GeneratedIDs(None, Some("GBD20200701AA0001")))
+        .success
+        .value
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
+      val result = route(application, request).value
+
+      an[Exception] mustBe thrownBy {
+        status(result) mustEqual OK
+
+        verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+        templateCaptor.getValue mustEqual "internalServerError.njk"
+      }
+
+      application.stop()
+    }
+
+    "throw an error then display the technical error page if there are non generated IDs or users go straight to this page" in {
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
+      val result = route(application, request).value
+
+      an[Exception] mustBe thrownBy {
+        status(result) mustEqual OK
+
+        verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+        templateCaptor.getValue mustEqual "internalServerError.njk"
+      }
+
+      application.stop()
+    }
   }
+
 }
