@@ -221,7 +221,7 @@ confirmation.li2.a = What did you think of this service?
 confirmation.li2 = (takes 30 seconds)
 
 createConfirmation.title = Disclosure received
-createConfirmation.heading = Disclosure received
+createConfirmation.panel.title = Disclosure received
 createConfirmation.panel.html = Your arrangement reference number
 createConfirmation.h2 = What happens next
 createConfirmation.p1 = We have sent you a confirmation email.
