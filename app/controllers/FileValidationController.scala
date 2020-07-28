@@ -31,6 +31,7 @@ import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Try}
 
 class FileValidationController @Inject()(
                                           override val messagesApi: MessagesApi,
@@ -50,35 +51,39 @@ class FileValidationController @Inject()(
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
     {
-      request.userAnswers.get(ValidUploadIDPage) match {
-        case Some(uploadId) =>
-          for {
-            uploadSessions <- repository.findByUploadId(uploadId)
-            (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-            validation = validationEngine.validateFile(downloadUrl)
-          } yield {
-            validation match {
-              case ValidationSuccess(_) =>
-                for {
-                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-                  updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-                  _ <- sessionRepository.set(updatedAnswersWithURL)
-                } yield {
-                  Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
-                }
-
-              case ValidationFailure(_) =>
-                for {
-                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
-                  _ <- sessionRepository.set(updatedAnswers)
-                } yield {
-                  Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
-                }
+      for {
+        uploadId <- getUploadId(request.userAnswers)
+        uploadSessions <- repository.findByUploadId(uploadId)
+        (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
+        validation = validationEngine.validateFile(downloadUrl)
+      } yield {
+        validation match {
+          case ValidationSuccess(_) =>
+            for {
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
+              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              _              <- sessionRepository.set(updatedAnswersWithURL)
+            } yield {
+              Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
             }
-          }
-        case None => ???
+
+          case ValidationFailure(_) =>
+            for {
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
+        }
       }
     }.flatten
+  }
+
+  private def getUploadId(userAnswers: UserAnswers): Future[UploadId] = {
+    userAnswers.get(ValidUploadIDPage) match {
+      case Some(uploadId) => Future.successful(uploadId)
+      case None => throw new RuntimeException("Cannot find uploadId")
+    }
   }
 
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {

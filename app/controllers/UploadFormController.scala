@@ -83,24 +83,19 @@ class UploadFormController @Inject()(
 
       request.userAnswers.get(ValidUploadIDPage) match {
         case Some(uploadId) =>
-            for (uploadResult <- uploadProgressTracker.getUploadResult (uploadId) ) yield { {
-            uploadResult match {
-
-            case Some (result) if result == Quarantined => Future.successful (Redirect (routes.VirusErrorController.onPageLoad () ) )
-            case Some (result) =>
-
-            renderer.render (
-            "upload-result.njk",
-            Json.obj ("uploadId" -> Json.toJson (uploadId),
-            "status" -> Json.toJson (result) )
-            ).map (Ok (_) )
-            case None => Future.successful (BadRequest (s"Upload with id $uploadId not found") )
-            }
-            }
-            }
-        case None => ???
+             uploadProgressTracker.getUploadResult(uploadId) flatMap {
+               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
+               case Some(result) =>
+                 renderer.render(
+                   "upload-result.njk",
+                   Json.obj("uploadId" -> Json.toJson(uploadId),
+                     "status" -> Json.toJson(result))
+                 ).map(Ok(_))
+               case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
+             }
+        case None => Future.successful(BadRequest (s"UploadId not found") )
       }
-    }.flatMap(identity)
+    }
   }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
