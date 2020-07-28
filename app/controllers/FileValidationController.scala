@@ -40,13 +40,14 @@ class FileValidationController @Inject()(
                                           val controllerComponents: MessagesControllerComponents,
                                           appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
+                                          requireData: DataRequiredAction,
                                           validationEngine: ValidationEngine,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(uploadId: UploadId): Action[AnyContent] = (identify andThen getData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData).async { implicit request =>
     {
       for {
         uploadSessions <- repository.findByUploadId(uploadId)
