@@ -34,6 +34,7 @@ import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.XMLValidationService
 import org.mockito.Mockito._
+import pages.ValidUploadIDPage
 
 import scala.concurrent.Future
 
@@ -50,7 +51,9 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
   "FileValidationController" - {
 
-    val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+    val uploadId = UploadId("123")
+    val userAnswers = UserAnswers(userAnswersId).set(ValidUploadIDPage, uploadId).success.value
+    val application = applicationBuilder(userAnswers = Some(userAnswers))
       .overrides(
         bind[XMLValidationService].toInstance(mockFileValidation),
         bind[UploadSessionRepository].toInstance(mockRepository),
@@ -89,7 +92,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       val uploadId = UploadId("123")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("invalidXML"-> "afile")
+      val expectedData = Json.obj("invalidXML"-> "afile","validUploadID" -> uploadId)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
       when(mockFileValidation.validateXML(org.mockito.Matchers.anyString())).thenReturn(ValidationFailure(List()))
