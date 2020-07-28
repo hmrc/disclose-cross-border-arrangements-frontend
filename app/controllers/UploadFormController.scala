@@ -19,13 +19,17 @@ package controllers
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.UpscanConnector
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import javax.inject.Singleton
+import models.UserAnswers
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import org.slf4j.LoggerFactory
+import pages.ValidUploadIDPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import services.UploadProgressTracker
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -36,18 +40,22 @@ class UploadFormController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       val controllerComponents: MessagesControllerComponents,
                                       appConfig: FrontendAppConfig,
+                                      identify: IdentifierAction,
+                                      getData: DataRetrievalAction,
+                                      requireData: DataRequiredAction,
                                       upscanInitiateConnector: UpscanConnector,
                                       uploadProgressTracker: UploadProgressTracker,
+                                      sessionRepository: SessionRepository,
                                       renderer: Renderer
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def onPageLoad: Action[AnyContent] = Action.async  {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
       val uploadId           = UploadId.generate
-      val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
+      val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
       val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
       val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
@@ -56,6 +64,8 @@ class UploadFormController @Inject()(
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
           _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
+          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, uploadId))
+          _                      <- sessionRepository.set(updatedAnswers)
         } yield {
           renderer.render(
             "upload-form.njk",
@@ -65,7 +75,7 @@ class UploadFormController @Inject()(
       }.flatMap(identity)
   }
 
-  def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
+  def showResult: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request => {
       logger.debug("Show result called")
 
