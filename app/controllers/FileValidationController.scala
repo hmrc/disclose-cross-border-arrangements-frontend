@@ -17,12 +17,12 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidXMLPage, URLPage, ValidXMLPage}
+import pages.{InvalidXMLPage, URLPage, ValidUploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
@@ -47,31 +47,36 @@ class FileValidationController @Inject()(
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request =>
     {
-      for {
-        uploadSessions <- repository.findByUploadId(uploadId)
-        (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl)
-      } yield {
-        validation match {
-          case ValidationSuccess(_) =>
-            for {
-              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL)
-            } yield {
-              Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
-            }
+      request.userAnswers.get(ValidUploadIDPage) match {
+        case Some(uploadId) =>
+          for {
+            uploadSessions <- repository.findByUploadId(uploadId)
+            (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
+            validation = validationEngine.validateFile(downloadUrl)
+          } yield {
+            validation match {
+              case ValidationSuccess(_) =>
+                for {
+                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
+                  updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+                  _ <- sessionRepository.set(updatedAnswersWithURL)
+                } yield {
+                  Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+                }
 
-          case ValidationFailure(_) =>
-            for {
-              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
-              _              <- sessionRepository.set(updatedAnswers)
-            } yield {
-              Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+              case ValidationFailure(_) =>
+                for {
+                  updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield {
+                  Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+                }
             }
-        }
+          }
+        case None => ???
       }
     }.flatten
   }

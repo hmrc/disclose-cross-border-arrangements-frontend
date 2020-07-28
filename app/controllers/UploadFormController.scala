@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import handlers.ErrorHandler
 import javax.inject.Singleton
 import models.UserAnswers
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
@@ -46,7 +47,8 @@ class UploadFormController @Inject()(
                                       upscanInitiateConnector: UpscanConnector,
                                       uploadProgressTracker: UploadProgressTracker,
                                       sessionRepository: SessionRepository,
-                                      renderer: Renderer
+                                      renderer: Renderer,
+                                      errorHandler: ErrorHandler
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
@@ -79,21 +81,24 @@ class UploadFormController @Inject()(
     implicit request => {
       logger.debug("Show result called")
 
-      for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
-        {
-          uploadResult match {
+      request.userAnswers.get(ValidUploadIDPage) match {
+        case Some(uploadId) =>
+            for (uploadResult <- uploadProgressTracker.getUploadResult (uploadId) ) yield { {
+            uploadResult match {
 
-            case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-            case Some(result) =>
+            case Some (result) if result == Quarantined => Future.successful (Redirect (routes.VirusErrorController.onPageLoad () ) )
+            case Some (result) =>
 
-              renderer.render(
-                "upload-result.njk",
-                Json.obj("uploadId" -> Json.toJson(uploadId),
-                  "status" -> Json.toJson(result))
-              ).map(Ok(_))
-            case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
-          }
-        }
+            renderer.render (
+            "upload-result.njk",
+            Json.obj ("uploadId" -> Json.toJson (uploadId),
+            "status" -> Json.toJson (result) )
+            ).map (Ok (_) )
+            case None => Future.successful (BadRequest (s"Upload with id $uploadId not found") )
+            }
+            }
+            }
+        case None => ???
       }
     }.flatMap(identity)
   }
