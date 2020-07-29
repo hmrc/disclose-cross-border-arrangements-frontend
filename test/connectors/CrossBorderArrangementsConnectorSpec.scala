@@ -63,7 +63,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
 
         val xml = <test></test>
 
-        whenReady(connector.submitDocument("test-file.xml", xml)){
+        whenReady(connector.submitDocument("test-file.xml", "enrolmentID", xml)){
           result =>
             result mustBe GeneratedIDs(Some("GBA20200601AAA000"), Some("GBD20200601AAA001"))
         }
@@ -81,7 +81,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
         )
 
         val xml = <test></test>
-        val result = connector.submitDocument("test-file.xml", xml)
+        val result = connector.submitDocument("test-file.xml","enrolmentID", xml)
 
         whenReady(result.failed){ e =>
           e mustBe a[UpstreamErrorResponse]
@@ -100,7 +100,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
         )
 
         val xml = <test></test>
-        val result = connector.submitDocument("test-file.xml", xml)
+        val result = connector.submitDocument("test-file.xml", "enrolmentID", xml)
         whenReady(result.failed){ e =>
           e mustBe an[UpstreamErrorResponse]
           val error = e.asInstanceOf[UpstreamErrorResponse]

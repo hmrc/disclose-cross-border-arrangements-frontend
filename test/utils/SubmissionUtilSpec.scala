@@ -31,6 +31,7 @@ class SubmissionUtilSpec extends SpecBase with StreamlinedXmlEquality {
       val expectedReturn =
         <submission>
           <fileName>test-file.xml</fileName>
+          <enrolmentID>enrolmentID</enrolmentID>
           <file>
             <test>
               <value>This should be preserved</value>
@@ -38,7 +39,7 @@ class SubmissionUtilSpec extends SpecBase with StreamlinedXmlEquality {
           </file>
         </submission>
 
-      SubmissionUtil.constructSubmission("test-file.xml", xml) mustEqual expectedReturn
+      SubmissionUtil.constructSubmission("test-file.xml", "enrolmentID", xml) mustEqual expectedReturn
     }
   }
 

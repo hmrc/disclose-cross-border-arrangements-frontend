@@ -68,7 +68,7 @@ class CheckYourAnswersController @Inject()(
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
           for {
-            ids <- crossBorderArrangementsConnector.submitDocument(fileName, xml)
+            ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _              <- sessionRepository.set(userAnswersWithIDs)
             //TODO: send confirmation emails

@@ -21,9 +21,13 @@ import scala.xml.{Elem, Node, NodeSeq}
 
 object SubmissionUtil {
 
-  def constructSubmission(fileName: String, document: Elem): NodeSeq = {
+  def constructSubmission(fileName: String, enrolmentID: String, document: Elem): NodeSeq = {
     val submission =
-      <submission><fileName>{fileName}</fileName><file></file></submission>
+      <submission>
+        <fileName>{fileName}</fileName>
+        <enrolmentID>{enrolmentID}</enrolmentID>
+        <file></file>
+      </submission>
 
     new RuleTransformer(new RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
