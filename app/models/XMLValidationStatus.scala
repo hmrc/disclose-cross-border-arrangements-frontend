@@ -18,6 +18,13 @@ package models
 
 import play.api.libs.json._
 
+//TODO - create case class for DAC6MetaData and Object with Json.format for Mongo
+
+case class Dac6MetaData(importInstruction: String, arrangementID: Option[String], disclosureID: Option[String])
+
+object Dac6MetaData {
+  implicit val format = Json.format[ValidationSuccess]
+}
 
 case class ValidationSuccess(downloadUrl : String) extends XMLValidationStatus
 
@@ -47,11 +54,11 @@ object XMLValidationStatus {
     }
   }
 
-  implicit val writes: Writes[XMLValidationStatus] = Writes {
+  implicit val writes: Writes[XMLValidationStatus] = Writes[XMLValidationStatus] {
     case ValidationSuccess(downloadUrl) => Json.obj(
-      "downloadUrl" -> JsString(downloadUrl),
-      "_type" -> "ValidationSuccess"
-    )
+      "downloadUrl" -> downloadUrl,
+      "_type" -> "ValidationSuccess")
+
     case ValidationFailure (error) => Json.obj(
       "error" -> JsArray(error.map(Json.toJson[SaxParseError](_))),
       "_type" -> "ValidationFailure"

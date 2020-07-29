@@ -20,21 +20,22 @@ import helpers.LineNumberHelper
 import javax.inject.Inject
 import models.{ValidationFailure, ValidationSuccess, XMLValidationStatus}
 
-import scala.collection.mutable.ListBuffer
 import scala.xml.Elem
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
                                  lineNumberHelper: LineNumberHelper){
 
-  def validateFile(source: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
+  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
 
-    val xmlAndXmlValidationStatus = xmlValidationService.validateXml(source)
+    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = xmlValidationService.validateXml(downloadUrl)
 
-    val businessRulesValidationResult = performBusinessRulesValidation(source, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
+    val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
-    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match{
-      case (ValidationSuccess(_), ValidationSuccess(_)) => ValidationSuccess(source)
+    //TODO - clean up code - Change match order so Success is last
+    // Add metaData to Success
+    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
+      case (ValidationSuccess(_), ValidationSuccess(_)) => ValidationSuccess(downloadUrl)
       case (ValidationFailure(xmlErrors), ValidationSuccess(_)) => ValidationFailure(xmlErrors)
       case (ValidationSuccess(_), ValidationFailure(errors)) => ValidationFailure(errors)
       case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => ValidationFailure(xmlErrors ++ businessRulesErrors)
@@ -52,8 +53,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                                error => error.toSaxParseError))
         case None => ValidationSuccess(source)
       }
-    }else ValidationSuccess(source)
-
+    } else {
+      ValidationSuccess(source)
+    }
   }
-
 }

@@ -63,7 +63,7 @@ class FileValidationController @Inject()(
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL)
+              _              <- sessionRepository.set(updatedAnswersWithURL) // TODO - pass ID's here to use in Controller
               xml <- Future.successful(xmlValidationService.loadXML(downloadUrl))
             } yield {
               (xml \ "DAC6Disclosures" \ "DisclosureImportInstruction").text match {
@@ -92,6 +92,8 @@ class FileValidationController @Inject()(
   }
 
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
+
+    //TODO - pass Download URL to ValidationSuccess alongside DAC6MetaDataObject
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
         case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)

@@ -22,7 +22,7 @@ import java.util.{Calendar, Date, GregorianCalendar}
 import cats.data.ReaderT
 import cats.implicits._
 import javax.inject.Inject
-import models.Validation
+import models.{Dac6MetaData, Validation}
 
 import scala.xml.NodeSeq
 
@@ -145,6 +145,25 @@ class BusinessRuleValidationService @Inject()() {
     )
   }
 
+  def extractDac6MetaData(): ReaderT[Option, NodeSeq, Dac6MetaData] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      arrangementID <- arrangementID
+      disclosureID <- disclosureID
+      messageRefID <- messageRefID
+    } yield
+      disclosureImportInstruction match {
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, None, None)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), None)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case _ => throw new Exception("XML Data extraction failed - disclosure import instruction Missing")
+      }
+  }
+
+  //TODO - add method here to extract ID's from XML and pass into DAC6MetaData Object
+  //TODO - write test for method
+
   def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()
@@ -159,7 +178,6 @@ class BusinessRuleValidationService @Inject()() {
     } yield
       Seq(v1,v2,v3,v4,v5,v6,v7,v8,v9).filterNot(_.value)
   }
-
 }
 
 object BusinessRuleValidationService {

@@ -20,7 +20,7 @@ import java.util.{Calendar, GregorianCalendar}
 
 import base.SpecBase
 import fixtures.XMLFixture
-import models.Validation
+import models.{Dac6MetaData, Validation}
 import org.scalatest.concurrent.IntegrationPatience
 
 class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatience {
@@ -1366,6 +1366,128 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.validateFile()(xml) mustBe Some(List())
+  }
+
+  "must return correct metadata for import instruction DAC6NEW" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6D1Other</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None))
+  }
+
+  "must return correct metadata for import instruction DAC6ADD" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+  }
+
+  "must return correct metadata for import instruction DAC6REP" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000")))
+  }
+
+  "must return correct metadata for import instruction DAC6DEL" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000")))
+  }
+
+  "must throw exception if disclosureImportInstruction is invalid or missing" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>AAA000000000</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+          </DisclosureInformation>
+          <DisclosureInformation>
+            <ImplementingDate>2018-06-25</ImplementingDate>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    an[Exception] mustBe thrownBy {
+      service.extractDac6MetaData()(xml)
+    }
   }
 
 }

@@ -29,7 +29,7 @@ import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.Elem
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
   def validateXml(downloadSrc: String): (Elem, XMLValidationStatus) = {
@@ -46,11 +46,13 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
       override def adapter =
         new scala.xml.parsing.NoBindingFactoryAdapter
           with AccumulatorState
-
-
     }.load(new URL(downloadSrc))
 
-   if (list.isEmpty) (elem, ValidationSuccess(downloadSrc)) else (elem, ValidationFailure(list))
+    if (list.isEmpty){
+      (elem, ValidationSuccess(downloadSrc))
+    } else {
+      (elem, ValidationFailure(list))
+    }
   }
 
   def loadXML(downloadSrc: String): Elem = {
