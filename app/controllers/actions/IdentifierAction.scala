@@ -25,7 +25,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,6 +55,7 @@ class AuthenticatedIdentifierAction @Inject()(
         }
 
         block(IdentifierRequest(request, internalID, enrolmentID))
+      case None ~ _ => throw new UnauthorizedException("Unable to retrieve internal Id")
     } recover {
       case _: NoActiveSession =>
         Redirect(config.loginUrl, Map("continue" -> Seq(config.loginContinueUrl)))
@@ -76,7 +77,7 @@ class SessionIdentifierAction @Inject()(
 
     hc.sessionId match {
       case Some(session) =>
-        block(IdentifierRequest(request, session.value, session.value)) //TODO Use session.value here?
+        block(IdentifierRequest(request, session.value, "EnrolmentID"))
       case None =>
         Future.successful(Redirect(routes.SessionExpiredController.onPageLoad()))
     }
