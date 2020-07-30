@@ -25,7 +25,7 @@ POST       /callback                                    controllers.UploadCallba
 
 GET        /error                                       controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String)
 
-GET        /validator                                   controllers.FileValidationController.onPageLoad()
+GET        /validator                                   controllers.FileValidationController.onPageLoad
 
 GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
 

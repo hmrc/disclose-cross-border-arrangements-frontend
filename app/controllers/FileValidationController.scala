@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidXMLPage, URLPage, ValidUploadIDPage, ValidXMLPage}
+import pages.{InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
@@ -80,7 +80,7 @@ class FileValidationController @Inject()(
   }
 
   private def getUploadId(userAnswers: UserAnswers): Future[UploadId] = {
-    userAnswers.get(ValidUploadIDPage) match {
+    userAnswers.get(UploadIDPage) match {
       case Some(uploadId) => Future.successful(uploadId)
       case None => throw new RuntimeException("Cannot find uploadId")
     }

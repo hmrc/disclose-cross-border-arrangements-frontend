@@ -25,7 +25,7 @@ import javax.inject.Singleton
 import models.UserAnswers
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import org.slf4j.LoggerFactory
-import pages.ValidUploadIDPage
+import pages.UploadIDPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -66,7 +66,7 @@ class UploadFormController @Inject()(
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
           _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
-          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(ValidUploadIDPage, uploadId))
+          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
           _                      <- sessionRepository.set(updatedAnswers)
         } yield {
           renderer.render(
@@ -81,7 +81,7 @@ class UploadFormController @Inject()(
     implicit request => {
       logger.debug("Show result called")
 
-      request.userAnswers.get(ValidUploadIDPage) match {
+      request.userAnswers.get(UploadIDPage) match {
         case Some(uploadId) =>
              uploadProgressTracker.getUploadResult(uploadId) flatMap {
                case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))

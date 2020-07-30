@@ -24,7 +24,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when, _}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
-import pages.ValidUploadIDPage
+import pages.UploadIDPage
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -49,7 +49,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
   "FileValidationController" - {
     val uploadId = UploadId("123")
-    val userAnswers = UserAnswers(userAnswersId).set(ValidUploadIDPage, uploadId).success.value
+    val userAnswers = UserAnswers(userAnswersId).set(UploadIDPage, uploadId).success.value
     val application = applicationBuilder(userAnswers = Some(userAnswers))
       .overrides(
         bind[UploadSessionRepository].toInstance(mockRepository),
