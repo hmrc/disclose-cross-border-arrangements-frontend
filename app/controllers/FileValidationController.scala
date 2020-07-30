@@ -94,7 +94,6 @@ class FileValidationController @Inject()(
 
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
 
-    //TODO - pass Download URL to ValidationSuccess alongside DAC6MetaDataObject
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
         case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)

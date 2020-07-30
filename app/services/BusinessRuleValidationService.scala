@@ -159,10 +159,7 @@ class BusinessRuleValidationService @Inject()() {
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
   }
-
-  //TODO - add method here to extract ID's from XML and pass into DAC6MetaData Object
-  //TODO - write test for method
-
+  
   def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()

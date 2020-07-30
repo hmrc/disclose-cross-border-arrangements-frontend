@@ -18,8 +18,6 @@ package models
 
 import play.api.libs.json._
 
-//TODO - create case class for DAC6MetaData and Object with Json.format for Mongo
-
 case class Dac6MetaData(importInstruction: String, arrangementID: Option[String] = None, disclosureID: Option[String] = None)
 
 object Dac6MetaData {

@@ -168,7 +168,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val controller = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
 
-      an[RuntimeException] mustBe thrownBy {
+      a[RuntimeException] mustBe thrownBy {
         status(result) mustEqual OK
       }
     }
