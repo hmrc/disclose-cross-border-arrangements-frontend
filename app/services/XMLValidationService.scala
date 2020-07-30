@@ -32,6 +32,7 @@ import scala.collection.mutable.ListBuffer
 import scala.xml.Elem
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
+
   def validateXml(downloadSrc: String): (Elem, XMLValidationStatus) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
@@ -69,7 +70,6 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
 trait XMLValidationParser {
   def validatingParser: SAXParser
 }
-
 
 class XMLDacXSDValidationParser extends XMLValidationParser {
   val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI

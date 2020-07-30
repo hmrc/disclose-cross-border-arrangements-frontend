@@ -20,13 +20,13 @@ import play.api.libs.json._
 
 //TODO - create case class for DAC6MetaData and Object with Json.format for Mongo
 
-case class Dac6MetaData(importInstruction: String, arrangementID: Option[String], disclosureID: Option[String])
+case class Dac6MetaData(importInstruction: String, arrangementID: Option[String] = None, disclosureID: Option[String] = None)
 
 object Dac6MetaData {
-  implicit val format = Json.format[ValidationSuccess]
+  implicit val format = Json.format[Dac6MetaData]
 }
 
-case class ValidationSuccess(downloadUrl : String) extends XMLValidationStatus
+case class ValidationSuccess(downloadUrl : String, metaData: Option[Dac6MetaData] = None) extends XMLValidationStatus
 
 object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
@@ -48,15 +48,18 @@ sealed trait XMLValidationStatus
 
 object XMLValidationStatus {
   implicit val reads = new Reads[XMLValidationStatus] {
-    override def reads(json: JsValue): JsResult[XMLValidationStatus] = json \ "downloadUrl" match {
-      case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
-      case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
+    override def reads(json: JsValue): JsResult[XMLValidationStatus] = {
+      json \ "downloadUrl" match {
+        case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
+        case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
+      }
     }
   }
 
   implicit val writes: Writes[XMLValidationStatus] = Writes[XMLValidationStatus] {
-    case ValidationSuccess(downloadUrl) => Json.obj(
+    case ValidationSuccess(downloadUrl, metaData) => Json.obj(
       "downloadUrl" -> downloadUrl,
+      "metaData" -> metaData,
       "_type" -> "ValidationSuccess")
 
     case ValidationFailure (error) => Json.obj(

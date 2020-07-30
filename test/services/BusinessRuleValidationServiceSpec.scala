@@ -1485,7 +1485,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    an[Exception] mustBe thrownBy {
+    a[RuntimeException] mustBe thrownBy {
       service.extractDac6MetaData()(xml)
     }
   }

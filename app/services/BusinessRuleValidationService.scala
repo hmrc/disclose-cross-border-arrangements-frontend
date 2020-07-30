@@ -150,14 +150,13 @@ class BusinessRuleValidationService @Inject()() {
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
-      messageRefID <- messageRefID
     } yield
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, None, None)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), None)
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
         case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
         case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
-        case _ => throw new Exception("XML Data extraction failed - disclosure import instruction Missing")
+        case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
   }
 

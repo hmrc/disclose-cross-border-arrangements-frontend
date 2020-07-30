@@ -18,6 +18,7 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import handlers.ErrorHandler
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
@@ -25,9 +26,8 @@ import navigation.Navigator
 import pages.{InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.{ValidationEngine, XMLValidationService}
+import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,6 +44,7 @@ class FileValidationController @Inject()(
                                           requireData: DataRequiredAction,
                                           validationEngine: ValidationEngine,
                                           xmlValidationService: XMLValidationService,
+                                          errorHandler: ErrorHandler,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -59,19 +60,17 @@ class FileValidationController @Inject()(
         validation = validationEngine.validateFile(downloadUrl)
       } yield {
         validation match {
-          case ValidationSuccess(_) =>
+          case ValidationSuccess(_,Some(metaData)) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL) // TODO - pass ID's here to use in Controller
-              xml <- Future.successful(xmlValidationService.loadXML(downloadUrl))
+              _              <- sessionRepository.set(updatedAnswersWithURL)
             } yield {
-              (xml \ "DAC6Disclosures" \ "DisclosureImportInstruction").text match {
+              metaData.importInstruction match {
                 case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-
           case ValidationFailure(_) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
@@ -79,6 +78,8 @@ class FileValidationController @Inject()(
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }
+          case _ =>
+            errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
         }
       }
     }.flatten

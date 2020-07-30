@@ -18,7 +18,7 @@ package services
 
 import helpers.LineNumberHelper
 import javax.inject.Inject
-import models.{ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 
 import scala.xml.Elem
 
@@ -32,13 +32,13 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
-    //TODO - clean up code - Change match order so Success is last
-    // Add metaData to Success
     (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-      case (ValidationSuccess(_), ValidationSuccess(_)) => ValidationSuccess(downloadUrl)
-      case (ValidationFailure(xmlErrors), ValidationSuccess(_)) => ValidationFailure(xmlErrors)
-      case (ValidationSuccess(_), ValidationFailure(errors)) => ValidationFailure(errors)
       case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => ValidationFailure(xmlErrors ++ businessRulesErrors)
+      case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
+      case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
+      case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>
+        val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
+        ValidationSuccess(downloadUrl, retrieveMetaData)
 
     }
  }
@@ -46,11 +46,10 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
   def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
 
-    if(businessRulesCheckRequired) {
+    if (businessRulesCheckRequired) {
       businessRuleValidationService.validateFile()(elem) match {
         case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
-                                               error => error.toSaxParseError))
+        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(error => error.toSaxParseError))
         case None => ValidationSuccess(source)
       }
     } else {
