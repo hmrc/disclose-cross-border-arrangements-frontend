@@ -16,6 +16,7 @@
 
 package models
 
+import helpers.ErrorMessageHelper
 import play.api.libs.json._
 
 
@@ -25,13 +26,26 @@ object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
 }
 
-case class SaxParseError(lineNumber: Int, errorMessage: String)
+case class SaxParseError(lineNumber: Int, errorMessage: String,
+                         errorType: Option[String] = None,
+                         elementName: Option[String] = None) {
+
+  def toGenericError: GenericError = GenericError(lineNumber, ErrorMessageHelper.transformErrorMessage(errorMessage))
+
+}
 
 object SaxParseError {
   implicit val format = Json.format[SaxParseError]
 }
 
-case class ValidationFailure (error: Seq[SaxParseError]) extends XMLValidationStatus
+
+case class GenericError(lineNumber: Int, messageKey: String)
+
+object GenericError {
+  implicit val format = Json.format[GenericError]
+}
+
+case class ValidationFailure (errors: Seq[GenericError]) extends XMLValidationStatus
 
 object ValidationFailure {
   implicit val format = Json.format[ValidationFailure]
@@ -53,7 +67,7 @@ object XMLValidationStatus {
       "_type" -> "ValidationSuccess"
     )
     case ValidationFailure (error) => Json.obj(
-      "error" -> JsArray(error.map(Json.toJson[SaxParseError](_))),
+      "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
       "_type" -> "ValidationFailure"
     )
   }

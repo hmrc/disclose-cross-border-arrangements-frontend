@@ -32,7 +32,7 @@ import scala.collection.mutable.ListBuffer
 import scala.xml.{Elem, NodeSeq}
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
-  def validateXml(downloadSrc: String): (Elem, XMLValidationStatus) = {
+  def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
     trait AccumulatorState extends DefaultHandler {
@@ -50,7 +50,7 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
 
     }.load(new URL(downloadSrc))
 
-   if (list.isEmpty) (elem, ValidationSuccess(downloadSrc)) else (elem, ValidationFailure(list))
+   (elem, list)
   }
 
   def loadXML(downloadSrc: String): Elem = {
