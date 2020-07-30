@@ -18,42 +18,83 @@ package services
 
 import helpers.LineNumberHelper
 import javax.inject.Inject
-import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 
+import scala.collection.mutable.ListBuffer
 import scala.xml.Elem
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
                                  lineNumberHelper: LineNumberHelper){
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
+  def validateFile(source: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
 
-    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = xmlValidationService.validateXml(downloadUrl)
+    val xmlAndXmlValidationStatus = performXmlValidation(source)
 
-    val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
-    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
+
+    val businessRulesValidationResult = performBusinessRulesValidation(source, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
+
+    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match{
+      case (ValidationSuccess(_), ValidationSuccess(_)) => ValidationSuccess(source)
+      case (ValidationFailure(xmlErrors), ValidationSuccess(_)) => ValidationFailure(xmlErrors)
+      case (ValidationSuccess(_), ValidationFailure(errors)) => ValidationFailure(errors)
       case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => ValidationFailure(xmlErrors ++ businessRulesErrors)
-      case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
-      case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
-      case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>
-        val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
-        ValidationSuccess(downloadUrl, retrieveMetaData)
 
     }
  }
 
 
-  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
 
-    if (businessRulesCheckRequired) {
-      businessRuleValidationService.validateFile()(elem) match {
-        case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(error => error.toSaxParseError))
-        case None => ValidationSuccess(source)
-      }
-    } else {
-      ValidationSuccess(source)
+  def performXmlValidation(source: String): (Elem, XMLValidationStatus) = {
+
+    val xmlErrors = xmlValidationService.validateXml(source)
+    if(xmlErrors._2.isEmpty) {
+      (xmlErrors._1, ValidationSuccess(source))
+    }else {
+
+      val filteredErrors = cleanseParseErrors(xmlErrors._2)
+
+      (xmlErrors._1,  ValidationFailure(filteredErrors.map(parseError => parseError.toGenericError)))
     }
   }
+
+  private def cleanseParseErrors(errors: ListBuffer[SaxParseError]): List[SaxParseError] ={
+
+    val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
+
+    errorsGroupedByLineNumber.map(groupedErrors => {
+    if(groupedErrors._2.length.equals(2)){
+
+      val sp = groupedErrors._2.last.errorMessage.split("of element")
+      val elementName = groupedErrors._2.last.errorMessage.split("of element").last.substring(2)
+
+      val eType = groupedErrors._2.head.errorMessage.substring(0, 10)
+      val tidedUpMessage = groupedErrors._2.head.errorMessage.substring(0, 10) + " " +
+        elementName.dropRight(14)
+
+      groupedErrors._2.head.copy(errorMessage = tidedUpMessage)
+
+
+        }else groupedErrors._2.head
+
+    }).toList
+
+  //  errorsGroupedByLineNumber.map(x => x._2.last).toList
+
+  }
+
+  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
+
+    if(businessRulesCheckRequired) {
+      businessRuleValidationService.validateFile()(elem) match {
+        case Some(List()) => ValidationSuccess(source)
+        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
+                                               error => error.toGenericError))
+        case None => ValidationSuccess(source)
+      }
+    }else ValidationSuccess(source)
+
+  }
+
 }

@@ -38,21 +38,21 @@ class XMLValidationStatusSpec extends SpecBase {
       val json =
         """
           |{
-          | "error": [{
+          | "errors": [{
           |     "lineNumber": 50,
-          |     "errorMessage": "It's an error"
+          |     "messageKey": "It's an error"
           |   },
           |   {
           |     "lineNumber": 52,
-          |     "errorMessage": "Oh no!"
+          |     "messageKey": "Oh no!"
           |   }
           | ]
           |}""".stripMargin
 
       val expectedResult = ValidationFailure(
         Seq(
-          SaxParseError(50, "It's an error"),
-          SaxParseError(52, "Oh no!")
+          GenericError(50, "It's an error"),
+          GenericError(52, "Oh no!")
         ))
 
       Json.parse(json).as[XMLValidationStatus] mustBe expectedResult
