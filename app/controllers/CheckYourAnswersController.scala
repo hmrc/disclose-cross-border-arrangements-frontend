@@ -19,7 +19,7 @@ package controllers
 import com.google.inject.Inject
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import pages.{GeneratedIDPage, URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -33,24 +33,25 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
 class CheckYourAnswersController @Inject()(
-                                            override val messagesApi: MessagesApi,
-                                            identify: IdentifierAction,
-                                            getData: DataRetrievalAction,
-                                            requireData: DataRequiredAction,
-                                            sessionRepository: SessionRepository,
-                                            xmlValidationService: XMLValidationService,
-                                            crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
-                                            val controllerComponents: MessagesControllerComponents,
-                                            renderer: Renderer
-                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+    override val messagesApi: MessagesApi,
+    identify: IdentifierAction,
+    getData: DataRetrievalAction,
+    requireData: DataRequiredAction,
+    sessionRepository: SessionRepository,
+    xmlValidationService: XMLValidationService,
+    crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+    val controllerComponents: MessagesControllerComponents,
+    renderer: Renderer
+)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      request.userAnswers.get(URLPage) match {
-        case Some(url) =>
-          val xml: Elem = xmlValidationService.loadXML(url)
+      request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
-          val fileInfo = helper.displaySummaryFromInstruction(xml)
+          val fileInfo = helper.displaySummaryFromInstruction(
+            xmlData.importInstruction, xmlData.arrangementID, xmlData.disclosureID
+          )
           renderer.render(
             "check-your-answers.njk",
             Json.obj(

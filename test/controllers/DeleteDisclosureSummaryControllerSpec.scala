@@ -18,12 +18,12 @@ package controllers
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
-import models.{GeneratedIDs, UserAnswers}
+import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
 import play.api.inject.bind
 import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
@@ -39,24 +39,18 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
 
     "return OK and the correct view for a GET" in {
 
-      val mockXmlValidationService =  mock[XMLValidationService]
 
-      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(
-        <test><value>test</value></test>
-      )
-
+      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA001"))
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")
         .success.value
-        .set(URLPage, "url")
+        .set(Dac6MetaDataPage, metaData)
         .success.value
 
-      val application = applicationBuilder(Some(userAnswers)).overrides(
-        bind[XMLValidationService].toInstance(mockXmlValidationService),
-      ).build()
+      val application = applicationBuilder(Some(userAnswers)).build()
 
       val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
       val result = route(application, request).value

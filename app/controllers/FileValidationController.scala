@@ -63,8 +63,8 @@ class FileValidationController @Inject()(
           case ValidationSuccess(_,Some(metaData)) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL)
+              updatedAnswersWithMetaData <- Future.fromTry(updatedAnswers.set(Dac6MetaDataPage, metaData))
+              _              <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield {
               metaData.importInstruction match {
                 case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())

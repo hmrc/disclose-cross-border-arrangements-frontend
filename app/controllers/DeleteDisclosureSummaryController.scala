@@ -19,14 +19,14 @@ package controllers
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions._
 import javax.inject.Inject
-import pages.{GeneratedIDPage, URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
 import services.XMLValidationService
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,11 +46,12 @@ class DeleteDisclosureSummaryController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      request.userAnswers.get(URLPage) match {
-        case Some(url) =>
-          val xml: Elem = xmlValidationService.loadXML(url)
+      request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
-          val fileToDelete = helper.displaySummaryFromInstruction(xml)
+          val fileToDelete = helper.displaySummaryFromInstruction(
+            xmlData.importInstruction, xmlData.arrangementID, xmlData.disclosureID
+          )
           renderer.render(
             "deleteDisclosure.njk",
             Json.obj(
@@ -64,7 +65,6 @@ class DeleteDisclosureSummaryController @Inject()(
 
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
