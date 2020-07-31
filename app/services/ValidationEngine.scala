@@ -16,7 +16,7 @@
 
 package services
 
-import helpers.LineNumberHelper
+import helpers.{ErrorConstants, LineNumberHelper}
 import javax.inject.Inject
 import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
@@ -24,10 +24,14 @@ import org.scalactic.ErrorMessage
 import scala.collection.mutable.ListBuffer
 import scala.util.{Success, Try}
 import scala.xml.Elem
+import scala.util.matching.Regex
+
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 lineNumberHelper: LineNumberHelper){
+                                 lineNumberHelper: LineNumberHelper) extends ErrorConstants{
+
+
 
   def validateFile(source: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
 
@@ -66,57 +70,25 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
 
     errorsGroupedByLineNumber.map(groupedErrors => {
-    if(groupedErrors._2.length.equals(2)){
+       val errorTypeOption = determineErrorType(groupedErrors._2.head.errorMessage)
 
-     val cleansedError =  Try {
-        val errorType = groupedErrors._2.head.errorMessage.substring(0, 10)
-
-        val elementName = getElementName(errorType, groupedErrors._2)
-
-        val subType = getSubType(errorType, groupedErrors._2.head.errorMessage)
-        groupedErrors._2.head.copy(errorType = Some(errorType),
-                                   elementName = elementName,
-                                   subType = subType)
-      }
-
-      cleansedError match {
-        case Success(error) => error
-        case _ => groupedErrors._2.head
-
-      }
-
-    }else {
-       val errorType = getErrorTypeForAttributeError(groupedErrors._2.head.errorMessage)
-      groupedErrors._2.head.copy(errorType = errorType)
-    }
+     val ce =  errorTypeOption match {
+         case Some(errorType) =>
+           val elementName = getElementName(errorType, groupedErrors._2)
+           val subType = getSubType(errorType, groupedErrors._2.head.errorMessage)
+           groupedErrors._2.head.copy(errorType = errorTypeOption,
+             elementName = elementName,
+             subType = subType)
+         case None => groupedErrors._2.head
+       }
+ce
     }).toList
-  }
-
-  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
-
-    if(businessRulesCheckRequired) {
-      businessRuleValidationService.validateFile()(elem) match {
-        case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
-                                               error => error.toGenericError))
-        case None => ValidationSuccess(source)
-      }
-    }else ValidationSuccess(source)
-
-  }
-
-  private def getErrorTypeForAttributeError(errorMessage: String): Option[String] = {
-    if(errorMessage.contains("must appear on element")) Some("missingAttribute")
-    else
-    if(errorMessage.contains("is not valid with respect to its type")) Some("invalidAttribute")
-    else None
-
   }
 
   private def getElementName(errorType: String, errorMessages: ListBuffer[SaxParseError]): Option[String] ={
     errorType match {
-      case "cvc-maxLen" | "cvc-minLen" => Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
-      case  "cvc-enumer" => getElementNameForEnumerationError(errorMessages.last.errorMessage)//Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
+      case MAX_LENGTH_ERROR | MISSING_VALUE_ERROR => Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
+      case INVALID_ENUM_ERROR => getElementNameForEnumerationError(errorMessages.last.errorMessage)//Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
       case _ => None
     }
 
@@ -133,7 +105,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
      val elementName = errorMessage.split("on element")(1).substring(2,5)
      val attributeName = errorMessage.split("of attribute")(1).substring(2, 10)
-     println("attributeName = " + attributeName)
 
      Some(s"$elementName $attributeName")
    }
@@ -144,8 +115,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   private def getSubType(errorType: String, errorMessage: String): Option[String] ={
 
     errorType match {
-      case "cvc-maxLen" =>  Some(errorMessage.split("StringMin1Max").last.replaceAll("[^0-9]", ""))
-      case  "cvc-enumer" => getCapacitySubType(errorMessage)
+      case MAX_LENGTH_ERROR =>  extractValueFromMessage(errorMessage, MAX_LENGTH_PATTERN)
+      case  INVALID_ENUM_ERROR => getCapacitySubType(errorMessage)
       case _ => None
       }
   }
@@ -156,4 +127,34 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     if(errorMessage.contains("DAC61101, DAC61102")) Some("Intermediary")
     else None
   }
+
+
+  private def determineErrorType(message:String): Option[String] = {
+    ERROR_TYPES.find(error => extractValueFromMessage(message, error).isDefined)
+
+  }
+  private def extractValueFromMessage(message: String, pattern: String): Option[String] ={
+
+      val regEx = pattern.stripMargin.r
+val first = regEx.findFirstMatchIn(message)
+    regEx.findFirstMatchIn(message) match{
+        case Some(value) => Some(value.toString)
+        case _ => None
+      }
+    }
+  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
+
+    if(businessRulesCheckRequired) {
+      businessRuleValidationService.validateFile()(elem) match {
+        case Some(List()) => ValidationSuccess(source)
+        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
+          error => error.toGenericError))
+        case None => ValidationSuccess(source)
+      }
+    }else ValidationSuccess(source)
+
+  }
+
+
+
 }

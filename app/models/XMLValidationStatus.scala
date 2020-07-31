@@ -31,7 +31,8 @@ object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
 }
 
-case class SaxParseError(lineNumber: Int, errorMessage: String,
+case class SaxParseError(lineNumber: Int,
+                         errorMessage: String,
                          errorType: Option[String] = None,
                          elementName: Option[String] = None,
                          subType: Option[String] = None) {
