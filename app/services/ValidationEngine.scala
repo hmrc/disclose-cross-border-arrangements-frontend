@@ -19,8 +19,10 @@ package services
 import helpers.LineNumberHelper
 import javax.inject.Inject
 import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import org.scalactic.ErrorMessage
 
 import scala.collection.mutable.ListBuffer
+import scala.util.{Success, Try}
 import scala.xml.Elem
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
@@ -66,22 +68,28 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     errorsGroupedByLineNumber.map(groupedErrors => {
     if(groupedErrors._2.length.equals(2)){
 
-      val sp = groupedErrors._2.last.errorMessage.split("of element")
-      val elementName = groupedErrors._2.last.errorMessage.split("of element").last.substring(2)
+     val cleansedError =  Try {
+        val errorType = groupedErrors._2.head.errorMessage.substring(0, 10)
 
-      val eType = groupedErrors._2.head.errorMessage.substring(0, 10)
-      val tidedUpMessage = groupedErrors._2.head.errorMessage.substring(0, 10) + " " +
-        elementName.dropRight(14)
+        val elementName = getElementName(errorType, groupedErrors._2)
 
-      groupedErrors._2.head.copy(errorMessage = tidedUpMessage)
+        val subType = getSubType(errorType, groupedErrors._2.head.errorMessage)
+        groupedErrors._2.head.copy(errorType = Some(errorType),
+                                   elementName = elementName,
+                                   subType = subType)
+      }
 
+      cleansedError match {
+        case Success(error) => error
+        case _ => groupedErrors._2.head
 
-        }else groupedErrors._2.head
+      }
 
+    }else {
+       val errorType = getErrorTypeForAttributeError(groupedErrors._2.head.errorMessage)
+      groupedErrors._2.head.copy(errorType = errorType)
+    }
     }).toList
-
-  //  errorsGroupedByLineNumber.map(x => x._2.last).toList
-
   }
 
   def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
@@ -97,4 +105,55 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
   }
 
+  private def getErrorTypeForAttributeError(errorMessage: String): Option[String] = {
+    if(errorMessage.contains("must appear on element")) Some("missingAttribute")
+    else
+    if(errorMessage.contains("is not valid with respect to its type")) Some("invalidAttribute")
+    else None
+
+  }
+
+  private def getElementName(errorType: String, errorMessages: ListBuffer[SaxParseError]): Option[String] ={
+    errorType match {
+      case "cvc-maxLen" | "cvc-minLen" => Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
+      case  "cvc-enumer" => getElementNameForEnumerationError(errorMessages.last.errorMessage)//Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
+      case _ => None
+    }
+
+
+
+
+  }
+
+  private def getElementNameForEnumerationError(errorMessage: String): Option[String] = {
+    println("error = " + errorMessage)
+   if(errorMessage.contains("of element"))   Some(errorMessage.split("of element").last.substring(2).dropRight(15))
+    else
+   if(errorMessage.contains("on element")) {
+
+     val elementName = errorMessage.split("on element")(1).substring(2,5)
+     val attributeName = errorMessage.split("of attribute")(1).substring(2, 10)
+     println("attributeName = " + attributeName)
+
+     Some(s"$elementName $attributeName")
+   }
+   else None
+
+  }
+
+  private def getSubType(errorType: String, errorMessage: String): Option[String] ={
+
+    errorType match {
+      case "cvc-maxLen" =>  Some(errorMessage.split("StringMin1Max").last.replaceAll("[^0-9]", ""))
+      case  "cvc-enumer" => getCapacitySubType(errorMessage)
+      case _ => None
+      }
+  }
+
+  private def getCapacitySubType(errorMessage: String):Option[String] = {
+    if(errorMessage.contains("DAC61104, DAC61105, DAC61106")) Some("RelevantTaxpayerDiscloser")
+    else
+    if(errorMessage.contains("DAC61101, DAC61102")) Some("Intermediary")
+    else None
+  }
 }
