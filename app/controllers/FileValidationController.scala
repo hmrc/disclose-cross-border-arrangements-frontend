@@ -17,12 +17,12 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidXMLPage, URLPage, ValidXMLPage}
+import pages.{InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
@@ -31,6 +31,7 @@ import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Success, Try}
 
 class FileValidationController @Inject()(
                                           override val messagesApi: MessagesApi,
@@ -40,15 +41,18 @@ class FileValidationController @Inject()(
                                           val controllerComponents: MessagesControllerComponents,
                                           appConfig: FrontendAppConfig,
                                           repository: UploadSessionRepository,
+                                          requireData: DataRequiredAction,
                                           validationEngine: ValidationEngine,
                                           renderer: Renderer,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(uploadId: UploadId): Action[AnyContent] = (identify andThen getData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request =>
     {
       for {
+        uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
         validation = validationEngine.validateFile(downloadUrl)
@@ -73,6 +77,13 @@ class FileValidationController @Inject()(
         }
       }
     }.flatten
+  }
+
+  private def getUploadId(userAnswers: UserAnswers): Future[UploadId] = {
+    userAnswers.get(UploadIDPage) match {
+      case Some(uploadId) => Future.successful(uploadId)
+      case None => throw new RuntimeException("Cannot find uploadId")
+    }
   }
 
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {

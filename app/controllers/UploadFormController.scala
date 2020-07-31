@@ -19,13 +19,18 @@ package controllers
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.UpscanConnector
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import handlers.ErrorHandler
 import javax.inject.Singleton
+import models.UserAnswers
 import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
 import org.slf4j.LoggerFactory
+import pages.UploadIDPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import services.UploadProgressTracker
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
@@ -36,18 +41,23 @@ class UploadFormController @Inject()(
                                       override val messagesApi: MessagesApi,
                                       val controllerComponents: MessagesControllerComponents,
                                       appConfig: FrontendAppConfig,
+                                      identify: IdentifierAction,
+                                      getData: DataRetrievalAction,
+                                      requireData: DataRequiredAction,
                                       upscanInitiateConnector: UpscanConnector,
                                       uploadProgressTracker: UploadProgressTracker,
-                                      renderer: Renderer
+                                      sessionRepository: SessionRepository,
+                                      renderer: Renderer,
+                                      errorHandler: ErrorHandler
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def onPageLoad: Action[AnyContent] = Action.async  {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
       val uploadId           = UploadId.generate
-      val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult(uploadId).url
+      val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
       val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
       val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
@@ -56,6 +66,8 @@ class UploadFormController @Inject()(
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
           _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
+          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
+          _                      <- sessionRepository.set(updatedAnswers)
         } yield {
           renderer.render(
             "upload-form.njk",
@@ -65,27 +77,25 @@ class UploadFormController @Inject()(
       }.flatMap(identity)
   }
 
-  def showResult(uploadId: UploadId): Action[AnyContent] = Action.async {
+  def showResult: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request => {
       logger.debug("Show result called")
 
-      for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
-        {
-          uploadResult match {
-
-            case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-            case Some(result) =>
-
-              renderer.render(
-                "upload-result.njk",
-                Json.obj("uploadId" -> Json.toJson(uploadId),
-                  "status" -> Json.toJson(result))
-              ).map(Ok(_))
-            case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
-          }
-        }
+      request.userAnswers.get(UploadIDPage) match {
+        case Some(uploadId) =>
+             uploadProgressTracker.getUploadResult(uploadId) flatMap {
+               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
+               case Some(result) =>
+                 renderer.render(
+                   "upload-result.njk",
+                   Json.obj("uploadId" -> Json.toJson(uploadId),
+                     "status" -> Json.toJson(result))
+                 ).map(Ok(_))
+               case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
+             }
+        case None => Future.successful(BadRequest (s"UploadId not found") )
       }
-    }.flatMap(identity)
+    }
   }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {

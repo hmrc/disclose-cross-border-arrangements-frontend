@@ -17,7 +17,7 @@ GET        /unauthorised                                controllers.Unauthorised
 
 GET        /accessibility-statement                     controllers.AccessibilityController.onPageLoad
 
-GET        /success                                     controllers.UploadFormController.showResult(uploadId: models.upscan.UploadId)
+GET        /success                                     controllers.UploadFormController.showResult
 
 GET        /upload                                      controllers.UploadFormController.onPageLoad
 
@@ -25,7 +25,7 @@ POST       /callback                                    controllers.UploadCallba
 
 GET        /error                                       controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String)
 
-GET        /validator                                   controllers.FileValidationController.onPageLoad(uploadId: models.upscan.UploadId)
+GET        /validator                                   controllers.FileValidationController.onPageLoad
 
 GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
 

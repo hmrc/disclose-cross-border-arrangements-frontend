@@ -25,7 +25,7 @@
     {% if status._type == "InProgress" %}
         <p>Waiting for the file to be scanned</p>
     {% elif status._type == "UploadedSuccessfully" %}
-        <p>Upload of <b>{{status.name}}</b> successful! http://localhost:9570{{status.downloadUrl}}</p>
+        <p>Upload of <b>{{status.name}}</b> successful!</p>
     {% elif status._type == "Failed" %}
         <p>File has been rejected.</p>
 

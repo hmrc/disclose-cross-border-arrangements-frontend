@@ -24,6 +24,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when, _}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import pages.UploadIDPage
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -47,8 +48,9 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
   }
 
   "FileValidationController" - {
-
-    val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+    val uploadId = UploadId("123")
+    val userAnswers = UserAnswers(userAnswersId).set(UploadIDPage, uploadId).success.value
+    val application = applicationBuilder(userAnswers = Some(userAnswers))
       .overrides(
         bind[UploadSessionRepository].toInstance(mockRepository),
         bind[SessionRepository].toInstance(mockSessionRepository),
@@ -75,7 +77,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
@@ -93,7 +95,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
@@ -108,7 +110,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       val controller = application.injector.instanceOf[FileValidationController]
 
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       a[RuntimeException] mustBe thrownBy(status(result))
     }
