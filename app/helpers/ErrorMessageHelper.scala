@@ -16,22 +16,21 @@
 
 package helpers
 
-import play.api.libs.json.Json
-
 import scala.util.{Success, Try}
 
 
 object ErrorMessageHelper {
 
-  def transformErrorMessage(errorMessage:String): String = {
+  def transformErrorMessage(errorMessage:String, errorType: Option[String],
+                            elementName: Option[String], subType: Option[String]): String = {
 
-    getErrorMessage(errorMessage) match {
+    getErrorMessage(errorMessage, errorType, elementName, subType) match {
       case Some(message) => message
       case None => "There is something wrong with this line"
     }
   }
 
-  private def formatErrorMessage(elementName: String): String = {
+  private def missingInfoMessage(elementName: String): String = {
     val vowels = "aeiouAEIOU"
     if(vowels.contains(elementName.head)){
       s"Enter an $elementName"
@@ -39,52 +38,30 @@ object ErrorMessageHelper {
 
   }
 
-  def getErrorMessage(errorMessage: String): Option[String] ={
+   def invalidCodeMessage(elementName: String, subType: Option[String]): Option[String] = {
+     println("in here " + elementName)
+     println("in here " + subType)
+    elementName match {
+      case "Country" | "CountryExemption" | "TIN issuedBy" => Some(s"$elementName is not one of the ISO country codes")
+      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
+      case "Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
+           "Hallmark" | "ResCountryCode"  => Some(s"$elementName is not one of the allowed values")
+      case "Capacity" => Some(s"${subType.get}/Capacity is not one of the allowed values")
+      case _ => None
+    }
+   }
 
-   val errorType = determineErrorType(errorMessage)
+  def getErrorMessage(errorMessage: String, errorType: Option[String],
+                      elementName: Option[String], subType: Option[String]): Option[String] ={
 
    errorType match{
-     case "missingMandatoryInfo" => getMissingElementName(errorMessage)
-     case "maxLengthExceeded" => getMaxLengthElementName(errorMessage)//getMissingElementName(errorMessage)
-     case "missingAttribute" => getMissingAttributeName(errorMessage)
+     case Some("cvc-minLen") => Some(missingInfoMessage(elementName.get))
+     case Some("cvc-maxLen") => Some(elementName.get + s" must be ${subType.get} characters or less")
+     case Some("cvc-enumer") => invalidCodeMessage(elementName.get, subType)//Some(elementName.get + s" is not one of the ISO country codes")
+     case Some("missingAttribute") => getMissingAttributeName(errorMessage)
+     case Some("invalidAttribute") => Some("Amount currCode is not one of the ISO currency codes")//getMissingAttributeName(errorMessage)
      case _ =>   None
    }
-
-  }
-
-  def determineErrorType(errorMessage: String):String ={
-
-    if(errorMessage.contains("cvc-minLen")){
-      "missingMandatoryInfo"
-    }else {
-      if(errorMessage.startsWith("cvc-maxLen")){
-        "maxLengthExceeded"
-      }else "missingAttribute"
-    }
-   }
-
-
-  def getMissingElementName(errorMessage:String): Option[String] = {
-
-    val elementName = Try {
-      errorMessage.split(" ").last.dropRight(1)
-    }
-    elementName match {
-      case Success(name) => Some(formatErrorMessage(name))
-      case _ => None
-    }
-
-  }
-
-  def getMaxLengthElementName(errorMessage:String): Option[String] = {
-
-    val elementName = Try {
-      errorMessage.split(" ").last.dropRight(1)
-    }
-    elementName match {
-      case Success(name) => Some(name + " must be 400 characters or less")
-      case _ => None
-    }
 
   }
 
@@ -100,9 +77,49 @@ object ErrorMessageHelper {
     }
 
     elementName match {
-      case Success(name) => Some(formatErrorMessage(name))
+      case Success(name) => Some(missingInfoMessage(name))
       case _ => None
     }
 
   }
+
+
+
+
+ // def getMaxLengthElementName(errorMessage:String): Option[String] = {
+    //
+    //    val elementName = Try {
+    //      errorMessage.split(" ").last.dropRight(1)
+    //    }
+    //    elementName match {
+    //      case Success(name) => Some(name + " must be 400 characters or less")
+    //      case _ => None
+    //    }
+    //
+    //  }
+
+  //  def determineErrorType(errorMessage: String):String ={
+  //
+  //    if(errorMessage.contains("cvc-minLen")){
+  //      "missingMandatoryInfo"
+  //    }else {
+  //      if(errorMessage.startsWith("cvc-maxLen")){
+  //        "maxLengthExceeded"
+  //      }else "missingAttribute"
+  //    }
+  //   }
+
+  //
+  //  def getMissingElementName(errorMessage:String): Option[String] = {
+  //
+  //    val elementName = Try {
+  //      errorMessage.split(" ").last.dropRight(1)
+  //    }
+  //    elementName match {
+  //      case Success(name) => Some(missingInfoMessage(name))
+  //      case _ => None
+  //    }
+  //
+  //  }
+
 }
