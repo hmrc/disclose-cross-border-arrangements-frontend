@@ -16,14 +16,13 @@
 
 package controllers
 
-import config.FrontendAppConfig
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, InvalidXMLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.{SessionRepository, UploadSessionRepository}
@@ -31,22 +30,18 @@ import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
 
 class FileValidationController @Inject()(
-                                          override val messagesApi: MessagesApi,
-                                          identify: IdentifierAction,
-                                          getData: DataRetrievalAction,
-                                          val sessionRepository: SessionRepository,
-                                          val controllerComponents: MessagesControllerComponents,
-                                          appConfig: FrontendAppConfig,
-                                          repository: UploadSessionRepository,
-                                          requireData: DataRequiredAction,
-                                          validationEngine: ValidationEngine,
-                                          xmlValidationService: XMLValidationService,
-                                          errorHandler: ErrorHandler,
-                                          renderer: Renderer,
-                                          navigator: Navigator
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  val sessionRepository: SessionRepository,
+  val controllerComponents: MessagesControllerComponents,
+  repository: UploadSessionRepository,
+  requireData: DataRequiredAction,
+  validationEngine: ValidationEngine ,
+  errorHandler: ErrorHandler,
+  navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 

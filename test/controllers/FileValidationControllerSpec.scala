@@ -79,7 +79,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
       redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
@@ -150,7 +150,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
-      val result: Future[Result] = controller.onPageLoad(uploadId)(FakeRequest("", ""))
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       a[RuntimeException] mustBe thrownBy {
         status(result) mustEqual OK
