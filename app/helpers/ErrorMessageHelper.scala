@@ -19,7 +19,7 @@ package helpers
 import scala.util.{Success, Try}
 
 
-object ErrorMessageHelper {
+object ErrorMessageHelper extends ErrorConstants{
 
   def transformErrorMessage(errorMessage:String, errorType: Option[String],
                             elementName: Option[String], subType: Option[String]): String = {
@@ -38,28 +38,26 @@ object ErrorMessageHelper {
 
   }
 
-   def invalidCodeMessage(elementName: String, subType: Option[String]): Option[String] = {
-     println("in here " + elementName)
-     println("in here " + subType)
-    elementName match {
-      case "Country" | "CountryExemption" | "TIN issuedBy" => Some(s"$elementName is not one of the ISO country codes")
-      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
-      case "Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
-           "Hallmark" | "ResCountryCode"  => Some(s"$elementName is not one of the allowed values")
-      case "Capacity" => Some(s"${subType.get}/Capacity is not one of the allowed values")
+   def invalidCodeMessage(elementName: String, subTypeOption: Option[String]): Option[String] = {
+     (elementName, subTypeOption) match {
+      case ("Country" | "CountryExemption" | "TIN issuedBy", _) => Some(s"$elementName is not one of the ISO country codes")
+      case ("ConcernedMS", _) => Some("ConcernedMS is not one of the ISO EU Member State country codes")
+      case ("Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
+           "Hallmark" | "ResCountryCode", _)  => Some(s"$elementName is not one of the allowed values")
+      case ("Capacity", Some(subType)) => Some(s"$subType/Capacity is not one of the allowed values")
       case _ => None
     }
    }
 
   def getErrorMessage(errorMessage: String, errorType: Option[String],
-                      elementName: Option[String], subType: Option[String]): Option[String] ={
+                      elementName: Option[String], subTypeOption: Option[String]): Option[String] ={
 
-   errorType match{
-     case Some("cvc-minLen") => Some(missingInfoMessage(elementName.get))
-     case Some("cvc-maxLen") => Some(elementName.get + s" must be ${subType.get} characters or less")
-     case Some("cvc-enumer") => invalidCodeMessage(elementName.get, subType)//Some(elementName.get + s" is not one of the ISO country codes")
-     case Some("missingAttribute") => getMissingAttributeName(errorMessage)
-     case Some("invalidAttribute") => Some("Amount currCode is not one of the ISO currency codes")//getMissingAttributeName(errorMessage)
+    (errorType, subTypeOption) match{
+     case (Some(MISSING_VALUE_ERROR), _) => Some(missingInfoMessage(elementName.get))
+     case (Some(MAX_LENGTH_ERROR), Some(subType)) => Some(elementName.get + s" must be ${subType.replaceAll("[^0-9]", "")} characters or less")
+     case (Some(INVALID_ENUM_ERROR), _) => invalidCodeMessage(elementName.get, subTypeOption)//Some(elementName.get + s" is not one of the ISO country codes")
+     case (Some(MISSING_ATTRIBUTE_ERROR), _) => getMissingAttributeName(errorMessage)
+     case (Some(INVALID_ATTRIBUTE_ERROR), _) => Some("Amount currCode is not one of the ISO currency codes")//getMissingAttributeName(errorMessage)
      case _ =>   None
    }
 
