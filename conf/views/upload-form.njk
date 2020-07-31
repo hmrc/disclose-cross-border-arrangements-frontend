@@ -3,6 +3,7 @@
 {% from "govuk/components/button/macro.njk"        import govukButton %}
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
+{% from "govuk/components/file-upload/macro.njk"   import govukFileUpload %}
 
 {% block pageTitle %}
   {{ title(messages("upload_form.title")) }}
@@ -34,12 +35,11 @@
 
         <div class="form-group">
             <div class="form-control-wrapper">
-                <p><input
-                        type="file"
-                        id="file-input"
-                        name="file"
-                        accept=".xml"
-                /></p>
+                {{ govukFileUpload({
+                  id: "file",
+                  name: "file",
+                  attributes: {"accept": ".xml,application/xml", "_type": "file", "class": "upload", "required": "required"}
+                }) }}
             </div>
         </div>
 
