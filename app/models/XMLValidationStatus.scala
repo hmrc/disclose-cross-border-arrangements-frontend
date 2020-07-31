@@ -33,9 +33,11 @@ object ValidationSuccess {
 
 case class SaxParseError(lineNumber: Int, errorMessage: String,
                          errorType: Option[String] = None,
-                         elementName: Option[String] = None) {
+                         elementName: Option[String] = None,
+                         subType: Option[String] = None) {
 
-  def toGenericError: GenericError = GenericError(lineNumber, ErrorMessageHelper.transformErrorMessage(errorMessage))
+  def toGenericError: GenericError =
+    GenericError(lineNumber, ErrorMessageHelper.transformErrorMessage(errorMessage, errorType, elementName, subType))
 
 }
 
