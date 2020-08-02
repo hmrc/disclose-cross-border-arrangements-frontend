@@ -16,7 +16,7 @@
 
 package models
 
-import helpers.ErrorMessageHelper
+import helpers.{ErrorMessageHelper, InvalidEnumErrorInfo}
 import play.api.libs.json._
 
 case class Dac6MetaData(importInstruction: String, arrangementID: Option[String] = None, disclosureID: Option[String] = None)
@@ -36,9 +36,10 @@ case class SaxParseError(lineNumber: Int,
                          errorType: Option[String] = None,
                          elementName: Option[String] = None,
                          subType: Option[String] = None) {
+  val invali = InvalidEnumErrorInfo("elem")
 
   def toGenericError: GenericError =
-    GenericError(lineNumber, ErrorMessageHelper.transformErrorMessage(errorMessage, errorType, elementName, subType))
+    GenericError(lineNumber, ErrorMessageHelper.buildErrorMessage(invali))
 
 }
 

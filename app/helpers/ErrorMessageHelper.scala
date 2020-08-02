@@ -21,13 +21,21 @@ import scala.util.{Success, Try}
 
 object ErrorMessageHelper extends ErrorConstants{
 
-  def transformErrorMessage(errorMessage:String, errorType: Option[String],
-                            elementName: Option[String], subType: Option[String]): String = {
+  val defaultMessage = "There is something wrong with this line"
 
-    getErrorMessage(errorMessage, errorType, elementName, subType) match {
-      case Some(message) => message
-      case None => "There is something wrong with this line"
+  def buildErrorMessage(errorMessageInfo: ErrorMessageInfo): String = {
+
+    errorMessageInfo match {
+    //  case InvalidAttributeInfo(element, attribute) => "Amount currCode is not one of the ISO currency codes"
+      case MissingAttributeInfo(element, attribute) => missingInfoMessage(element + " " + attribute)
+      case InvalidEnumAttributeInfo(element, attribute) => invalidCodeMessage(element  + " "+ attribute).getOrElse(defaultMessage)
+      case MissingElementInfo(element) => missingInfoMessage(element)
+      case MaxLengthErrorInfo(element, allowedLength) => s"$element must be $allowedLength characters or less"
+      case InvalidEnumErrorInfo(element)  => invalidCodeMessage(element).getOrElse(defaultMessage)
+      case _ =>   "There is something wrong with this line"
     }
+
+
   }
 
   private def missingInfoMessage(elementName: String): String = {
@@ -38,13 +46,13 @@ object ErrorMessageHelper extends ErrorConstants{
 
   }
 
-   def invalidCodeMessage(elementName: String, subTypeOption: Option[String]): Option[String] = {
-     (elementName, subTypeOption) match {
-      case ("Country" | "CountryExemption" | "TIN issuedBy", _) => Some(s"$elementName is not one of the ISO country codes")
-      case ("ConcernedMS", _) => Some("ConcernedMS is not one of the ISO EU Member State country codes")
-      case ("Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
-           "Hallmark" | "ResCountryCode", _)  => Some(s"$elementName is not one of the allowed values")
-      case ("Capacity", Some(subType)) => Some(s"$subType/Capacity is not one of the allowed values")
+   def invalidCodeMessage(elementName: String): Option[String] = {
+     elementName match {
+      case "Country" | "CountryExemption" | "TIN issuedBy" => Some(s"$elementName is not one of the ISO country codes")
+      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
+      case "Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
+           "Hallmark" | "ResCountryCode"  => Some(s"$elementName is not one of the allowed values")
+      case "Capacity"=> Some(s"Capacity is not one of the allowed values")
       case _ => None
     }
    }
@@ -55,7 +63,7 @@ object ErrorMessageHelper extends ErrorConstants{
     (errorType, subTypeOption) match{
      case (Some(MISSING_VALUE_ERROR), _) => Some(missingInfoMessage(elementName.get))
      case (Some(MAX_LENGTH_ERROR), Some(subType)) => Some(elementName.get + s" must be ${subType.replaceAll("[^0-9]", "")} characters or less")
-     case (Some(INVALID_ENUM_ERROR), _) => invalidCodeMessage(elementName.get, subTypeOption)//Some(elementName.get + s" is not one of the ISO country codes")
+     case (Some(INVALID_ENUM_ERROR), _) => invalidCodeMessage(elementName.get)//Some(elementName.get + s" is not one of the ISO country codes")
      case (Some(MISSING_ATTRIBUTE_ERROR), _) => getMissingAttributeName(errorMessage)
      case (Some(INVALID_ATTRIBUTE_ERROR), _) => Some("Amount currCode is not one of the ISO currency codes")//getMissingAttributeName(errorMessage)
      case _ =>   None

@@ -34,52 +34,52 @@ class ErrorMessageHelperSpec extends SpecBase{
     "invalidCodeMessage" - {
 
       "must return correct message for 'Country'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("Country", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("Country")
         result mustBe Some("Country is not one of the ISO country codes")
       }
 
       "must return correct message for 'CountryExemption'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("CountryExemption", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("CountryExemption")
         result mustBe Some("CountryExemption is not one of the ISO country codes")
       }
 
       "must return correct message for 'ConcernedMS'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("ConcernedMS", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("ConcernedMS")
         result mustBe Some("ConcernedMS is not one of the ISO EU Member State country codes")
       }
 
       "must return correct message for 'Reason'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("Reason", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("Reason")
         result mustBe Some("Reason is not one of the allowed values")
       }
 
       "must return correct message for 'Capacity'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("Capacity", None)
-        result mustBe Some("Intermediary/Capacity is not one of the allowed values")
+        val result = ErrorMessageHelper.invalidCodeMessage("Capacity")
+        result mustBe Some("Capacity is not one of the allowed values")
       }
 
       "must return correct message for 'IntermediaryNexus'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("IntermediaryNexus", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("IntermediaryNexus")
         result mustBe Some("IntermediaryNexus is not one of the allowed values")
       }
 
       "must return correct message for 'RelevantTaxpayerNexus'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("RelevantTaxpayerNexus", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("RelevantTaxpayerNexus")
         result mustBe Some("RelevantTaxpayerNexus is not one of the allowed values")
       }
 
       "must return correct message for 'Hallmark'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("Hallmark", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("Hallmark")
         result mustBe Some("Hallmark is not one of the allowed values")
       }
 
       "must return correct message for 'ResCountryCode'" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("ResCountryCode", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("ResCountryCode")
         result mustBe Some("ResCountryCode is not one of the allowed values")
       }
 
       "must return None for unexpected elementName" in {
-        val result = ErrorMessageHelper.invalidCodeMessage("Unexpected-name", None)
+        val result = ErrorMessageHelper.invalidCodeMessage("Unexpected-name")
         result mustBe None
       }
 

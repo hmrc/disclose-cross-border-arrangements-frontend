@@ -16,9 +16,9 @@
 
 package services
 
-import helpers.{ErrorConstants, LineNumberHelper}
+import helpers.{ErrorConstants, ErrorMessageHelper, ErrorMessageInfo, LineNumberHelper}
 import javax.inject.Inject
-import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
 
 import scala.collection.mutable.ListBuffer
@@ -59,11 +59,61 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       (xmlErrors._1, ValidationSuccess(source))
     }else {
 
-      val filteredErrors = cleanseParseErrors(xmlErrors._2)
+      val filteredErrors = generateErrorMessages(xmlErrors._2)
 
-      (xmlErrors._1,  ValidationFailure(filteredErrors.map(parseError => parseError.toGenericError)))
+      (xmlErrors._1,  ValidationFailure(filteredErrors))
     }
   }
+
+
+
+  private def generateErrorMessages(errors: ListBuffer[SaxParseError]): List[GenericError] ={
+
+
+    val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
+
+    errorsGroupedByLineNumber.map(groupedErrors => {
+      if(groupedErrors._2.length.equals(2)){
+//        case class MissingAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
+//        case class InvalidEnumAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
+//        case class MissingElementInfo(element: String) extends ErrorMessageInfo
+//        case class MaxLengthErrorInfo(element: String, allowedLength: String) extends ErrorMessageInfo
+//        case class InvalidEnumErrorInfo(element: String) extends ErrorMessageInfo
+
+        val lineNumber = groupedErrors._1
+        val e1 = groupedErrors._2.head.errorMessage
+        val e2 = groupedErrors._2.last.errorMessage
+       val err = extractInvalidEnumAttributeValues(e1, e2) match {
+          case Some(info) => ErrorMessageHelper.buildErrorMessage(info)
+          case None =>   extractMissingElementValues(e1, e2) match {
+            case Some(info) => ErrorMessageHelper.buildErrorMessage(info)
+            case None =>  extractMaxLengthErrorValues(e1, e2) match {
+              case Some(info) => ErrorMessageHelper.buildErrorMessage(info)
+              case None =>  extractEnumErrorValues(e1, e2) match {
+                case Some(info) => ErrorMessageHelper.buildErrorMessage(info)
+                case None =>  "There is something wrong with this line"
+            }
+          }
+
+        }
+
+      }
+       GenericError(lineNumber, err)
+
+
+    }else  extractMissingAttributeValues(groupedErrors._2.head.errorMessage) match {
+        case Some(info) => GenericError(groupedErrors._2.head.lineNumber, ErrorMessageHelper.buildErrorMessage(info))
+        case None => GenericError(groupedErrors._2.head.lineNumber, "There is something wrong with this line")
+      }
+
+    }).toList
+
+
+}
+
+
+
+
 
   private def cleanseParseErrors(errors: ListBuffer[SaxParseError]): List[SaxParseError] ={
 
@@ -87,8 +137,11 @@ ce
 
   private def getElementName(errorType: String, errorMessages: ListBuffer[SaxParseError]): Option[String] ={
     errorType match {
-      case MAX_LENGTH_ERROR | MISSING_VALUE_ERROR => Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
-      case INVALID_ENUM_ERROR => getElementNameForEnumerationError(errorMessages.last.errorMessage)//Some(errorMessages.last.errorMessage.split("of element").last.substring(2).dropRight(15))
+      case MAX_LENGTH_ERROR | MISSING_VALUE_ERROR => extractValueFromMessage(errorMessages.last.errorMessage, ELEMENT_NAME_PATTERN) match {
+        case Some(elementName) => Some(elementName.substring(12).dropRight(1))
+        case None => None
+      }
+      case INVALID_ENUM_ERROR => getElementNameForEnumerationError(errorMessages.last.errorMessage)
       case _ => None
     }
 
@@ -133,10 +186,22 @@ ce
     ERROR_TYPES.find(error => extractValueFromMessage(message, error).isDefined)
 
   }
+  private def extractValueFromMessage1(message: String, pattern: String): Option[String] ={
+
+      val regEx = pattern.stripMargin.r
+val first = regEx.findFirstMatchIn(message)
+
+    regEx.findFirstMatchIn(message) match{
+        case Some(value) => Some(value.toString)
+        case _ => None
+      }
+    }
+
   private def extractValueFromMessage(message: String, pattern: String): Option[String] ={
 
       val regEx = pattern.stripMargin.r
 val first = regEx.findFirstMatchIn(message)
+
     regEx.findFirstMatchIn(message) match{
         case Some(value) => Some(value.toString)
         case _ => None
