@@ -16,19 +16,105 @@
 
 package helpers
 
-object ErrorMessageHelper extends ErrorConstants{
+import models.{GenericError, SaxParseError}
+
+import scala.collection.mutable.ListBuffer
+
+object ErrorMessageHelper {
 
   val defaultMessage = "There is something wrong with this line"
 
-  def buildErrorMessage(errorMessageInfo: ErrorMessageInfo): String = {
+  def generateErrorMessages(errors: ListBuffer[SaxParseError]): List[GenericError] = {
+    val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
 
-    errorMessageInfo match {
-      case MissingAttributeInfo(element, attribute) => missingInfoMessage(element + " " + attribute)
-      case InvalidEnumAttributeInfo(element, attribute) => invalidCodeMessage(element  + " "+ attribute).getOrElse(defaultMessage)
-      case MissingElementInfo(element) => missingInfoMessage(element)
-      case MaxLengthErrorInfo(element, allowedLength) => s"$element must be $allowedLength characters or less"
-      case InvalidEnumErrorInfo(element)  => invalidCodeMessage(element).getOrElse(defaultMessage)
-      case _ =>   "There is something wrong with this line"
+    errorsGroupedByLineNumber.map(groupedErrors => {
+        val lineNumber = groupedErrors._1
+        val error1 = groupedErrors._2.head.errorMessage
+        val error2 = groupedErrors._2.last.errorMessage
+
+        val error = extractInvalidEnumAttributeValues(error1, error2).orElse(
+                  extractMissingElementValues(error1, error2)).orElse(
+                  extractMaxLengthErrorValues(error1, error2)).orElse(
+                  extractEnumErrorValues(error1, error2)).orElse(
+          extractMissingAttributeValues(groupedErrors._2.head.errorMessage))
+
+
+        GenericError(lineNumber, error.getOrElse(defaultMessage))
+
+    }).toList
+
+  }
+
+
+
+  def extractMissingAttributeValues(errorMessage: String): Option[String] = {
+    val format = """cvc-complex-type.4: Attribute '(.*?)' must appear on element '(.*?)'.""".stripMargin.r
+
+    errorMessage match {
+      case format(attribute, element) =>
+           Some(missingInfoMessage(element + " " + attribute))
+      case _ => None
+    }
+  }
+
+  def extractInvalidEnumAttributeValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-enumeration-valid: Value '(.*?)' is not facet-valid with respect to enumeration '(.*?)'. It must be a value from the enumeration.""".stripMargin.r
+    val formatOfSecondError = """cvc-attribute.3: The value '(.*?)' of attribute '(.*?)' on element '(.*?)' is not valid with respect to its type, '(.*?)'.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError(_, _) =>
+        errorMessage2 match {
+          case formatOfSecondError(_, attribute, element, _) =>
+            invalidCodeMessage(element  + " "+ attribute)
+          case _ => None
+        }
+      case _ => None
+
+    }
+  }
+
+  def extractMissingElementValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '' of element '(.*?)' is not valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError() =>
+        errorMessage2 match {
+          case formatOfSecondError(element) =>
+            Some(missingInfoMessage(element))
+          case _ => None
+        }
+      case _ =>  None
+    }
+  }
+
+  def extractMaxLengthErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-maxLength-valid: Value '(.*?)' with length = '(.*?)' is not facet-valid with respect to maxLength '(.*?)' for type '(.*?)'.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError(_, _, allowedLength, _) =>
+        errorMessage2 match {
+          case formatOfSecondError(_, element) =>
+            Some(s"$element must be $allowedLength characters or less")
+          case _ => None
+        }
+      case _ =>  None
+    }
+  }
+
+  def extractEnumErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-enumeration-valid: Value '(.*?)' is not facet-valid with respect to enumeration '(.*?)'. It must be a value from the enumeration.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError(_, _) =>
+        errorMessage2 match {
+          case formatOfSecondError(_, element) =>
+            invalidCodeMessage(element)
+          case _ =>  None
+        }
+      case _ => None
     }
   }
 

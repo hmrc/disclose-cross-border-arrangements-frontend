@@ -20,17 +20,53 @@ import base.SpecBase
 
 class ErrorMessageHelperSpec extends SpecBase{
 
-//  def invalidCodeMessage(elementName: String): Option[String] = {
-//    elementName match {
-//      case "Country" | "CountryExemption" => Some(s"$elementName is not one of the ISO country codes")
-//      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
-//      case "Reason" => Some("Reason is not one of the allowed values")
-//      case _ => None
-//    }
-//  }
-
-
   "ErrorMessageHelper"  - {
+
+    "getErrorInfo" - {
+
+      "must return correct info for missing attribute error'" in {
+        val missingAttributeError = "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'."
+        val result = ErrorMessageHelper.extractMissingAttributeValues(missingAttributeError)
+        result mustBe Some("Enter an Amount currCode")
+      }
+
+      "must return correct info for invalid enum error for attribute" in {
+        val invalidEnumError1 = "cvc-enumeration-valid: Value 'GBf' is not facet-valid with respect to enumeration '[AF, AX]'. It must be a value from the enumeration."
+        val invalidEnumError2 = "cvc-attribute.3: The value 'GBf' of attribute 'issuedBy' on element 'TIN' is not valid with respect to its type, 'CountryCode_Type'."
+        val result = ErrorMessageHelper.extractInvalidEnumAttributeValues(invalidEnumError1, invalidEnumError2)
+        result mustBe Some("TIN issuedBy is not one of the ISO country codes")
+      }
+
+      "must return correct info for missing element error'" in {
+
+        val missingElementError1 = "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'."
+
+        val missingElementError2 = "cvc-type.3.1.3: The value '' of element 'Street' is not valid."
+
+        val result = ErrorMessageHelper.extractMissingElementValues(missingElementError1, missingElementError2)
+        result mustBe Some("Enter a Street")
+      }
+
+      "must return correct info when allowed length exceeded" in {
+
+        val maxLengthError1 = "cvc-maxLength-valid: Value '$over400' with length = '401' is not facet-valid with respect to maxLength '400' for type 'StringMin1Max400_Type'."
+        val maxlengthError2 = "cvc-type.3.1.3: The value '$over400' of element 'BuildingIdentifier' is not valid."
+
+        val result = ErrorMessageHelper.extractMaxLengthErrorValues(maxLengthError1, maxlengthError2)
+        result mustBe Some("BuildingIdentifier must be 400 characters or less")
+      }
+
+
+      "must return correct info when invalid enum given for element" in {
+
+        val invalidEnumError1 = "cvc-enumeration-valid: Value 'Invalid code' is not facet-valid with respect to enumeration '[AF, AX, AL, DZ]'. It must be a value from the enumeration."
+        val invalidEnumError2 = "cvc-type.3.1.3: The value 'Raneevev' of element 'Country' is not valid."
+
+        val result = ErrorMessageHelper.extractEnumErrorValues(invalidEnumError1, invalidEnumError2)
+        result mustBe Some("Country is not one of the ISO country codes")
+      }
+    }
+
     "invalidCodeMessage" - {
 
       "must return correct message for 'Country'" in {
