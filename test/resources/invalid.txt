@@ -172,7 +172,7 @@
                 <Disclosure_Description>I will give advice on expensing catnip for money</Disclosure_Description>
             </Summary>
             <NationalProvision>I don't know what this is as I am just a cat</NationalProvision>
-            <Amount currCode="VUV">4000</Amount>
+            <Amount>4000</Amount>
             <ConcernedMSs>
                 <ConcernedMS>CZ</ConcernedMS>
             </ConcernedMSs>
