@@ -223,7 +223,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(intermediaryCapacityError1, intermediaryCapacityError2)))
 
-        val expectedErrors = Seq(GenericError(129, "Intermediary/Capacity is not one of the allowed values"))
+        val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values"))
 
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
@@ -233,17 +233,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(relevantTpDiscloserCapacityError1, relevantTpDiscloserCapacityError2)))
 
-        val expectedErrors = Seq(GenericError(37, "RelevantTaxpayerDiscloser/Capacity is not one of the allowed values"))
-
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
-      }
-
-      "must return ValidationFailure for file with invalid amount attribute code" in new SetUp {
-
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
-          ListBuffer(invalidAttributeCodeError)))
-
-        val expectedErrors = Seq(GenericError(175, "Amount currCode is not one of the ISO currency codes"))
+        val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values"))
 
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
