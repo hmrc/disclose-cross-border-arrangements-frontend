@@ -16,7 +16,6 @@
 
 package models
 
-import helpers.{ErrorMessageHelper, InvalidEnumErrorInfo}
 import play.api.libs.json._
 
 
@@ -26,17 +25,7 @@ object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
 }
 
-case class SaxParseError(lineNumber: Int,
-                         errorMessage: String,
-                         errorType: Option[String] = None,
-                         elementName: Option[String] = None,
-                         subType: Option[String] = None) {
-  val invali = InvalidEnumErrorInfo("elem")
-
-  def toGenericError: GenericError =
-    GenericError(lineNumber, ErrorMessageHelper.buildErrorMessage(invali))
-
-}
+case class SaxParseError(lineNumber: Int, errorMessage: String)
 
 object SaxParseError {
   implicit val format = Json.format[SaxParseError]

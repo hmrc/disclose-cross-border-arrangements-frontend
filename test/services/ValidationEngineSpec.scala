@@ -250,7 +250,6 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
 
 
-
       "must return ValidationFailure with generic error message if parse error is not in an expected format" in new SetUp {
 
         val randomParseError = SaxParseError(lineNumber, xsdError)
