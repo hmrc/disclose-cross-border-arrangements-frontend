@@ -21,7 +21,6 @@ import scala.util.matching.Regex
 
 sealed trait ErrorMessageInfo
 
-//case class InvalidAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
 case class MissingAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
 case class InvalidEnumAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
 case class MissingElementInfo(element: String) extends ErrorMessageInfo
@@ -29,9 +28,6 @@ case class MaxLengthErrorInfo(element: String, allowedLength: String) extends Er
 case class InvalidEnumErrorInfo(element: String) extends ErrorMessageInfo
 
 trait ErrorConstants {
-
-
-
 
   case class RequestValues(url: String, method: String, status: String, remoteAddress: String)
 
@@ -44,20 +40,6 @@ trait ErrorConstants {
       case _ => None
     }
   }
-
- // SaxParseError(175,"cvc-attribute.3: The value 'VUVs' of attribute 'currCode' on element 'Amount' is not valid with respect to its type, 'currCode_Type'.")
-
-  //case class AttributeValues(value: String, attribute: String, element: String, t : String)
-
-//  def extractInvalidAttributeValues(errorMessage: String): Option[InvalidAttributeInfo] = {
-//    val format = """cvc-attribute.3: The value '(.*?)' of attribute '(.*?)' on element '(.*?)' is not valid with respect to its type, '(.*?)'.""".stripMargin.r
-//
-//    errorMessage match {
-//      case format(_, attribute, element, _) =>
-//        Some (InvalidAttributeInfo(element, attribute))
-//      case _ => None
-//    }
-//  }
 
   def extractMissingAttributeValues(errorMessage: String): Option[MissingAttributeInfo] = {
     val format = """cvc-complex-type.4: Attribute '(.*?)' must appear on element '(.*?)'.""".stripMargin.r

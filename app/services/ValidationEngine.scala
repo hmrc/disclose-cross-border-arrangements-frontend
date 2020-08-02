@@ -66,7 +66,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   }
 
 
-
   private def generateErrorMessages(errors: ListBuffer[SaxParseError]): List[GenericError] ={
 
 
@@ -74,11 +73,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
     errorsGroupedByLineNumber.map(groupedErrors => {
       if(groupedErrors._2.length.equals(2)){
-//        case class MissingAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
-//        case class InvalidEnumAttributeInfo(element: String, attribute: String) extends ErrorMessageInfo
-//        case class MissingElementInfo(element: String) extends ErrorMessageInfo
-//        case class MaxLengthErrorInfo(element: String, allowedLength: String) extends ErrorMessageInfo
-//        case class InvalidEnumErrorInfo(element: String) extends ErrorMessageInfo
 
         val lineNumber = groupedErrors._1
         val e1 = groupedErrors._2.head.errorMessage
@@ -110,103 +104,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
 
 }
-
-
-
-
-
-  private def cleanseParseErrors(errors: ListBuffer[SaxParseError]): List[SaxParseError] ={
-
-    val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
-
-    errorsGroupedByLineNumber.map(groupedErrors => {
-       val errorTypeOption = determineErrorType(groupedErrors._2.head.errorMessage)
-
-     val ce =  errorTypeOption match {
-         case Some(errorType) =>
-           val elementName = getElementName(errorType, groupedErrors._2)
-           val subType = getSubType(errorType, groupedErrors._2.head.errorMessage)
-           groupedErrors._2.head.copy(errorType = errorTypeOption,
-             elementName = elementName,
-             subType = subType)
-         case None => groupedErrors._2.head
-       }
-ce
-    }).toList
-  }
-
-  private def getElementName(errorType: String, errorMessages: ListBuffer[SaxParseError]): Option[String] ={
-    errorType match {
-      case MAX_LENGTH_ERROR | MISSING_VALUE_ERROR => extractValueFromMessage(errorMessages.last.errorMessage, ELEMENT_NAME_PATTERN) match {
-        case Some(elementName) => Some(elementName.substring(12).dropRight(1))
-        case None => None
-      }
-      case INVALID_ENUM_ERROR => getElementNameForEnumerationError(errorMessages.last.errorMessage)
-      case _ => None
-    }
-
-
-
-
-  }
-
-  private def getElementNameForEnumerationError(errorMessage: String): Option[String] = {
-    println("error = " + errorMessage)
-   if(errorMessage.contains("of element"))   Some(errorMessage.split("of element").last.substring(2).dropRight(15))
-    else
-   if(errorMessage.contains("on element")) {
-
-     val elementName = errorMessage.split("on element")(1).substring(2,5)
-     val attributeName = errorMessage.split("of attribute")(1).substring(2, 10)
-
-     Some(s"$elementName $attributeName")
-   }
-   else None
-
-  }
-
-  private def getSubType(errorType: String, errorMessage: String): Option[String] ={
-
-    errorType match {
-      case MAX_LENGTH_ERROR =>  extractValueFromMessage(errorMessage, MAX_LENGTH_PATTERN)
-      case  INVALID_ENUM_ERROR => getCapacitySubType(errorMessage)
-      case _ => None
-      }
-  }
-
-  private def getCapacitySubType(errorMessage: String):Option[String] = {
-    if(errorMessage.contains("DAC61104, DAC61105, DAC61106")) Some("RelevantTaxpayerDiscloser")
-    else
-    if(errorMessage.contains("DAC61101, DAC61102")) Some("Intermediary")
-    else None
-  }
-
-
-  private def determineErrorType(message:String): Option[String] = {
-    ERROR_TYPES.find(error => extractValueFromMessage(message, error).isDefined)
-
-  }
-  private def extractValueFromMessage1(message: String, pattern: String): Option[String] ={
-
-      val regEx = pattern.stripMargin.r
-val first = regEx.findFirstMatchIn(message)
-
-    regEx.findFirstMatchIn(message) match{
-        case Some(value) => Some(value.toString)
-        case _ => None
-      }
-    }
-
-  private def extractValueFromMessage(message: String, pattern: String): Option[String] ={
-
-      val regEx = pattern.stripMargin.r
-val first = regEx.findFirstMatchIn(message)
-
-    regEx.findFirstMatchIn(message) match{
-        case Some(value) => Some(value.toString)
-        case _ => None
-      }
-    }
   def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
 
     if(businessRulesCheckRequired) {
