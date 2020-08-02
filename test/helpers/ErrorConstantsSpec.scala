@@ -24,16 +24,6 @@ class ErrorConstantsSpec extends SpecBase with ErrorConstants {
   val over400 = "a" * 401
   val over4000 = "a" * 4001
 
-  //  def invalidCodeMessage(elementName: String): Option[String] = {
-  //    elementName match {
-  //      case "Country" | "CountryExemption" => Some(s"$elementName is not one of the ISO country codes")
-  //      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
-  //      case "Reason" => Some("Reason is not one of the allowed values")
-  //      case _ => None
-  //    }
-  //  }
-
-
   val s1 = "Request URL: https://start.duckduckgo.com/ Request Method: GET Status Code: 304 Remote Address: 107.20.240.232:443"
 
 
@@ -45,13 +35,6 @@ class ErrorConstantsSpec extends SpecBase with ErrorConstants {
         result mustBe Some(RequestValues("https://start.duckduckgo.com/", "GET", "304", "107.20.240.232:443"))
       }
 
-
-//      "must return correct info invalid attribute error'" in {
-//        val invalidAttributeError = "cvc-attribute.3: The value 'VUVs' of attribute 'currCode' on element 'Amount' is not valid with respect to its type, 'currCode_Type'."
-//
-//        val result = extractInvalidAttributeValues(invalidAttributeError)
-//        result mustBe Some(InvalidAttributeInfo("Amount", "currCode"))
-//      }
 
       "must return correct info for missing attribute error'" in {
         val missingAttributeError = "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'."
@@ -94,9 +77,6 @@ class ErrorConstantsSpec extends SpecBase with ErrorConstants {
         val result = extractEnumErrorValues(invalidEnumError1, invalidEnumError2)
           result mustBe Some(InvalidEnumErrorInfo("Country"))
       }
-
-
-
     }
   }
 }
