@@ -20,13 +20,9 @@
                 </h1>
 
         <div class="govuk-body">
-            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureId, arrangementId) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID) }}</p>
             <p>{{ messages("deleteDisclosureConfirmation.p2") }}</p>
-            <p>{{ messages("deleteDisclosureConfirmation.p3") }}
-              <a class="disclose-link" href={{homePageLink}}>
-                  {{messages("deleteDisclosureConfirmation.p4")}}
-              </a>
-            </p>
+            <p>{{ messages("deleteDisclosureConfirmation.p3") }} {{ homePageLink | safe }}</p>
             <p>
               <a href="#">{{ messages("deleteDisclosureConfirmation.p5") }}</a>
               {{ messages("deleteDisclosureConfirmation.p6") }}

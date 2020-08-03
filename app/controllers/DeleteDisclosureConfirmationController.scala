@@ -18,7 +18,10 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import handlers.ErrorHandler
+import helpers.ViewHelper
 import javax.inject.Inject
+import pages.Dac6MetaDataPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -34,23 +37,25 @@ class DeleteDisclosureConfirmationController @Inject()(
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
+    renderer: Renderer,
+    errorHandler: ErrorHandler,
+    viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(xmlData) =>
+          renderer.render(
+            "deleteDisclosureConfirmation.njk",
+            Json.obj(
+              "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
+              "disclosureID" -> xmlData.disclosureID,
+              "arrangementID" -> xmlData.arrangementID
+            )
+          ).map(Ok(_))
 
-      //TODO - pass ID's from summary
-      val disclosureId = "GBD 2020 07 01 AAA 001"
-      val arrangementId = "GBA 2020 07 01 AAA 000"
-
-      renderer.render(
-        "deleteDisclosureConfirmation.njk",
-        Json.obj(
-          "homePageLink" -> Json.toJson(appConfig.discloseArrangeLink),
-          "disclosureId" -> disclosureId,
-          "arrangementId" -> arrangementId
-        )
-      ).map(Ok(_))
+        case _ => errorHandler.onServerError(request, throw new RuntimeException("ID's from XML are missing"))
+      }
   }
 }

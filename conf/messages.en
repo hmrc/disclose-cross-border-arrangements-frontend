@@ -231,9 +231,10 @@ deleteDisclosureConfirmation.heading = Your disclosure has been deleted
 deleteDisclosureConfirmation.p1 = Your disclosure {0} for arrangement {1} has been deleted.
 deleteDisclosureConfirmation.p2 = We have sent you a confirmation email.
 deleteDisclosureConfirmation.p3 = Go back to
-deleteDisclosureConfirmation.p4 = disclose cross-border arrangements.
 deleteDisclosureConfirmation.p5 = What did you think of this service?
 deleteDisclosureConfirmation.p6 = (takes 30 seconds)
+
+confirmationPage.linkText = disclose cross-border arrangements
 
 confirmation.li1 = Go to
 confirmation.li1.a = disclose cross-border arrangements
