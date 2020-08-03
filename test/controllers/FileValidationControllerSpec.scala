@@ -72,7 +72,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val uploadId = UploadId("123")
       val metaData = Dac6MetaData("DAC6NEW")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData)
+      val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL, Some(metaData)))
@@ -94,7 +94,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val uploadId = UploadId("123")
       val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"))
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData)
+      val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL, Some(metaData)))

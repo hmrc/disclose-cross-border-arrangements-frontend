@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{Dac6MetaDataPage, InvalidXMLPage, UploadIDPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.{SessionRepository, UploadSessionRepository}
@@ -58,7 +58,8 @@ class FileValidationController @Inject()(
           case ValidationSuccess(_,Some(metaData)) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithMetaData <- Future.fromTry(updatedAnswers.set(Dac6MetaDataPage, metaData))
+              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
               _              <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield {
               metaData.importInstruction match {
