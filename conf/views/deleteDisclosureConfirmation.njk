@@ -14,21 +14,16 @@
       <div class="govuk-grid-column-two-thirds">
 
         <h1 class="govuk-panel__title">
-                  {{ govukPanel({
-                    titleText: messages("deleteDisclosureConfirmation.heading")
-                  }) }}
-                </h1>
+          {{ govukPanel({
+            titleText: messages("deleteDisclosureConfirmation.heading")
+          }) }}
+        </h1>
 
         <div class="govuk-body">
             <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID) }}</p>
             <p>{{ messages("deleteDisclosureConfirmation.p2") }}</p>
-            <p>{{ messages("deleteDisclosureConfirmation.p3") }} {{ homePageLink | safe }}</p>
-            <p>
-              <a href="#">{{ messages("deleteDisclosureConfirmation.p5") }}</a>
-              {{ messages("deleteDisclosureConfirmation.p6") }}
-            </p>
-
-
+            <p>{{ homePageLink | safe }}</p>
+            <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>
 
       </div>

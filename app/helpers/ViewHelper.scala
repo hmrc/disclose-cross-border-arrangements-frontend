@@ -25,6 +25,10 @@ import uk.gov.hmrc.viewmodels.Html
 class ViewHelper @Inject()() {
 
   def linkToHomePageText(href: JsValue)(implicit messages: Messages): Html = {
-    Html(s"<a id='disclose-link' href=$href>${{ messages("confirmation.li1.a") }}</a>.")
+    Html(s"${{ messages("confirmation.link.text")}} <a id='homepage-link' href=$href>${{ messages("confirmation.link.text2") }}</a>.")
+  }
+
+  def surveyLinkText(href: JsValue)(implicit messages: Messages): Html = {
+    Html(s"<a id='feedback-link' href=$href>${{ messages("confirmation.survey.link")}}</a> ${{ messages("confirmation.survey.text")}}")
   }
 }

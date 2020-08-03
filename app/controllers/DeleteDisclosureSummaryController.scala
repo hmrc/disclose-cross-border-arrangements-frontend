@@ -74,7 +74,7 @@ class DeleteDisclosureSummaryController @Inject()(
             _ <- sessionRepository.set(userAnswersWithIDs)
             //TODO: send confirmation emails
           } yield {
-            Redirect("") //TODO: redirect to deletion confirmation controller
+            Redirect(routes.DeleteDisclosureConfirmationController.onPageLoad().url) //TODO: redirect to deletion confirmation controller
           }
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }

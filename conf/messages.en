@@ -236,10 +236,10 @@ deleteDisclosureConfirmation.p6 = (takes 30 seconds)
 
 confirmationPage.linkText = disclose cross-border arrangements
 
-confirmation.li1 = Go to
-confirmation.li1.a = disclose cross-border arrangements
-confirmation.li2.a = What did you think of this service?
-confirmation.li2 = (takes 30 seconds)
+confirmation.link.text = Go to
+confirmation.link.text2 = disclose cross-border arrangements
+confirmation.survey.link = What did you think of this service?
+confirmation.survey.text = (takes 30 seconds)
 
 createConfirmation.title = Disclosure received
 createConfirmation.panel.title = Disclosure received

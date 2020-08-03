@@ -49,9 +49,10 @@ class DeleteDisclosureConfirmationController @Inject()(
           renderer.render(
             "deleteDisclosureConfirmation.njk",
             Json.obj(
-              "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
               "disclosureID" -> xmlData.disclosureID,
-              "arrangementID" -> xmlData.arrangementID
+              "arrangementID" -> xmlData.arrangementID,
+              "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
+              "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
             )
           ).map(Ok(_))
 

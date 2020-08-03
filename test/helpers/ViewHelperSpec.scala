@@ -24,15 +24,25 @@ import uk.gov.hmrc.viewmodels.Html
 class ViewHelperSpec extends SpecBase with MockitoSugar {
 
   val viewHelper = new ViewHelper
+  val mockURL = Json.toJson("www.test.com")
+
 
   "linkToHomePageText" - {
 
-    "must return the correct HTML when given Valid JSValue" in {
+    "must return the correct go to home page content" in {
 
-      val homePageLink = Json.toJson("www.test.com")
-
-      viewHelper.linkToHomePageText(homePageLink) mustBe Html(s"<a id='disclose-link' href=$homePageLink>" +
+      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"Go to <a id='homepage-link' href=$mockURL>" +
         s"disclose cross-border arrangements</a>.")
+
+    }
+  }
+
+  "surveyLinkText" - {
+
+    "must return the correct beta feedback content" in {
+
+      viewHelper.surveyLinkText(mockURL) mustBe Html(s"<a id='feedback-link' href=$mockURL>" +
+        s"What did you think of this service?</a> (takes 30 seconds)")
 
     }
   }
