@@ -16,9 +16,9 @@
 
 package controllers
 
-import com.google.inject.Inject
 import connectors.CrossBorderArrangementsConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions._
+import javax.inject.Inject
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -32,7 +32,7 @@ import utils.CheckYourAnswersHelper
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
-class CheckYourAnswersController @Inject()(
+class DeleteDisclosureSummaryController @Inject()(
     override val messagesApi: MessagesApi,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
@@ -44,18 +44,18 @@ class CheckYourAnswersController @Inject()(
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
-          val fileInfo = helper.displaySummaryFromInstruction(
+          val fileToDelete = helper.displaySummaryFromInstruction(
             xmlData.importInstruction, xmlData.arrangementID.getOrElse(""), xmlData.disclosureID.getOrElse("")
           )
           renderer.render(
-            "check-your-answers.njk",
+            "deleteDisclosure.njk",
             Json.obj(
-              "fileInfo" -> fileInfo
+              "fileToDelete" -> fileToDelete
             )
           ).map(Ok(_))
 
@@ -69,25 +69,14 @@ class CheckYourAnswersController @Inject()(
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
           for {
-            ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
+            ids <- crossBorderArrangementsConnector.submitDocument(fileName, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
-            _              <- sessionRepository.set(userAnswersWithIDs)
+            _ <- sessionRepository.set(userAnswersWithIDs)
             //TODO: send confirmation emails
-
           } yield {
-            val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
-            val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
-
-            instruction match {
-              case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
-              case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
-              case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
-              case _ => Redirect(routes.UploadFormController.onPageLoad().url)
-            }
+            Redirect("") //TODO: redirect to deletion confirmation controller
           }
-
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
-
   }
 }

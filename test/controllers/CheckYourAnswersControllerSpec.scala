@@ -18,11 +18,11 @@ package controllers
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
-import models.{GeneratedIDs, UserAnswers}
+import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import pages.{URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
 import play.api.inject.bind
 import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
@@ -49,13 +49,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
     "must return OK and the correct view for a GET" in {
 
-      val mockXmlValidationService =  mock[XMLValidationService]
-
-      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(
-        <test>
-          <value>DAC6NEW</value>
-        </test>
-      )
+      val metaData = Dac6MetaData("DAC6NEW", None, None)
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -63,12 +57,10 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")
         .success.value
-        .set(URLPage, "url")
+        .set(Dac6MetaDataPage, metaData)
         .success.value
 
-      val application = applicationBuilder(Some(userAnswers)).overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
-        ).build()
+      val application = applicationBuilder(Some(userAnswers)).build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 

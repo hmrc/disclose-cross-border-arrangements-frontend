@@ -18,8 +18,13 @@ package models
 
 import play.api.libs.json._
 
+case class Dac6MetaData(importInstruction: String, arrangementID: Option[String] = None, disclosureID: Option[String] = None)
 
-case class ValidationSuccess(downloadUrl : String) extends XMLValidationStatus
+object Dac6MetaData {
+  implicit val format = Json.format[Dac6MetaData]
+}
+
+case class ValidationSuccess(downloadUrl : String, metaData: Option[Dac6MetaData] = None) extends XMLValidationStatus
 
 object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
@@ -41,17 +46,20 @@ sealed trait XMLValidationStatus
 
 object XMLValidationStatus {
   implicit val reads = new Reads[XMLValidationStatus] {
-    override def reads(json: JsValue): JsResult[XMLValidationStatus] = json \ "downloadUrl" match {
-      case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
-      case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
+    override def reads(json: JsValue): JsResult[XMLValidationStatus] = {
+      json \ "downloadUrl" match {
+        case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
+        case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
+      }
     }
   }
 
-  implicit val writes: Writes[XMLValidationStatus] = Writes {
-    case ValidationSuccess(downloadUrl) => Json.obj(
-      "downloadUrl" -> JsString(downloadUrl),
-      "_type" -> "ValidationSuccess"
-    )
+  implicit val writes: Writes[XMLValidationStatus] = Writes[XMLValidationStatus] {
+    case ValidationSuccess(downloadUrl, metaData) => Json.obj(
+      "downloadUrl" -> downloadUrl,
+      "metaData" -> metaData,
+      "_type" -> "ValidationSuccess")
+
     case ValidationFailure (error) => Json.obj(
       "error" -> JsArray(error.map(Json.toJson[SaxParseError](_))),
       "_type" -> "ValidationFailure"

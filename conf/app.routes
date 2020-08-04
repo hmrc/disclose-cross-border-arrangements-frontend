@@ -13,6 +13,9 @@ GET        /this-service-has-been-reset                 controllers.SessionExpir
 GET        /send-disclosure/check-answers               controllers.CheckYourAnswersController.onPageLoad
 POST       /send-disclosure/check-answers               controllers.CheckYourAnswersController.onSubmit
 
+GET        /send-disclosure/delete-disclosure           controllers.DeleteDisclosureSummaryController.onPageLoad
+POST       /send-disclosure/delete-disclosure           controllers.DeleteDisclosureSummaryController.onSubmit
+
 GET        /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
 GET        /accessibility-statement                     controllers.AccessibilityController.onPageLoad

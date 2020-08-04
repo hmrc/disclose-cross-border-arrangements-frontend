@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when, _}
@@ -32,16 +32,16 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
-import services.ValidationEngine
+import services.{ValidationEngine, XMLValidationService}
 
 import scala.concurrent.Future
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   val mockValidationEngine = mock[ValidationEngine]
+  val mockXmlValidationService =  mock[XMLValidationService]
   val mockRepository = mock[UploadSessionRepository]
   val mockSessionRepository = mock[SessionRepository]
-
 
   override def beforeEach() = {
     reset(mockSessionRepository)
@@ -55,6 +55,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
         bind[UploadSessionRepository].toInstance(mockRepository),
         bind[SessionRepository].toInstance(mockSessionRepository),
         bind[ValidationEngine].toInstance(mockValidationEngine),
+        bind[XMLValidationService].toInstance(mockXmlValidationService)
       )
       .build()
 
@@ -66,20 +67,45 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       UploadedSuccessfully("afile",downloadURL)
     )
 
-    "must redirect to Check your answers and the correct view for a GET" in {
+    "must redirect to Check your answers and present the correct view for a GET" in {
 
       val uploadId = UploadId("123")
+      val metaData = Dac6MetaData("DAC6NEW")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("validXML"-> "afile", "url" -> downloadURL)
+      val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL, Some(metaData)))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+
+      verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
+      userAnswersCaptor.getValue.data mustEqual expectedData
+    }
+
+
+    "must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
+
+      val uploadId = UploadId("123")
+      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"))
+      val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
+      val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
+
+      when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL, Some(metaData)))
+      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+
+      val controller = application.injector.instanceOf[FileValidationController]
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
+
+      status(result) mustBe SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DeleteDisclosureSummaryController.onPageLoad().url
+
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
       userAnswersCaptor.getValue.data mustEqual expectedData
     }
@@ -115,5 +141,20 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       a[RuntimeException] mustBe thrownBy(status(result))
     }
 
+    "must return an Exception when meta data cannot be found" in {
+
+      val uploadId = UploadId("123")
+
+      when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(ValidationSuccess(downloadURL, None))
+      when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
+
+      val controller = application.injector.instanceOf[FileValidationController]
+      val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
+
+      a[RuntimeException] mustBe thrownBy {
+        status(result) mustEqual OK
+      }
+    }
   }
 }

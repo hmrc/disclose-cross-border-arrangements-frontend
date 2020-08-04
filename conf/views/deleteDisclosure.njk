@@ -1,0 +1,56 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
+{% from "govuk/components/button/macro.njk"        import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+
+{% block pageTitle %}
+  {{ title(messages("checkYourAnswers.deleteDisclosure.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back")
+      }) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("checkYourAnswers.deleteDisclosure.heading") }}
+        </h1>
+
+        {{ govukSummaryList({
+          classes: 'govuk-summary-list--no-border',
+          rows: fileToDelete
+        }) }}
+
+        <hr>
+
+        {{ govukWarningText({
+          text: messages("checkYourAnswers.summaryWarning"),
+          iconFallbackText: "Warning"
+        }) }}
+
+        <form action="{{ routes.controllers.DeleteDisclosureController.onSubmit.url }}" method="post">
+            {{ csrf() | safe }}
+
+            {{ govukButton({
+              text: messages("checkYourAnswers.delete.button"),
+              preventDoubleClick: true,
+              attributes: {id:"submit"}
+            }) }}
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
