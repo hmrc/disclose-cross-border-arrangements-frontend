@@ -22,25 +22,28 @@ import scala.collection.mutable.ListBuffer
 
 object ErrorMessageHelper {
 
-  val defaultMessage = "There is something wrong with this line"
+  val defaultMessage = "There is a problem with this line number"
 
   def generateErrorMessages(errors: ListBuffer[SaxParseError]): List[GenericError] = {
     val errorsGroupedByLineNumber = errors.groupBy(saxParseError => saxParseError.lineNumber)
 
     errorsGroupedByLineNumber.map(groupedErrors => {
-        val lineNumber = groupedErrors._1
-        val error1 = groupedErrors._2.head.errorMessage
-        val error2 = groupedErrors._2.last.errorMessage
+        if(groupedErrors._2.length <= 2) {
+          val error1 = groupedErrors._2.head.errorMessage
+          val error2 = groupedErrors._2.last.errorMessage
 
-        val error = extractInvalidEnumAttributeValues(error1, error2).orElse(
-                  extractMissingElementValues(error1, error2)).orElse(
-                  extractMaxLengthErrorValues(error1, error2)).orElse(
-                  extractEnumErrorValues(error1, error2)).orElse(
-          extractMissingAttributeValues(groupedErrors._2.head.errorMessage))
+          val error = extractInvalidEnumAttributeValues(error1, error2).orElse(
+            extractMissingElementValues(error1, error2)).orElse(
+            extractMaxLengthErrorValues(error1, error2)).orElse(
+            extractEnumErrorValues(error1, error2)).orElse(
+            extractMissingAttributeValues(groupedErrors._2.head.errorMessage)).orElse(
+            extractInvalidIntegerErrorValues(error1, error2)).orElse(
+            extractInvalidDateErrorValues(error1, error2)).orElse(
+            extractMissingTagValues(error1)).orElse(
+            extractMissingBooleanValues(error1, error2))
 
-
-        GenericError(lineNumber, error.getOrElse(defaultMessage))
-
+          GenericError(groupedErrors._1, error.getOrElse(defaultMessage))
+        }else GenericError(groupedErrors._1, defaultMessage)
     }).toList
 
   }
@@ -114,6 +117,65 @@ object ErrorMessageHelper {
             invalidCodeMessage(element)
           case _ =>  None
         }
+      case _ => None
+    }
+  }
+
+  def extractMissingBooleanValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-datatype-valid.1.2.1: '' is not a valid value for 'boolean'.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '' of element '(.*?)' is not valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError() =>
+        errorMessage2 match {
+          case formatOfSecondError(element) =>
+            Some(missingInfoMessage(element))
+          case _ => println("rijvirj")
+                    None
+        }
+      case _ => println("aaaaa")
+                  None
+    }
+  }
+
+  def extractInvalidIntegerErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-datatype-valid.1.2.1: '(.*?)' is not a valid value for 'integer'.""".stripMargin.r
+    val formatOfSecondError = """cvc-complex-type.2.2: Element '(.*?)' must have no element (.*?), and the value must be valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError(_) =>
+        errorMessage2 match {
+          case formatOfSecondError(element, _) =>
+            Some(s"$element must not include pence, like 123 or 156")
+          case _ =>  None
+        }
+      case _ => None
+    }
+  }
+
+  def extractInvalidDateErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-datatype-valid.1.2.1: '(.*?)' is not a valid value for 'date'.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
+
+    errorMessage1 match {
+      case formatOfFirstError(_) =>
+        errorMessage2 match {
+          case formatOfSecondError(_, element) =>
+            Some(s"Enter a $element in the format YYYY-MM-DD")
+          case _ =>  None
+        }
+      case _ => None
+    }
+  }
+
+  def extractMissingTagValues(errorMessage: String): Option[String] = {
+
+     val formattedError = errorMessage.replaceAll("[{}]", "")
+     val format = """cvc-complex-type.2.4.a: Invalid content was found starting with element '(.*?)'. One of '"urn:ukdac6:v0.1":(.*?)' is expected.""".stripMargin.r
+
+    formattedError match {
+      case format(_, element) =>
+        Some(s"Missing $element tags")
       case _ => None
     }
   }
