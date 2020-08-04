@@ -16,15 +16,23 @@
 
 package helpers
 
-import models.Validation
+import models.{GenericError, Validation}
 
 import scala.xml.{Elem, NodeSeq}
 
-class LineNumberHelper {
+class BusinessRulesErrorMessageHelper {
 
-  def getLineNumbersOfErrors(validations: Seq[Validation], xml: Elem): Seq[Validation] = {
+  def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
     val xmlArray = xml.toString().split("\n")
-    validations.map(validation => validation.setLineNumber(xmlArray))
+
+   val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
+
+   valsWithLineNumber.map(validation => validation.toGenericError)
+
+
+
+
   }
 
  }
+

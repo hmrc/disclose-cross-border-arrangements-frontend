@@ -18,11 +18,28 @@ package models
 
 case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = None) {
 
-  def toGenericError: GenericError = GenericError(lineNumber.getOrElse(0), key)
+  def toGenericError: GenericError = GenericError(lineNumber.getOrElse(0), getErrorMessage)
 
   def setLineNumber(xmlArray: Array[String]): Validation ={
     val index = xmlArray.indexWhere(str => str.contains(path)) + 1
     copy(lineNumber = Some(index))
+  }
+
+
+   def getErrorMessage: String ={
+     key match {
+       case "businessrules.initialDisclosure.needRelevantTaxPayer" => "InitialDisclosureMA is false so there should be a RelevantTaxpayer"
+       case "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo" => "DAC6D1OtherInfo has been provided but hallmark DAC6D1Other has not been selected"
+       case "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer" => "RelevantTaxpayerDiscloser has been provided so there must be at least one RelevantTaxpayer"
+       case "businessrules.intermediaryDiscloser.needIntermediary" => "IntermediaryDiscloser has been provided so there must be at least one Intermediary"
+       case "businessrules.taxPayerImplementingDates.needToBeAfterStart" => "The TaxpayerImplementingDate when the arrangement has been or will be made available to each taxpayer must be on or after 25 June 2018"
+       case "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate" => "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"
+       case "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1 is false but the hallmarks A, B, C1bi and/or C1d have been selected"
+       case "businessrules.implementingDates.needToBeAfterStart" => "The DisclosureInformation/ImplementingDate on which the first step in the implementation of the reportable cross-border arrangement has been made or will be made must be on or after 25 June 2018"
+
+       case  _ => "DisclosureImportInstruction is DAC6NEW so there should be no ArrangementId or DisclosureId"
+
+     }
   }
 
   def path: String = {
@@ -34,7 +51,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "businessrules.taxPayerImplementingDates.needToBeAfterStart" => "TaxpayerImplementingDate"
       case "businessrules.implementingDates.needToBeAfterStart" => "ImplementingDate"
       case "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate" => "InitialDisclosureMA"
-      case  "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1"
+      case "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1"
       case "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo" => "DAC6D1OtherInfo"
       case  _ => "DisclosureImportInstruction"
 

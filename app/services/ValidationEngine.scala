@@ -16,7 +16,7 @@
 
 package services
 
-import helpers.{ErrorMessageHelper, LineNumberHelper}
+import helpers.{ErrorMessageHelper, BusinessRulesErrorMessageHelper}
 import javax.inject.Inject
 import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
@@ -29,7 +29,7 @@ import scala.util.matching.Regex
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 lineNumberHelper: LineNumberHelper) {
+                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper) {
 
 
 
@@ -70,8 +70,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     if(businessRulesCheckRequired) {
       businessRuleValidationService.validateFile()(elem) match {
         case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(
-          error => error.toGenericError))
+        case Some(errors) => ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(errors, elem))
         case None => ValidationSuccess(source)
       }
     }else ValidationSuccess(source)

@@ -129,12 +129,14 @@ object ErrorMessageHelper {
       case formatOfFirstError() =>
         errorMessage2 match {
           case formatOfSecondError(element) =>
-            Some(missingInfoMessage(element))
-          case _ => println("rijvirj")
-                    None
+            val displayName = if(element.equals("AffectedPerson")){
+              "AssociatedEnterprise/AffectedPerson"
+            }else element
+
+            Some(missingInfoMessage(displayName))
+          case _ => None
         }
-      case _ => println("aaaaa")
-                  None
+      case _ => None
     }
   }
 
