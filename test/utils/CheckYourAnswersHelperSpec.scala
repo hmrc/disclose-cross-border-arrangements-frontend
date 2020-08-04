@@ -50,7 +50,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
     "must return new arrangement content when import instruction is DAC6NEW" in {
 
-      helper.displaySummaryFromInstruction("DAC6NEW", None, None) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6NEW", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
           value = Value(msg"checkYourAnswers.new.text",
@@ -60,7 +60,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
     "must return arrangement ID & additional information content when import instruction is DAC6ADD" in {
 
-      helper.displaySummaryFromInstruction("DAC6ADD", Some(arrangementID), None) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6ADD", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
           value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID),
@@ -70,7 +70,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
     "must return arrangement ID, Disclosure ID & replacement content when import instruction is DAC6REP" in {
 
-      helper.displaySummaryFromInstruction("DAC6REP", Some(arrangementID), Some(disclosureID)) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6REP", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
           value = Value(msg"checkYourAnswers.replacement.text".withArgs(arrangementID, disclosureID),
@@ -80,7 +80,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
 
     "must return arrangement ID, Disclosure ID & deletion content when import instruction is DAC6DEL" in {
 
-      helper.displaySummaryFromInstruction("DAC6DEL", Some(arrangementID), Some(disclosureID)) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6DEL", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
           value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(arrangementID, disclosureID),

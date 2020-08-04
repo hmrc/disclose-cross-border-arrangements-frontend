@@ -50,7 +50,7 @@ class CheckYourAnswersController @Inject()(
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
           val fileInfo = helper.displaySummaryFromInstruction(
-            xmlData.importInstruction, xmlData.arrangementID, xmlData.disclosureID
+            xmlData.importInstruction, xmlData.arrangementID.getOrElse(""), xmlData.disclosureID.getOrElse("")
           )
           renderer.render(
             "check-your-answers.njk",
