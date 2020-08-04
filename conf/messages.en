@@ -213,10 +213,6 @@ replaceConfirmation.heading = Replacement received
 replaceConfirmation.heading.two = What happens next
 replaceConfirmation.p1 = We have sent you a confirmation email.
 replaceConfirmation.p2 = If we have any questions about the disclosure, we will contact you.
-replaceConfirmation.p3 = Go to
-replaceConfirmation.p4 = disclose cross-border arrangements.
-replaceConfirmation.p5 = What did you think of this service?
-replaceConfirmation.p6 = (takes 30 seconds)
 
 uploadConfirmation.title = Disclosure received
 uploadConfirmation.panel.title = Disclosure received
@@ -230,11 +226,6 @@ deleteDisclosureConfirmation.title = Disclosure has been deleted
 deleteDisclosureConfirmation.heading = Your disclosure has been deleted
 deleteDisclosureConfirmation.p1 = Your disclosure {0} for arrangement {1} has been deleted.
 deleteDisclosureConfirmation.p2 = We have sent you a confirmation email.
-deleteDisclosureConfirmation.p3 = Go back to
-deleteDisclosureConfirmation.p5 = What did you think of this service?
-deleteDisclosureConfirmation.p6 = (takes 30 seconds)
-
-confirmationPage.linkText = disclose cross-border arrangements
 
 confirmation.link.text = Go to
 confirmation.link.text2 = disclose cross-border arrangements
