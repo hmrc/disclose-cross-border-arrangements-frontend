@@ -17,54 +17,111 @@
 package helpers
 
 import base.SpecBase
+import models.{GenericError, SaxParseError}
+
+import scala.collection.mutable.ListBuffer
 
 class ErrorMessageHelperSpec extends SpecBase{
 
+  val lineNumber = 20
+  val over400 = "s"*401
+
   "ErrorMessageHelper"  - {
 
-    "getErrorInfo" - {
+    "generateErrorMessages" - {
 
-      "must return correct info for missing attribute error'" in {
-        val missingAttributeError = "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'."
-        val result = ErrorMessageHelper.extractMissingAttributeValues(missingAttributeError)
-        result mustBe Some("Enter an Amount currCode")
+      "must return correct error for missing attribute error'" in {
+        val missingAttributeError = SaxParseError(lineNumber, "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(missingAttributeError))
+        result mustBe List(GenericError(lineNumber,"Enter an Amount currCode"))
       }
 
-      "must return correct info for invalid enum error for attribute" in {
-        val invalidEnumError1 = "cvc-enumeration-valid: Value 'GBf' is not facet-valid with respect to enumeration '[AF, AX]'. It must be a value from the enumeration."
-        val invalidEnumError2 = "cvc-attribute.3: The value 'GBf' of attribute 'issuedBy' on element 'TIN' is not valid with respect to its type, 'CountryCode_Type'."
-        val result = ErrorMessageHelper.extractInvalidEnumAttributeValues(invalidEnumError1, invalidEnumError2)
-        result mustBe Some("TIN issuedBy is not one of the ISO country codes")
+      "must return correct error for unexpected error message'" in {
+        val randomError = SaxParseError(lineNumber, "random error.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(randomError))
+        result mustBe List(GenericError(lineNumber,"There is a problem with this line number"))
       }
 
-      "must return correct info for missing element error'" in {
-
-        val missingElementError1 = "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'."
-
-        val missingElementError2 = "cvc-type.3.1.3: The value '' of element 'Street' is not valid."
-
-        val result = ErrorMessageHelper.extractMissingElementValues(missingElementError1, missingElementError2)
-        result mustBe Some("Enter a Street")
+      "must return correct error for invalid enum error for attribute" in {
+        val invalidEnumError1 = SaxParseError(lineNumber, "cvc-enumeration-valid: Value 'GBf' is not facet-valid with respect to enumeration '[AF, AX]'. It must be a value from the enumeration.")
+        val invalidEnumError2 = SaxParseError(lineNumber, "cvc-attribute.3: The value 'GBf' of attribute 'issuedBy' on element 'TIN' is not valid with respect to its type, 'CountryCode_Type'.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(invalidEnumError1, invalidEnumError2))
+        result mustBe List(GenericError(lineNumber,"TIN issuedBy is not one of the ISO country codes"))
       }
 
-      "must return correct info when allowed length exceeded" in {
+      "must return correct error for missing element error'" in {
 
-        val maxLengthError1 = "cvc-maxLength-valid: Value '$over400' with length = '401' is not facet-valid with respect to maxLength '400' for type 'StringMin1Max400_Type'."
-        val maxlengthError2 = "cvc-type.3.1.3: The value '$over400' of element 'BuildingIdentifier' is not valid."
+        val missingElementError1 = SaxParseError(lineNumber, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.")
 
-        val result = ErrorMessageHelper.extractMaxLengthErrorValues(maxLengthError1, maxlengthError2)
-        result mustBe Some("BuildingIdentifier must be 400 characters or less")
+        val missingElementError2 = SaxParseError(lineNumber, "cvc-type.3.1.3: The value '' of element 'Street' is not valid.")
+
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(missingElementError1, missingElementError2))
+        result mustBe List(GenericError(lineNumber,"Enter a Street"))
+      }
+
+      "must return correct error when allowed length exceeded" in {
+
+        val maxLengthError1 = SaxParseError(lineNumber, s"cvc-maxLength-valid: Value '$over400' with length = '401' is not facet-valid with respect to maxLength '400' for type 'StringMin1Max400_Type'.")
+        val maxlengthError2 = SaxParseError(lineNumber, s"cvc-type.3.1.3: The value '$over400' of element 'BuildingIdentifier' is not valid.")
+
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(maxLengthError1, maxlengthError2))
+        result mustBe List(GenericError(lineNumber,"BuildingIdentifier must be 400 characters or less"))
       }
 
 
-      "must return correct info when invalid enum given for element" in {
+      "must return correct error when invalid enum given for element" in {
 
-        val invalidEnumError1 = "cvc-enumeration-valid: Value 'Invalid code' is not facet-valid with respect to enumeration '[AF, AX, AL, DZ]'. It must be a value from the enumeration."
-        val invalidEnumError2 = "cvc-type.3.1.3: The value 'Raneevev' of element 'Country' is not valid."
+        val invalidEnumError1 = SaxParseError(lineNumber, "cvc-enumeration-valid: Value 'Invalid code' is not facet-valid with respect to enumeration '[AF, AX, AL, DZ]'. It must be a value from the enumeration.")
+        val invalidEnumError2 = SaxParseError(lineNumber, "cvc-type.3.1.3: The value 'Raneevev' of element 'Country' is not valid.")
 
-        val result = ErrorMessageHelper.extractEnumErrorValues(invalidEnumError1, invalidEnumError2)
-        result mustBe Some("Country is not one of the ISO country codes")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(invalidEnumError1, invalidEnumError2))
+        result mustBe List(GenericError(lineNumber,"Country is not one of the ISO country codes"))
       }
+
+
+      "must return correct error when when pence included on amount field" in {
+
+        val error1 = SaxParseError(lineNumber, "cvc-datatype-valid.1.2.1: '4000.02' is not a valid value for 'integer'.")
+        val error2 = SaxParseError(lineNumber, "cvc-complex-type.2.2: Element 'Amount' must have no element [children], and the value must be valid.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Amount must not include pence, like 123 or 156"))
+      }
+
+      "must return correct error for invalid date format" in {
+
+        val error1 = SaxParseError(lineNumber, "cvc-datatype-valid.1.2.1: '14-01-2007' is not a valid value for 'date'.")
+        val error2 = SaxParseError(lineNumber, "cvc-type.3.1.3: The value '14-01-2007' of element 'BirthDate' is not valid.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(20, "Enter a BirthDate in the format YYYY-MM-DD"))
+      }
+
+    "must return correct error for missing tags" in {
+
+
+        val error1 = SaxParseError(lineNumber, "cvc-complex-type.2.4.a: Invalid content was found starting with element '{\"urn:ukdac6:v0.1\":BuildingIdentifier}'. One of '{\"urn:ukdac6:v0.1\":Street}' is expected.")
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1))
+        result mustBe List(GenericError(lineNumber, "Missing Street tags"))
+      }
+
+    "must return correct error when 3 errors present for same line" in {
+
+        val error1 = SaxParseError(lineNumber, "random error 1")
+        val error2 = SaxParseError(lineNumber, "random error 2")
+        val error3 = SaxParseError(lineNumber, "random error 3")
+
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2, error3))
+        result mustBe List(GenericError(20, "There is a problem with this line number"))
+      }
+
+    "must return correct for missing boolean value" in {
+
+      val error1 = SaxParseError(lineNumber,"cvc-datatype-valid.1.2.1: '' is not a valid value for 'boolean'.")
+      val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value '' of element 'AffectedPerson' is not valid.")
+
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter an AffectedPerson"))
+      }
+
     }
 
     "invalidCodeMessage" - {
