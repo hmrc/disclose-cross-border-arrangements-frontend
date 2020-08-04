@@ -25,8 +25,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.bind
 import play.api.libs.json.Json
 import play.api.mvc.Result
-import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers.{status, _}
+import play.api.test.{FakeHeaders, FakeRequest}
 import services.UpscanCallbackDispatcher
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 

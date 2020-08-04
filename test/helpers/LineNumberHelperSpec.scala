@@ -17,12 +17,8 @@
 package helpers
 
 import base.SpecBase
-import cats.data.ReaderT
 import models.Validation
-import services.BusinessRuleValidationService.{hallmarks, hallmarksForMainBenefitTest, hasIntermediaryDiscloser, hasMainBenefitTest1, implementationStartDate, isInitialDisclosureMA, noOfIntermediaries, noOfRelevantTaxPayers, taxPayerImplementingDates}
 import utils.TestXml
-
-import scala.xml.NodeSeq
 
 class LineNumberHelperSpec extends SpecBase with TestXml {
 

@@ -17,7 +17,7 @@
 package services
 
 import base.SpecBase
-import models.upscan.{InProgress, Reference, UploadSessionDetails, UploadId}
+import models.upscan.{InProgress, Reference, UploadId, UploadSessionDetails}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar

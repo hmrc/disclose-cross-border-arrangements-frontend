@@ -16,7 +16,7 @@
 
 package models
 
-import org.scalatest.{EitherValues, FreeSpec, OptionValues, MustMatchers}
+import org.scalatest.{EitherValues, FreeSpec, MustMatchers, OptionValues}
 import play.api.libs.json._
 
 object EnumerableSpec {

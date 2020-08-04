@@ -18,8 +18,8 @@ package models
 
 import generators.ModelGenerators
 import org.scalacheck.{Gen, Shrink}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalatest.{FreeSpec, MustMatchers, OptionValues}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json._
 
 class RichJsValueSpec extends FreeSpec
