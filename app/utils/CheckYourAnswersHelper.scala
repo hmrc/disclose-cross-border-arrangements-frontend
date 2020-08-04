@@ -67,12 +67,12 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
       )
       case "DAC6REP" => Seq(uploadedFile.get, Row(
         key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.replacement.text".withArgs(arrangementID, disclosureID), classes = Seq("replacement-disclosure-text"))
+        value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
         )
       )
       case _ => Seq(uploadedFile.get, Row(
         key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(arrangementID, disclosureID), classes = Seq("delete-disclosure-text"))
+        value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID, arrangementID), classes = Seq("delete-disclosure-text"))
         )
       )
     }

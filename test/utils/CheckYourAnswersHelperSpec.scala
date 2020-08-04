@@ -73,7 +73,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
       helper.displaySummaryFromInstruction("DAC6REP", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"checkYourAnswers.replacement.text".withArgs(arrangementID, disclosureID),
+          value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID),
             classes = Seq("replacement-disclosure-text"))
         ))
     }
@@ -83,7 +83,7 @@ class CheckYourAnswersHelperSpec extends SpecBase {
       helper.displaySummaryFromInstruction("DAC6DEL", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(arrangementID, disclosureID),
+          value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID,arrangementID),
             classes = Seq("delete-disclosure-text"))
         )
       )
