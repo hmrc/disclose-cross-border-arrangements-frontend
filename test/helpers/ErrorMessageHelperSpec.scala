@@ -113,13 +113,22 @@ class ErrorMessageHelperSpec extends SpecBase{
         result mustBe List(GenericError(20, "There is a problem with this line number"))
       }
 
-    "must return correct for missing boolean value" in {
+    "must return correct for missing boolean value (affected Person)" in {
 
       val error1 = SaxParseError(lineNumber,"cvc-datatype-valid.1.2.1: '' is not a valid value for 'boolean'.")
       val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value '' of element 'AffectedPerson' is not valid.")
 
         val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
-        result mustBe List(GenericError(lineNumber, "Enter an AffectedPerson"))
+        result mustBe List(GenericError(lineNumber, "Enter an AssociatedEnterprise/AffectedPerson"))
+      }
+
+      "must return correct for missing other boolean value" in {
+
+      val error1 = SaxParseError(lineNumber,"cvc-datatype-valid.1.2.1: '' is not a valid value for 'boolean'.")
+      val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value '' of element 'InitialDisclosureMA' is not valid.")
+
+        val result = ErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter an InitialDisclosureMA"))
       }
 
     }
