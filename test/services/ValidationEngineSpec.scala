@@ -19,7 +19,7 @@ package services
 import base.SpecBase
 import cats.data.ReaderT
 import cats.implicits._
-import helpers.LineNumberHelper
+import helpers.BusinessRulesErrorMessageHelper
 import models.{GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Matchers._
 import org.mockito.Mockito.when
@@ -84,7 +84,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
     val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
 
-    val lineNumberHelper: LineNumberHelper = new LineNumberHelper
+    val lineNumberHelper: BusinessRulesErrorMessageHelper = new BusinessRulesErrorMessageHelper
 
     val mockBusinessRuleValidationService: BusinessRuleValidationService = new BusinessRuleValidationService {
 
