@@ -121,7 +121,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
 
       when(mockXmlValidationService.loadXML(any[String]())).
         thenReturn(<test><value>Success</value></test>)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any())(any())).
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
 
       val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
@@ -130,7 +130,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
 
       status(result) mustEqual SEE_OTHER
       verify(mockCrossBorderArrangementsConnector, times(1))
-        .submitDocument(any(), any())(any())
+        .submitDocument(any(), any(), any())(any())
 
       application.stop()
     }

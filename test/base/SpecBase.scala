@@ -20,8 +20,8 @@ import config.FrontendAppConfig
 import controllers.actions._
 import models.UserAnswers
 import org.mockito.Mockito
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest._
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice._
 import play.api.i18n.{Messages, MessagesApi}
