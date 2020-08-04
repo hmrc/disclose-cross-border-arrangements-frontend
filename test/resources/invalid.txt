@@ -14,7 +14,7 @@
                         <Suffix>(Cat)</Suffix>
                     </IndividualName>
                     <BirthDate>2007-01-14</BirthDate>
-                    <BirthPlace>HexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexhamHexham</BirthPlace>
+                    <BirthPlace>gvgvhv</BirthPlace>
                     <TIN issuedBy="GB">AA000000D</TIN>
                     <Address>
                         <Street>Downing Street</Street>
@@ -94,7 +94,7 @@
                                 <ResCountryCode>VU</ResCountryCode>
                             </Individual>
                         </AssociatedEnterpriseID>
-                        <AffectedPerson>true</AffectedPerson>
+                        <AffectedPerson></AffectedPerson>
                     </AssociatedEnterprise>
                 </AssociatedEnterprises>
             </RelevantTaxpayer>
@@ -148,11 +148,9 @@
                         <BirthPlace>Hexham</BirthPlace>
                         <TIN issuedBy="GB">AB000000D</TIN>
                         <Address>
-                            <Street>King Charles Street</Street>
                             <BuildingIdentifier>No 10</BuildingIdentifier>
                             <SuiteIdentifier>Lord Palmerston Suite</SuiteIdentifier>
                             <FloorIdentifier>Second</FloorIdentifier>
-                            <DistrictName>Westminster</DistrictName>
                             <POB>48</POB>
                             <PostCode>SW1A 4GG</PostCode>
                             <City>London</City>
@@ -169,7 +167,6 @@
             <Reason>DAC6704</Reason>
             <Summary>
                 <Disclosure_Name>Catnip Advice</Disclosure_Name>
-                <Disclosure_Description>I will give advice on expensing catnip for money</Disclosure_Description>
             </Summary>
             <NationalProvision>I don't know what this is as I am just a cat</NationalProvision>
             <Amount>4000</Amount>

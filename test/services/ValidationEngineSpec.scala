@@ -256,7 +256,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(randomParseError)))
 
-        val expectedErrors = Seq(GenericError(lineNumber, "There is something wrong with this line"))
+        val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
