@@ -17,8 +17,8 @@
                     <BirthPlace>gvgvhv</BirthPlace>
                     <TIN issuedBy="GB">AA000000D</TIN>
                     <Address>
-                        <Street>Downing Street</Street>
                         <BuildingIdentifier>No 10</BuildingIdentifier>
+                        <Street>Downing Street</Street>
                         <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
                         <FloorIdentifier>Second</FloorIdentifier>
                         <DistrictName>Westminster</DistrictName>
@@ -33,12 +33,13 @@
             </ID>
             <Liability>
                 <RelevantTaxpayerDiscloser>
+                    <Street>Downing Street</Street>
                     <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
                     <Capacity>DAC61105</Capacity>
                 </RelevantTaxpayerDiscloser>
             </Liability>
         </Disclosing>
-        <InitialDisclosureMA></InitialDisclosureMA>
+        <InitialDisclosureMA>yes</InitialDisclosureMA>
         <RelevantTaxPayers>
             <RelevantTaxpayer>
                 <ID>
