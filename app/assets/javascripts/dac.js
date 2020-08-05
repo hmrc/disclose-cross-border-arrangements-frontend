@@ -21,3 +21,10 @@ if(backLink){
         }
   });
 }
+dac.js
+document.getElementById('print').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.print();
+});
+
+// <a id = "print" href="/">{{ title(messages("site.print")) }}</a>
