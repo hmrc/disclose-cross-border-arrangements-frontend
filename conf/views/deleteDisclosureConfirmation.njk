@@ -4,8 +4,7 @@
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 
 {% block pageTitle %}
-  {{ title(messages("replaceConfirmation.title")) }}
-
+  {{ title(messages("deleteDisclosureConfirmation.title")) }}
 {% endblock %}
 
 {% block mainContent %}
@@ -16,18 +15,13 @@
 
         <h1 class="govuk-panel__title">
           {{ govukPanel({
-            titleText: messages("replaceConfirmation.heading")
+            titleText: messages("deleteDisclosureConfirmation.heading")
           }) }}
         </h1>
 
         <div class="govuk-body">
-            <p>{{ messages("replaceConfirmation.p1") }}</p>
-
-            <h2 class="govuk-heading-m">
-                {{ messages("replaceConfirmation.heading.two") }}
-            </h2>
-
-            <p>{{ messages("replaceConfirmation.p2") }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p2") }}</p>
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>
