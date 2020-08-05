@@ -42,7 +42,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
     (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => ValidationFailure(xmlErrors ++ businessRulesErrors)
+      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
+                                                                                     ValidationFailure(orderedErrors)
       case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
       case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
       case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>

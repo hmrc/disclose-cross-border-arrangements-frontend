@@ -103,6 +103,22 @@ class XmlErrorMessageHelperSpec extends SpecBase{
         result mustBe List(GenericError(lineNumber, "Enter a DisclosureInformation/ImplementingDate in the format YYYY-MM-DD"))
       }
 
+
+      "must return correct error for invalid Intermediary Capacity" in {
+        val error1 = SaxParseError(lineNumber,"cvc-enumeration-valid: Value 'DAC61102fggg' is not facet-valid with respect to enumeration '[DAC61101, DAC61102]'. It must be a value from the enumeration.")
+        val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value 'DAC61102fggg' of element 'Capacity' is not valid.")
+
+        val result = XmlErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
+      }
+
+      "must return correct error for invalid TaxPayer Capacity" in {
+        val error1 = SaxParseError(lineNumber,"cvc-enumeration-valid: Value 'DAC61105hjkjk' is not facet-valid with respect to enumeration '[DAC61104, DAC61105, DAC61106]'. It must be a value from the enumeration.")
+        val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value 'DAC61105hjkjk' of element 'Capacity' is not valid.")
+        val result = XmlErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
+      }
+
     "must return correct error for line (value and tags)" in {
 
 
@@ -173,8 +189,8 @@ class XmlErrorMessageHelperSpec extends SpecBase{
       }
 
       "must return correct message for 'Capacity'" in {
-        val result = XmlErrorMessageHelper.invalidCodeMessage("Capacity")
-        result mustBe Some("Capacity is not one of the allowed values")
+        val result = XmlErrorMessageHelper.invalidCodeMessage("Capacity", Some("(DAC61101, DAC61102)"))
+        result mustBe Some("Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary")
       }
 
       "must return correct message for 'IntermediaryNexus'" in {
