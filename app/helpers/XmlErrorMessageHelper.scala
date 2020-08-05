@@ -20,7 +20,7 @@ import models.{GenericError, SaxParseError}
 
 import scala.collection.mutable.ListBuffer
 
-object ErrorMessageHelper {
+object XmlErrorMessageHelper {
 
   val defaultMessage = "There is a problem with this line number"
 
@@ -40,7 +40,7 @@ object ErrorMessageHelper {
             extractInvalidIntegerErrorValues(error1, error2)).orElse(
             extractInvalidDateErrorValues(error1, error2)).orElse(
             extractMissingTagValues(error1)).orElse(
-            extractMissingBooleanValues(error1, error2))
+            extractBooleanErrorValues(error1, error2))
 
           GenericError(groupedErrors._1, error.getOrElse(defaultMessage))
         }else GenericError(groupedErrors._1, defaultMessage)
@@ -121,19 +121,21 @@ object ErrorMessageHelper {
     }
   }
 
-  def extractMissingBooleanValues(errorMessage1: String, errorMessage2: String): Option[String] = {
-    val formatOfFirstError = """cvc-datatype-valid.1.2.1: '' is not a valid value for 'boolean'.""".stripMargin.r
-    val formatOfSecondError = """cvc-type.3.1.3: The value '' of element '(.*?)' is not valid.""".stripMargin.r
+  def extractBooleanErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formatOfFirstError = """cvc-datatype-valid.1.2.1: '(.*?)' is not a valid value for 'boolean'.""".stripMargin.r
+    val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
     errorMessage1 match {
-      case formatOfFirstError() =>
+      case formatOfFirstError(_) =>
         errorMessage2 match {
-          case formatOfSecondError(element) =>
+          case formatOfSecondError(entry, element) =>
             val displayName = if(element.equals("AffectedPerson")){
               "AssociatedEnterprise/AffectedPerson"
             }else element
 
-            Some(missingInfoMessage(displayName))
+            if(entry.isEmpty) {
+              Some(missingInfoMessage(displayName))
+            }else Some(s"$displayName must be true or false")
           case _ => None
         }
       case _ => None
@@ -163,7 +165,10 @@ object ErrorMessageHelper {
       case formatOfFirstError(_) =>
         errorMessage2 match {
           case formatOfSecondError(_, element) =>
-            Some(s"Enter a $element in the format YYYY-MM-DD")
+            val displayName = if (element.equals("ImplementingDate")) {
+              "DisclosureInformation/ImplementingDate"
+            }else element
+            Some(s"Enter a $displayName in the format YYYY-MM-DD")
           case _ =>  None
         }
       case _ => None
@@ -177,7 +182,7 @@ object ErrorMessageHelper {
 
     formattedError match {
       case format(_, element) =>
-        Some(s"Missing $element tags")
+        Some(s"Enter a line for $element")
       case _ => None
     }
   }

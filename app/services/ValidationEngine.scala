@@ -16,7 +16,7 @@
 
 package services
 
-import helpers.{ErrorMessageHelper, BusinessRulesErrorMessageHelper}
+import helpers.{XmlErrorMessageHelper, BusinessRulesErrorMessageHelper}
 import javax.inject.Inject
 import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
@@ -59,7 +59,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       (xmlErrors._1, ValidationSuccess(source))
     }else {
 
-      val filteredErrors = ErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+      val filteredErrors = XmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
 
       (xmlErrors._1,  ValidationFailure(filteredErrors))
     }

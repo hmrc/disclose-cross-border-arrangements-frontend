@@ -100,18 +100,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(17, "The TaxpayerImplementingDate when the arrangement has been or will be made available to each taxpayer must be on or after 25 June 2018"))
       }
 
-      "must  return correct error message when for DisclosureImportInstruction error" in {
-
-      val failedValidation = Validation(
-        key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
-        value = false
-      )
-
-        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
-        result mustBe List(GenericError(8, "DisclosureImportInstruction is DAC6NEW so there should be no ArrangementId or DisclosureId"))
-      }
-
-      "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
+     "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
 
       val failedValidation = Validation(
         key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
@@ -122,8 +111,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(8, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
       }
 
-
-      "must  return correct error message when main benefit test does not have a specified hallmark" in {
+     "must  return correct error message when main benefit test does not have a specified hallmark" in {
 
       val failedValidation = Validation(
         key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
@@ -132,6 +120,64 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
         result mustBe List(GenericError(10, "MainBenefitTest1 is false but the hallmarks A, B, C1bi and/or C1d have been selected"))
+      }
+
+
+      "must  return correct error message when IntitialDisclosureMA is true but arrangement/disclosure id's provided" in {
+
+      val failedValidation = Validation(
+        key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
+        value = false
+      )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
+        result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6NEW so there should be no ArrangementID or DisclosureID"))
+      }
+
+
+
+      "must  return correct error message when DAC6ADD has disclosureID" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+        result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6ADD so there should be an ArrangementID and no DisclosureID"))
+      }
+
+      "must  return correct error message when DAC6REP does not have Arrangement ID/disclosureID" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+        result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6REP so there should be an ArrangementID and a DisclosureID"))
+      }
+
+      "must  return correct error message when DAC6DEL does not have Arrangement ID/disclosureID" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+        result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6DEL so there should be an ArrangementID and a DisclosureID"))
+      }
+
+      "must  return correct default message for unexpected error key" in {
+
+        val failedValidation = Validation(
+          key = "random error",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+        result mustBe List(GenericError(7, "There is a problem with this line number"))
       }
 
 
