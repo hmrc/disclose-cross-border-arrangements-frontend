@@ -107,14 +107,16 @@ object XmlErrorMessageHelper {
   }
 
   def extractEnumErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formattedError = errorMessage1.replaceAll("\\[", "(").replaceAll("\\]",")")
+
     val formatOfFirstError = """cvc-enumeration-valid: Value '(.*?)' is not facet-valid with respect to enumeration '(.*?)'. It must be a value from the enumeration.""".stripMargin.r
     val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
-    errorMessage1 match {
-      case formatOfFirstError(_, _) =>
+    formattedError match {
+      case formatOfFirstError(_, allowedValues) =>
         errorMessage2 match {
           case formatOfSecondError(_, element) =>
-            invalidCodeMessage(element)
+            invalidCodeMessage(element, Some(allowedValues))
           case _ =>  None
         }
       case _ => None
@@ -195,13 +197,16 @@ object XmlErrorMessageHelper {
 
   }
 
-   def invalidCodeMessage(elementName: String): Option[String] = {
-     elementName match {
-      case "Country" | "CountryExemption" | "TIN issuedBy" => Some(s"$elementName is not one of the ISO country codes")
-      case "ConcernedMS" => Some("ConcernedMS is not one of the ISO EU Member State country codes")
-      case "Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
-           "Hallmark" | "ResCountryCode"  => Some(s"$elementName is not one of the allowed values")
-      case "Capacity"=> Some(s"Capacity is not one of the allowed values")
+   def invalidCodeMessage(elementName: String, allowedValues : Option[String] = None): Option[String] = {
+     (elementName, allowedValues) match {
+      case ("Country" | "CountryExemption" | "TIN issuedBy", _) => Some(s"$elementName is not one of the ISO country codes")
+      case ("ConcernedMS", _) => Some("ConcernedMS is not one of the ISO EU Member State country codes")
+      case ("Reason" | "IntermediaryNexus" | "RelevantTaxpayerNexus" |
+           "Hallmark" | "ResCountryCode", _)  => Some(s"$elementName is not one of the allowed values")
+      case ("Capacity", Some(values))=>
+             if(values.equals("(DAC61104, DAC61105, DAC61106)")){
+               Some(s"Capacity is not one of the allowed values $values for Taxpayer")
+             }else  Some(s"Capacity is not one of the allowed values $values for Intermediary")
       case _ => None
     }
    }

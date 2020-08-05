@@ -223,7 +223,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(intermediaryCapacityError1, intermediaryCapacityError2)))
 
-        val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values"))
+        val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
@@ -233,7 +233,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(relevantTpDiscloserCapacityError1, relevantTpDiscloserCapacityError2)))
 
-        val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values"))
+        val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
@@ -272,12 +272,12 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
 
       "must return a ValidationFailure with a combined list of errors for a for file which " +
-        "fails both xsd checks and business rules validation" in new SetUp {
+        "fails both xsd checks and business rules validation and order errors correctly" in new SetUp {
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
 
-        val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(lineNumber, defaultError))
+        val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
 
