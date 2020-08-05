@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package navigation
+package pages
 
-import models.{Mode, NormalMode, UserAnswers}
-import pages._
-import play.api.mvc.Call
+import models.Dac6MetaData
+import play.api.libs.json.JsPath
 
-class FakeNavigator(desiredRoute: Call, mode: Mode = NormalMode) extends Navigator {
+object Dac6MetaDataPage extends QuestionPage[Dac6MetaData] {
 
-  override def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call =
-    desiredRoute
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "dac6MetaData"
 }

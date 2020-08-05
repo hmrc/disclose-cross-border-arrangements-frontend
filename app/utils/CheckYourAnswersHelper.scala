@@ -26,8 +26,6 @@ import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels._
 
-import scala.xml.Elem
-
 class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messages) {
 
   private def yesOrNo(answer: Boolean)(implicit messages: Messages): Html = {
@@ -54,10 +52,7 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
       )
   }
 
-  def displaySummaryFromInstruction(xml: Elem) : Seq[SummaryList.Row] = {
-    val arrangementID = (xml \ "ArrangementID").text
-    val importInstruction = (xml \ "DAC6Disclosures" \ "DisclosureImportInstruction").text
-    val disclosureID = (xml \ "DAC6Disclosures" \ "DisclosureID").text
+  def displaySummaryFromInstruction(importInstruction: String, arrangementID: String, disclosureID: String) : Seq[SummaryList.Row] = {
 
     importInstruction match {
       case "DAC6NEW" => Seq(uploadedFile.get, Row(
@@ -75,9 +70,14 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
         value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
         )
       )
-      case _ => Seq() //TODO - add DAC6DEL to cover all scenarios
+      case _ => Seq(uploadedFile.get, Row(
+        key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID, arrangementID), classes = Seq("delete-disclosure-text"))
+        )
+      )
     }
   }
+
 }
 
 object CheckYourAnswersHelper {

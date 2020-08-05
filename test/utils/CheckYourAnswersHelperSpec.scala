@@ -23,8 +23,6 @@ import pages.ValidXMLPage
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels._
 
-import scala.xml.Elem
-
 class CheckYourAnswersHelperSpec extends SpecBase {
 
   "Check Your Answers Helper" - {
@@ -47,56 +45,48 @@ class CheckYourAnswersHelperSpec extends SpecBase {
     )
 
     val helper: CheckYourAnswersHelper = new CheckYourAnswersHelper(userAnswers)
+    val arrangementID = "GBA20200701AAA000"
+    val disclosureID = "GBD20200701AAA001"
 
     "must return new arrangement content when import instruction is DAC6NEW" in {
 
-      val mockXML: Elem =
-        <DAC6_Arrangement>
-          <DAC6Disclosures>
-            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-          </DAC6Disclosures>
-        </DAC6_Arrangement >
-
-      helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6NEW", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"checkYourAnswers.new.text", classes = Seq("new-arrangement-text")))
+          value = Value(msg"checkYourAnswers.new.text",
+            classes = Seq("new-arrangement-text")))
       )
     }
 
     "must return arrangement ID & additional information content when import instruction is DAC6ADD" in {
 
-      val mockXML: Elem =
-        <DAC6_Arrangement>
-          <ArrangementID>GBA20200701AAA000</ArrangementID>
-          <DAC6Disclosures>
-            <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
-          </DAC6Disclosures>
-        </DAC6_Arrangement >
-
-      helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6ADD", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"checkYourAnswers.additional.text".withArgs("GBA20200701AAA000"), classes = Seq("additional-disclosure-text"))
+          value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID),
+            classes = Seq("additional-disclosure-text"))
         ))
     }
 
     "must return arrangement ID, Disclosure ID & replacement content when import instruction is DAC6REP" in {
 
-      val mockXML: Elem =
-        <DAC6_Arrangement>
-          <ArrangementID>GBA20200701AAA000</ArrangementID>
-          <DAC6Disclosures>
-            <DisclosureID>GBD20200701AAA001</DisclosureID>
-            <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
-          </DAC6Disclosures>
-        </DAC6_Arrangement >
-
-      helper.displaySummaryFromInstruction(mockXML) mustBe Seq(fileContent,
+      helper.displaySummaryFromInstruction("DAC6REP", arrangementID, disclosureID) mustBe Seq(fileContent,
         Row(
           key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"checkYourAnswers.replacement.text".withArgs("GBD20200701AAA001", "GBA20200701AAA000"), classes = Seq("replacement-disclosure-text"))
+          value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID),
+            classes = Seq("replacement-disclosure-text"))
         ))
+    }
+
+    "must return arrangement ID, Disclosure ID & deletion content when import instruction is DAC6DEL" in {
+
+      helper.displaySummaryFromInstruction("DAC6DEL", arrangementID, disclosureID) mustBe Seq(fileContent,
+        Row(
+          key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID,arrangementID),
+            classes = Seq("delete-disclosure-text"))
+        )
+      )
     }
   }
 }

@@ -25,6 +25,7 @@ import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
 import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import models.{ValidationFailure, ValidationSuccess}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application

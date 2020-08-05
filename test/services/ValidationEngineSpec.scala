@@ -20,7 +20,7 @@ import base.SpecBase
 import cats.data.ReaderT
 import cats.implicits._
 import helpers.BusinessRulesErrorMessageHelper
-import models.{GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, SaxParseError, Validation, ValidationFailure, ValidationSuccess, GenericError}
 import org.mockito.Matchers._
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -109,19 +109,23 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         } yield
           Seq(v1).filterNot(_.value)
       }
+
     }
 
     val validationEngine = new ValidationEngine(mockXmlValidationService, mockBusinessRuleValidationService, lineNumberHelper)
 
     val source = "src"
     val elem: Elem = <dummyElement>Test</dummyElement>
+    val mockXML: Elem = <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+    val mockMetaData = Some(Dac6MetaData("DAC6NEW"))
+
   }
   "ValidationEngine" - {
     "ValidateXml" -{
 
       "must return ValidationSuccess for valid file" in new SetUp {
-        when(mockXmlValidationService.validateXml(any())).thenReturn((elem, noErrors))
-        validationEngine.validateFile(source) mustBe ValidationSuccess(source)
+        when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
+        validationEngine.validateFile(source) mustBe ValidationSuccess(source, mockMetaData)
       }
 
 //      "must return ValidationFailure for file which fails xsd validation" in new SetUp {

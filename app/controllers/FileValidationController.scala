@@ -16,16 +16,15 @@
 
 package controllers
 
-import config.FrontendAppConfig
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import handlers.ErrorHandler
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{InvalidXMLPage, URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import renderer.Renderer
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -33,36 +32,41 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileValidationController @Inject()(
-                                          override val messagesApi: MessagesApi,
-                                          identify: IdentifierAction,
-                                          getData: DataRetrievalAction,
-                                          val sessionRepository: SessionRepository,
-                                          val controllerComponents: MessagesControllerComponents,
-                                          appConfig: FrontendAppConfig,
-                                          repository: UploadSessionRepository,
-                                          validationEngine: ValidationEngine,
-                                          renderer: Renderer,
-                                          navigator: Navigator
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  val sessionRepository: SessionRepository,
+  val controllerComponents: MessagesControllerComponents,
+  repository: UploadSessionRepository,
+  requireData: DataRequiredAction,
+  validationEngine: ValidationEngine ,
+  errorHandler: ErrorHandler,
+  navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(uploadId: UploadId): Action[AnyContent] = (identify andThen getData).async { implicit request =>
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request =>
     {
       for {
+        uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
         validation = validationEngine.validateFile(downloadUrl)
       } yield {
         validation match {
-          case ValidationSuccess(_) =>
+          case ValidationSuccess(_,Some(metaData)) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
-              _              <- sessionRepository.set(updatedAnswersWithURL)
+              updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
+              _              <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield {
-              Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              metaData.importInstruction match {
+                case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
+                case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              }
             }
-
           case ValidationFailure(_) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
@@ -70,12 +74,22 @@ class FileValidationController @Inject()(
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }
+          case _ =>
+            errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
         }
       }
     }.flatten
   }
 
+  private def getUploadId(userAnswers: UserAnswers): Future[UploadId] = {
+    userAnswers.get(UploadIDPage) match {
+      case Some(uploadId) => Future.successful(uploadId)
+      case None => throw new RuntimeException("Cannot find uploadId")
+    }
+  }
+
   private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
+
     uploadSessions match {
       case Some(uploadDetails) => uploadDetails.status match {
         case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
