@@ -31,7 +31,7 @@ import scala.xml.{Elem, NodeSeq}
 class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
   val xsdError = "xsd-error"
-  val businessRulesError = "business-rules-error"
+  val defaultError = "There is a problem with this line number"
   val lineNumber = 0
   val noErrors: ListBuffer[SaxParseError] = ListBuffer()
 
@@ -98,7 +98,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
           result <- dummyReader
         } yield
           Validation(
-            key = businessRulesError,
+            key = defaultError,
             value = result
           )
       }
@@ -266,7 +266,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, noErrors))
 
-        val expectedErrors = Seq(GenericError(lineNumber, businessRulesError))
+        val expectedErrors = Seq(GenericError(lineNumber, defaultError))
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
 
@@ -277,7 +277,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
 
-        val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(lineNumber, businessRulesError))
+        val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(lineNumber, defaultError))
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
 
