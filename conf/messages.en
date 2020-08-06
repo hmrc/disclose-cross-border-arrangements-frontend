@@ -159,8 +159,8 @@ session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
 session_expired.guidance = The details you have given have been deleted because you did not continue the service for 15 minutes.
 
-upload_form.title = Please upload a file
-upload_form.heading = Please upload a file
+upload_form.title = Upload an XML file
+upload_form.heading = Upload an XML file
 
 upload_error.title = Upload Error
 upload_error.heading = Upload Error
