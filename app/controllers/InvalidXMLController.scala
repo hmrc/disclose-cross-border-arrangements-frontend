@@ -16,35 +16,50 @@
 
 package controllers
 
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import handlers.ErrorHandler
 import javax.inject.Inject
-import pages.InvalidXMLPage
+import pages.{GenericErrorPage, InvalidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.Table
+import utils.CheckYourAnswersHelper
 
 import scala.concurrent.ExecutionContext
 
 class InvalidXMLController @Inject()(
-                                        override val messagesApi: MessagesApi,
-                                        identify: IdentifierAction,
-                                        getData: DataRetrievalAction,
-                                        val controllerComponents: MessagesControllerComponents,
-                                        renderer: Renderer
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  errorHandler: ErrorHandler
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      val fileName = request.userAnswers.flatMap(_.get(InvalidXMLPage)) match {
-        case Some(fileName) => fileName
-        case None => ""
-      }
 
-      renderer.render(
-        "invalidXML.njk",
-        Json.obj("fileName" -> Json.toJson(fileName))
-      ).map(Ok(_))
-  }
+      (request.userAnswers.get(GenericErrorPage), request.userAnswers.get(InvalidXMLPage)) match {
+        case (Some(errors), Some(fileName)) =>
+          val helper = new CheckYourAnswersHelper(request.userAnswers)
+          val tableWithErrors: Table = helper.mapErrorsToTable(errors)
+
+          renderer.render(
+            "invalidXML.njk",
+            Json.obj(
+              "fileName" -> Json.toJson(fileName),
+              "tableWithErrors" -> tableWithErrors
+            )
+          ).map(Ok(_))
+
+        case _ => errorHandler.onServerError(request, throw new RuntimeException("fileName or errors missing for InvalidXMLPage"))
+
+      }
+    }
+
 }
+

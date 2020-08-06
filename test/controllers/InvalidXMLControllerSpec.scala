@@ -17,11 +17,12 @@
 package controllers
 
 import base.SpecBase
-import models.UserAnswers
+import models.{GenericError, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.{GenericErrorPage, InvalidXMLPage}
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -35,10 +36,20 @@ class InvalidXMLControllerSpec extends SpecBase with MockitoSugar {
 
     "return OK and the correct view for a GET" in {
 
+      val mockErrors = Seq(GenericError(1, "test"))
+      val mockfileName = "fileName.xml"
+
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
-      val userAnswers = UserAnswers("id", Json.obj("invalidXML" -> "fileName.xml"))
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(InvalidXMLPage, mockfileName)
+        .success.value
+        .set(GenericErrorPage, mockErrors)
+        .success
+        .value
+
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+
       val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
@@ -51,6 +62,27 @@ class InvalidXMLControllerSpec extends SpecBase with MockitoSugar {
 
       templateCaptor.getValue mustEqual "invalidXML.njk"
       jsonCaptor.getValue.value.get("fileName") mustBe Some(Json.toJson("fileName.xml"))
+
+      application.stop()
+    }
+
+    "throw Exception and redirect to Internal Server Error page when errors or fileName is missing" in {
+
+      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val result = route(application, request).value
+
+      an[RuntimeException] mustBe thrownBy {
+        status(result) mustEqual OK
+
+        verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+        templateCaptor.getValue mustEqual "internalServerError.njk"
+      }
 
       application.stop()
     }
