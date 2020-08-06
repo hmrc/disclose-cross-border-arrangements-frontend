@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package helpers
+package pages
 
-import models.{GenericError, Validation}
+import models.GenericError
+import play.api.libs.json.JsPath
 
-import scala.xml.Elem
+object GenericErrorPage extends QuestionPage[Seq[GenericError]] {
 
-class BusinessRulesErrorMessageHelper {
+  override def path: JsPath = JsPath \ toString
 
-  def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-    val xmlArray = xml.toString().split("\n")
-
-   val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-   valsWithLineNumber.map(validation => validation.toGenericError)
-
-  }
- }
-
+  override def toString: String = "error"
+}

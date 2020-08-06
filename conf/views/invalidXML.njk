@@ -2,6 +2,8 @@
 
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "govuk/components/table/macro.njk"         import govukTable %}
+
 
 
 {% block pageTitle %}
@@ -27,12 +29,30 @@
         <div class="govuk-body">
 
         <p>{{ messages("invalidXML.p1", fileName) }}</p>
-
         <p>{{ messages("invalidXML.p2") }}</p>
 
-        <p><a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" id="uploadFileLink" class="govuk-link">{{ messages("invalidXML.p3") }}</a></p>
+        <h2 class="govuk-heading-m">
+            {{ messages("invalidXML.h2") }}
+        </h2>
 
-        <p><a href="#" id="helpLink" class="govuk-link" rel="noreferrer noopener" target="_blank">{{ messages("invalidXML.p4") }}</a></p>
+        <ol class="govuk-list govuk-list--number">
+          <li>{{ messages("invalidXML.li1") }}</li>
+          <li>{{ messages("invalidXML.li2") }}</li>
+          <li>
+            <a href="#" id="helpLink" class="govuk-link" rel="noreferrer noopener" target="_blank">
+              {{ messages("invalidXML.li3") }}
+            </a>
+          </li>
+          <li>
+            <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" id="uploadFileLink" class="govuk-link">
+                {{ messages("invalidXML.li4") }}
+            </a>
+          </li>
+        </ol>
+
+        <br>
+
+        {{ govukTable(tableWithErrors) }}
 
         </div>
       </div>

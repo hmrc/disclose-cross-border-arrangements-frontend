@@ -36,7 +36,6 @@ object SaxParseError {
   implicit val format = Json.format[SaxParseError]
 }
 
-
 case class GenericError(lineNumber: Int, messageKey: String)
 
 object GenericError {

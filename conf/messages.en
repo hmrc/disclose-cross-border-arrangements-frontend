@@ -171,12 +171,18 @@ upload_result_form.heading = Verifying uploaded file
 validation.title = Validator placeholder
 validation.heading = Validator placeholder
 
-invalidXML.title = There is a problem
+invalidXML.title = There is a problem with your file
 invalidXML.heading = There is a problem with your file
-invalidXML.p1 = Your file {0} does not contain valid XML.
-invalidXML.p2 = You can restructure the XML and upload it again.
-invalidXML.p3 = Upload a different file
-invalidXML.p4 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
+invalidXML.p1 = You uploaded {0}.
+invalidXML.p2 = Your file does not meet our technical requirements.
+invalidXML.h2 = What you can do next
+invalidXML.li1 = Print or save this page
+invalidXML.li2 = View the errors in the table below
+invalidXML.li3 = Correct the errors by reading the technical guidance for XML files (opens in a new window or tab)
+invalidXML.li4 = Upload your corrected file
+invalidXML.h3 = Errors
+invalidXML.table.heading1 = Line number
+invalidXML.table.heading2 = Error
 
 fileToLargeError.title = There is a problem with your file
 fileToLargeError.heading = There is a problem with your file
