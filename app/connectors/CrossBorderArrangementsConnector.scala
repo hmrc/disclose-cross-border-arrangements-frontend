@@ -20,8 +20,7 @@ import config.FrontendAppConfig
 import javax.inject.Inject
 import models.GeneratedIDs
 import play.api.http.HeaderNames
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.SubmissionUtil._
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -30,8 +29,11 @@ import scala.xml.Elem
 
 class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfig,
                                                  httpClient: HttpClient)(implicit val ec: ExecutionContext) {
-
   val submitUrl = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/submit"
+
+  def verificationUrl(arrangementId: String): String = {
+    s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"
+  }
 
   private val headers = Seq(
     HeaderNames.CONTENT_TYPE -> "application/xml"
@@ -40,5 +42,16 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] = {
     httpClient.POSTString[GeneratedIDs](submitUrl, constructSubmission(fileName, enrolmentID, xmlDocument).toString(), headers)
   }
+
+  def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+ httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map {response =>
+   response.status match{
+     case 204 => true
+     case _ => false
+   }
+ }
+
+}
+
 
 }

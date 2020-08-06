@@ -25,7 +25,7 @@ class BusinessRulesErrorMessageHelper {
   def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
     val xmlArray = xml.toString().split("\n")
 
-   val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
+    val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
 
    valsWithLineNumber.map(validation => validation.toGenericError)
 

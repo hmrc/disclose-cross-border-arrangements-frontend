@@ -40,30 +40,11 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID" => "DisclosureImportInstruction is DAC6NEW so there should be no ArrangementID or DisclosureID"
        case "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID" => "DisclosureImportInstruction is DAC6REP so there should be an ArrangementID and a DisclosureID"
        case "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID" => "DisclosureImportInstruction is DAC6DEL so there should be an ArrangementID and a DisclosureID"
+       case "businessrules.addDisclosure.mustNotBeInitialDisclosureMA" => "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"
        case _ => "There is a problem with this line number"
 
      }
   }
-
-
-
-//  disclosureImportInstruction match {
-//    case "DAC6NEW" => Validation(
-//      key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
-//      value = arrangementID.isEmpty && disclosureID.isEmpty)
-//    case "DAC6ADD" => Validation(
-//      key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
-//      value = arrangementID.nonEmpty && disclosureID.isEmpty)
-//    case "DAC6REP" => Validation(
-//      key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-//      value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-//    case "DAC6DEL" => Validation(
-//      key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-//      value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-//    case _ =>  Validation(
-//      key = "businessrules.disclosure.notAValidDisclosureInstruction",
-//      value = false) //TODO: This is because I haven't used an enum
-//  }
 
   def path: String = {
 

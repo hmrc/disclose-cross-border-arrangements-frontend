@@ -164,6 +164,23 @@ class XmlErrorMessageHelperSpec extends SpecBase{
         result mustBe List(GenericError(lineNumber, "InitialDisclosureMA must be true or false"))
       }
 
+      "must return correct error for incorrectly formatted arrangement id" in {
+
+        val error1 = SaxParseError(lineNumber, "cvc-pattern-valid: Value 'njinjin' is not facet-valid with respect to pattern '[A-Z]{2}[A]([2]\\d{3}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01]))([A-Z0-9]{6})' for type '#AnonType_ArrangementIDDAC6_Arrangement'.")
+        val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value 'njinjin' of element 'ArrangementID' is not valid.")
+
+        val result = XmlErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter ArrangementID in the format CCAYYYYMMDDXXXXXX"))
+      }
+
+      "must return correct error for incorrectly formatted disclosure id" in {
+
+        val error1 = SaxParseError(lineNumber,"cvc-pattern-valid: Value 'rbrbrbrbrb' is not facet-valid with respect to pattern '[A-Z]{2}[D]([2]\\d{3}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01]))([A-Z0-9]{6})' for type '#AnonType_DisclosureIDDAC6Disclosure_Type'.")
+        val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value 'rbrbrbrbrb' of element 'DisclosureID' is not valid.")
+        val result = XmlErrorMessageHelper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter DisclosureID in the format CCDYYYYMMDDXXXXXX"))
+      }
+
     }
 
     "invalidCodeMessage" - {

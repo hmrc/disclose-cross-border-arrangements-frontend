@@ -65,6 +65,17 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(8, "InitialDisclosureMA is false so there should be a RelevantTaxpayer"))
       }
 
+      "must return correct error message when other initialDisclosureMa is true and importInstruction is DAC6ADD" in {
+
+      val failedValidation = Validation(
+        key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
+        value = false
+      )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
+        result mustBe List(GenericError(7, "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"))
+      }
+
 
       "must  return correct error message when RelevantTaxpayerDiscloser does not have a RelevantTaxPayer" in {
 

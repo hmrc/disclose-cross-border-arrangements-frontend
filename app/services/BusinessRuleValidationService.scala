@@ -108,6 +108,21 @@ class BusinessRuleValidationService @Inject()() {
         }
   }
 
+  def validateDisclosureImportInstructionAndInitialDisclosureFlag(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      initialDisclosureMA <- isInitialDisclosureMA
+    } yield
+      disclosureImportInstruction match {
+        case "DAC6ADD" => Validation(
+          key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
+          value = !initialDisclosureMA)
+        case _ => Validation(
+          key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+          value = true)
+
+      }
+  }
   def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       initialDisclosureMA <- isInitialDisclosureMA
@@ -171,8 +186,9 @@ class BusinessRuleValidationService @Inject()() {
        v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
        v8 <- validateMainBenefitTestHasASpecifiedHallmark()
        v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
+      v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
     } yield
-      Seq(v1,v2,v3,v4,v5,v6,v7,v8,v9).filterNot(_.value)
+      Seq(v1,v2,v3,v4,v5,v6,v7,v8,v9, v10).filterNot(_.value)
   }
 }
 

@@ -16,13 +16,15 @@
 
 package services
 
-import helpers.{XmlErrorMessageHelper, BusinessRulesErrorMessageHelper}
+import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
 import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.Elem
 import scala.util.matching.Regex
@@ -30,27 +32,56 @@ import scala.util.matching.Regex
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper) {
+                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
+                                 idVerificationService: IdVerificationService) {
 
 
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
+  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true)
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext ) : Future[XMLValidationStatus] = {
 
     val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
 
 
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
+    val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 
-    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
-                                                                                     ValidationFailure(orderedErrors)
-      case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
-      case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
-      case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>
-        val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
-        ValidationSuccess(downloadUrl, retrieveMetaData)
+    idVerificationService.verifyIds(metaData) map { idVerificationResult =>
 
+      combineResults(xmlAndXmlValidationStatus._2, businessRulesValidationResult, idVerificationResult) match {
+        case ValidationFailure(errors) => ValidationFailure(errors)
+
+        case ValidationSuccess(_,_)=> ValidationSuccess(downloadUrl, metaData)
+      }
     }
+  }
+
+  private def combineResults(xmlResult: XMLValidationStatus, businessRulesResult: XMLValidationStatus,
+                             idResult: XMLValidationStatus): XMLValidationStatus = {
+
+      val xmlErrors = xmlResult match {
+        case ValidationSuccess(_, _) => List()
+        case ValidationFailure(errors) => errors
+      }
+
+    val businessRulesErrors = businessRulesResult match {
+        case ValidationSuccess(_, _) => List()
+        case ValidationFailure(errors) => errors
+      }
+
+    val idErrors = idResult match {
+      case ValidationSuccess(_, _) => List()
+      case ValidationFailure(errors) => errors
+    }
+
+    val combinedErrors = (xmlErrors ++ businessRulesErrors ++ idErrors).sortBy(_.lineNumber)
+
+    if (combinedErrors.isEmpty){
+      ValidationSuccess("", None)
+
+    } else ValidationFailure(combinedErrors)
+
+
  }
 
 

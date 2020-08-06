@@ -17,13 +17,13 @@
 package connectors
 
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo, get}
 import models.GeneratedIDs
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
+import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE, NOT_FOUND, NO_CONTENT}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -109,5 +109,47 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       }
     }
 
-  }
+    "verify ArrangementIDs" - {
+      "should return true when arrangement Id is one issued by HMRC" in {
+
+       val arrangementId = "GBA20200601AAA000"
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
+            .willReturn(
+              aResponse()
+                .withStatus(NO_CONTENT)
+            )
+        )
+
+       whenReady(connector.verifyArrangementId(arrangementId)){
+          result =>
+            result mustBe true
+        }
+
+
+      }
+
+      "should return false when arrangement Id is one issued by HMRC" in {
+
+       val arrangementId = "GBA20200601AAA000"
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
+
+       whenReady(connector.verifyArrangementId(arrangementId)){
+          result =>
+            result mustBe false
+        }
+
+
+      }
+
+    }
+
+
+    }
 }
