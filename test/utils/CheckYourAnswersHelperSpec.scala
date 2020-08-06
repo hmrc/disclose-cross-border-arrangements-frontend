@@ -99,13 +99,6 @@ class CheckYourAnswersHelperSpec extends SpecBase {
         .set(InvalidXMLPage, "file-name.xml")
         .success.value
 
-      val mockSingleError: Seq[GenericError] = Seq(GenericError(11, "Enter your cats name in meow format"))
-
-      val mockMultiError: Seq[GenericError] =
-        Seq(GenericError(22, "Enter cat years only"),
-        GenericError(33,"Incorrect number of cat legs"))
-
-
       val helper: CheckYourAnswersHelper = new CheckYourAnswersHelper(userAnswers)
 
 
@@ -115,6 +108,8 @@ class CheckYourAnswersHelperSpec extends SpecBase {
       )
 
       "must return a table containing a row with a line number & error when given a generic error" in {
+
+        val mockSingleError: Seq[GenericError] = Seq(GenericError(11, "Enter your cats name in meow format"))
 
         helper.mapErrorsToTable(mockSingleError) mustBe Table(
           head = head,
@@ -128,6 +123,10 @@ class CheckYourAnswersHelperSpec extends SpecBase {
       }
 
       "must return a table containing multiple rows with line numbers & errors when a given Generic Error" in {
+
+        val mockMultiError: Seq[GenericError] =
+          Seq(GenericError(22, "Enter cat years only"),
+            GenericError(33,"Incorrect number of cat legs"))
 
         helper.mapErrorsToTable(mockMultiError) mustBe Table(
           head = head,
@@ -144,6 +143,30 @@ class CheckYourAnswersHelperSpec extends SpecBase {
           )
       }
 
+      "must return a table containing multiple rows in correct order with line numbers & errors when a given Generic Error" in {
+
+        val mockMultiError: Seq[GenericError] =
+          Seq(GenericError(33,"Incorrect number of cat legs"),
+            GenericError(48, "You gotta be kitten me"),
+            GenericError(22,"Enter cat years only"))
+
+        helper.mapErrorsToTable(mockMultiError) mustBe Table(
+          head = head,
+          rows = Seq(Seq(
+              Cell(msg"22", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
+              Cell(msg"Enter cat years only", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))),
+            Seq(
+              Cell(msg"33", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
+              Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))),
+            Seq(
+              Cell(msg"48", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
+              Cell(msg"You gotta be kitten me", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))
+            )),
+          caption = Some(msg"invalidXML.h3"),
+          attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+          )
+      }
     }
+
   }
 }

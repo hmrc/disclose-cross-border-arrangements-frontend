@@ -79,7 +79,7 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
     }
   }
 
-  def mapErrorsToTable(errors: Seq[GenericError]) : Table = {
+  def mapErrorsToTable(listOfErrors: Seq[GenericError]) : Table = {
 
     val head: Seq[Cell] = Seq(
       Cell(msg"invalidXML.table.heading1", classes = Seq("govuk-!-width-one-quarter", "govuk-table__header")),
@@ -88,12 +88,11 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
 
     val rows: Seq[Seq[Cell]] =
       for {
-        lineNumber <- errors.map(_.lineNumber)
-        errorMessage <- errors.map(_.messageKey)
+        errors <- listOfErrors.sorted
       } yield {
         Seq(
-          Cell(msg"$lineNumber", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
-          Cell(msg"$errorMessage", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))
+          Cell(msg"${errors.lineNumber}", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
+          Cell(msg"${errors.messageKey}", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))
         )
       }
 
