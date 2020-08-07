@@ -18,7 +18,8 @@ package services
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
-import models.{Dac6MetaData, GenericError, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, ValidationFailure, ValidationSuccess}
+import org.joda.time.DateTime
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatest.time.Seconds
@@ -29,14 +30,15 @@ import scala.concurrent.duration._
 
 class IdVerificationServiceSpec extends SpecBase{
 
-  val arrangementId = "GBA20200101AAA123"
+  val arrangementId1 = "GBA20200101AAA123"
+  val arrangementId2 = "GBA20200101BBB456"
+
+  val disclosureId1 = "GBD20200101AAA123"
+  val disclosureId2 = "GBD20200101BBB456"
 
   val mockConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
   val idVerificationService = new IdVerificationService(mockConnector)
-
-  val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD",
-                                  arrangementID = Some(arrangementId)))
 
   val downloadSource = "download-src"
 
@@ -50,6 +52,7 @@ class IdVerificationServiceSpec extends SpecBase{
         <Timestamp>2020-05-14T17:10:00</Timestamp>
       </Header>
       <ArrangementID>AAA000000000</ArrangementID>
+      <DisclosureID>AAA000000000</DisclosureID>
       <DAC6Disclosures>
         <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
         <DisclosureInformation>
@@ -64,7 +67,9 @@ class IdVerificationServiceSpec extends SpecBase{
 
   "IdVerificationService" -{
     "verifyIds" -{
-      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6DD" in {
+      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
@@ -72,7 +77,9 @@ class IdVerificationServiceSpec extends SpecBase{
 
       }
 
-      "should return a ValidationFailure if ArrangementId matches hmrcs record for DAC6DD" in {
+      "should return a ValidationFailure if ArrangementId matches hmrcs record for DAC6ADD" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
         val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
@@ -80,6 +87,86 @@ class IdVerificationServiceSpec extends SpecBase{
 
       }
 
+      "should return a ValidationSuccess if disclosureId relates to them for DAC6REP" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1)))
+
+        val submissionDetails = SubmissionDetails(enrolmentID = "enrolmentID",
+                                                  submissionTime = DateTime.now(),
+                                                  fileName = "fileName.xml",
+                                                  arrangementID = Some(arrangementId1),
+                                                  disclosureID = Some(disclosureId1),
+                                                  importInstruction = "DAC6REP",
+                                                  initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+
+      }
+
+      "should return a ValidationFailure if disclosureId does not relate to them for DAC6REP" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1)))
+
+        val submissionDetails = SubmissionDetails(enrolmentID = "enrolmentID",
+                                                  submissionTime = DateTime.now(),
+                                                  fileName = "fileName.xml",
+                                                  arrangementID = Some(arrangementId1),
+                                                  disclosureID = Some(disclosureId2),
+                                                  importInstruction = "DAC6REP",
+                                                  initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(7, "DisclosureID has not been generated by this individual or organisation")))
+
+      }
+
+      "should return a ValidationFailure if disclosureId does not relate to the given ArrangementId" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId2)))
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = "enrolmentID",
+                                                  submissionTime = DateTime.now(),
+                                                  fileName = "fileName.xml",
+                                                  arrangementID = Some(arrangementId1),
+                                                  disclosureID = Some(disclosureId1),
+                                                  importInstruction = "DAC6REP",
+                                                  initialDisclosureMA = false)
+
+        val submissionDetails2 = SubmissionDetails(enrolmentID = "enrolmentID",
+                                                  submissionTime = DateTime.now(),
+                                                  fileName = "fileName.xml",
+                                                  arrangementID = Some(arrangementId2),
+                                                  disclosureID = Some(disclosureId2),
+                                                  importInstruction = "DAC6REP",
+                                                  initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(7, "DisclosureID does not match the ArrangementID provided")))
+
+      }
+
+
+//      "DisclosureID does not match HMRC's records
+//
+//      DisclosureID has not been generated by this individual or organisation
+//
+//      DisclosureID does not match the ArrangementID provided"
 
     }
 

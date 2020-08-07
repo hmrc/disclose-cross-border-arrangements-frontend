@@ -18,11 +18,11 @@ package connectors
 
 import config.FrontendAppConfig
 import javax.inject.Inject
-import models.GeneratedIDs
+import models.{GeneratedIDs, _}
 import play.api.http.HeaderNames
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.SubmissionUtil._
-import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
@@ -35,6 +35,10 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
     s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"
   }
 
+  def historyUrl(enrolmentId: String): String = {
+    s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/get-history/$enrolmentId"
+  }
+
   private val headers = Seq(
     HeaderNames.CONTENT_TYPE -> "application/xml"
   )
@@ -44,14 +48,18 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   }
 
   def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
- httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map {response =>
-   response.status match{
-     case 204 => true
-     case _ => false
-   }
- }
+    httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map { response =>
+      response.status match {
+        case 204 => true
+        case _ => false
+      }
+    }
+  }
 
-}
-
+  def getSubmissionHistory(enrolmentId: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {
+    httpClient.GET[SubmissionHistory](historyUrl(enrolmentId)).recover {
+      case ex: Exception => SubmissionHistory(List())
+    }
+  }
 
 }
