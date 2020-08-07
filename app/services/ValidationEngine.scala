@@ -25,7 +25,8 @@ import scala.xml.Elem
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper) {
+                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
+                                 xmlErrorMessageHelper: XmlErrorMessageHelper) {
 
 
 
@@ -55,8 +56,10 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val xmlErrors = xmlValidationService.validateXml(source)
     if(xmlErrors._2.isEmpty) {
       (xmlErrors._1, ValidationSuccess(source))
-    } else {
-      val filteredErrors = XmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+    }else {
+
+      val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+
       (xmlErrors._1,  ValidationFailure(filteredErrors))
     }
   }
