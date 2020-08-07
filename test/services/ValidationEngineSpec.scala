@@ -147,14 +147,14 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
       "must return ValidationSuccess for valid file" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
         Await.result(validationEngine.validateFile(source), 10 seconds)  mustBe ValidationSuccess(source, mockMetaData)
       }
 
       "must return ValidationFailure for valid file which fails IdVerifcation" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
         val expectedErrors = GenericError(1, "ArrangementID does not match HMRC's records")
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationFailure(List(expectedErrors))))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationFailure(List(expectedErrors))))
         Await.result(validationEngine.validateFile(source), 10 seconds) mustBe ValidationFailure(List(expectedErrors))
       }
 
@@ -163,7 +163,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(addressError1, addressError2, cityError1, cityError2)))
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(27, "Enter a City"))
 
@@ -174,7 +174,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val missingAttributeError = SaxParseError(175,"cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'.")
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(missingAttributeError)))
@@ -190,7 +190,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError1, maxlengthError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(116, "BuildingIdentifier must be 400 characters or less"))
 
@@ -202,7 +202,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError3, maxlengthError4)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
@@ -214,7 +214,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryCodeError1, countryCodeError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(123, "Country is not one of the ISO country codes"))
 
@@ -226,7 +226,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(concernedMsError1, concernedMsError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(177, "ConcernedMS is not one of the ISO EU Member State country codes"))
 
@@ -238,7 +238,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryExemptionError1, countryExemptionError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(133, "CountryExemption is not one of the ISO country codes"))
 
@@ -251,7 +251,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(reasonError1, reasonError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(169, "Reason is not one of the allowed values"))
 
@@ -263,7 +263,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(intermediaryCapacityError1, intermediaryCapacityError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
@@ -275,7 +275,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(relevantTpDiscloserCapacityError1, relevantTpDiscloserCapacityError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
@@ -287,7 +287,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(issuedByError1, issuedByError2)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(18, "TIN issuedBy is not one of the ISO country codes"))
 
@@ -302,7 +302,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(randomParseError)))
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
@@ -312,7 +312,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
       "must return ValidationFailure for file which fails business rules validation" in new SetUp {
         override val doesFileHaveBusinessErrors = true
 
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, noErrors))
 
@@ -326,7 +326,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source), 10 seconds)  mustBe ValidationFailure(expectedErrors)
@@ -336,7 +336,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
-        when(mockIdVerificationService.verifyIds(any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockIdVerificationService.verifyIds(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, businessRulesCheckRequired = false), 10 seconds)  mustBe ValidationFailure(expectedErrors)

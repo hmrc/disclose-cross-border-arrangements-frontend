@@ -38,25 +38,45 @@ class IdVerificationServiceSpec extends SpecBase{
   val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD",
                                   arrangementID = Some(arrangementId)))
 
+  val downloadSource = "download-src"
+
   implicit val hc = HeaderCarrier()
   import scala.concurrent.ExecutionContext.Implicits._
 
+  val testXml =
+    <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+      <Header>
+        <MessageRefId>GB0000000XXX</MessageRefId>
+        <Timestamp>2020-05-14T17:10:00</Timestamp>
+      </Header>
+      <ArrangementID>AAA000000000</ArrangementID>
+      <DAC6Disclosures>
+        <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+        <DisclosureInformation>
+          <ImplementingDate>2020-01-14</ImplementingDate>
+        </DisclosureInformation>
+        <DisclosureInformation>
+          <ImplementingDate>2018-06-25</ImplementingDate>
+        </DisclosureInformation>
+      </DAC6Disclosures>
+    </DAC6_Arrangement>
+
+
   "IdVerificationService" -{
     "verifyIds" -{
-      "should return a ValidationSuccess if ArragmentId matches hmrcs record for DAC6DD" in {
+      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6DD" in {
 
-      //  when(mockConnector.verifyArrangementId(any()(any(), any()).thenReturn(Future.successful(trt))
-          when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
-         val result = Await.result(idVerificationService.verifyIds(dac6MetaData), 10 seconds)
-        result mustBe ValidationSuccess("", dac6MetaData)
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+        val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
 
       }
 
-      "should return a ValidationFailure if ArragmentId matches hmrcs record for DAC6DD" in {
-        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
+      "should return a ValidationFailure if ArrangementId matches hmrcs record for DAC6DD" in {
 
-        val result = Await.result(idVerificationService.verifyIds(dac6MetaData), 10 seconds)
-        result mustBe ValidationFailure(List(GenericError(1, "Error")))
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
+        val result = Await.result(idVerificationService.verifyIds(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(6, "ArrangementID does not match HMRC's records")))
 
       }
 

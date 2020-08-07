@@ -29,9 +29,6 @@ class BusinessRulesErrorMessageHelper {
 
    valsWithLineNumber.map(validation => validation.toGenericError)
 
-
-
-
   }
 
  }

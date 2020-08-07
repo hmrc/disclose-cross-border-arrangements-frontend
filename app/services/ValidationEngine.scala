@@ -46,7 +46,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
     val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 
-    idVerificationService.verifyIds(metaData) map { idVerificationResult =>
+    idVerificationService.verifyIds(downloadUrl, xmlAndXmlValidationStatus._1, metaData) map { idVerificationResult =>
 
       combineResults(xmlAndXmlValidationStatus._2, businessRulesValidationResult, idVerificationResult) match {
         case ValidationFailure(errors) => ValidationFailure(errors)

@@ -18,19 +18,28 @@ package services
 
 import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
-import models.{Dac6MetaData, GenericError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{Dac6MetaData, GenericError, Validation, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.xml.Elem
 
 class IdVerificationService @Inject()(connector:  CrossBorderArrangementsConnector) {
 
-  def verifyIds(dac6MetaData: Option[Dac6MetaData])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
+  def verifyIds(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
     connector.verifyArrangementId(dac6MetaData.get.arrangementID.get) map {
-      case true => ValidationSuccess("", dac6MetaData)
-      case false => ValidationFailure(List(GenericError(1, "Error")))
+      case true => ValidationSuccess(source, dac6MetaData)
+      case false =>
+        ValidationFailure(List(GenericError(getLineNumber(elem, "ArrangementID"), "ArrangementID does not match HMRC's records")))
     }
 
   }
+
+  private def getLineNumber(xml: Elem, path: String): Int = {
+    val xmlArray = xml.toString().split("\n")
+
+    xmlArray.indexWhere(str => str.contains(path)) + 1
+  }
+
 
 }
