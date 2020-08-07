@@ -16,21 +16,17 @@
 
 package services
 
-import helpers.{XmlErrorMessageHelper, BusinessRulesErrorMessageHelper}
+import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
 import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
-import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
-import org.scalactic.ErrorMessage
 
-import scala.collection.mutable.ListBuffer
-import scala.util.{Success, Try}
 import scala.xml.Elem
-import scala.util.matching.Regex
 
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper) {
+                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
+                                 xmlErrorMessageHelper: XmlErrorMessageHelper) {
 
 
 
@@ -62,7 +58,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       (xmlErrors._1, ValidationSuccess(source))
     }else {
 
-      val filteredErrors = XmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+      val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
 
       (xmlErrors._1,  ValidationFailure(filteredErrors))
     }
