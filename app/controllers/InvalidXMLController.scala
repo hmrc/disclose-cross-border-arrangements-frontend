@@ -18,15 +18,14 @@ package controllers
 
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
+import helpers.ViewHelper
 import javax.inject.Inject
-import models.GenericError
 import pages.{GenericErrorPage, InvalidXMLPage}
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels._
 
 import scala.concurrent.ExecutionContext
@@ -38,7 +37,8 @@ class InvalidXMLController @Inject()(
   requireData: DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
   renderer: Renderer,
-  errorHandler: ErrorHandler
+  errorHandler: ErrorHandler,
+  viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -46,7 +46,7 @@ class InvalidXMLController @Inject()(
 
       (request.userAnswers.get(GenericErrorPage), request.userAnswers.get(InvalidXMLPage)) match {
         case (Some(errors), Some(fileName)) =>
-          val tableWithErrors: Table = mapErrorsToTable(errors)
+          val tableWithErrors: Table = viewHelper.mapErrorsToTable(errors)
 
           renderer.render(
             "invalidXML.njk",
@@ -57,30 +57,7 @@ class InvalidXMLController @Inject()(
           ).map(Ok(_))
 
         case _ => errorHandler.onServerError(request, throw new RuntimeException("fileName or errors missing for InvalidXMLPage"))
-
       }
-    }
-
-  private def mapErrorsToTable(listOfErrors: Seq[GenericError])(implicit messages: Messages) : Table = {
-
-    val rows: Seq[Seq[Cell]] =
-      for {
-        error <- listOfErrors.sorted
-      } yield {
-        Seq(
-          Cell(msg"${error.lineNumber}", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
-          Cell(msg"${error.messageKey}", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))
-        )
-      }
-
-    Table(
-      head = Seq(
-        Cell(msg"invalidXML.table.heading1", classes = Seq("govuk-!-width-one-quarter", "govuk-table__header")),
-        Cell(msg"invalidXML.table.heading2", classes = Seq("govuk-!-font-weight-bold"))),
-      rows = rows,
-      caption = Some(msg"invalidXML.h3"),
-      attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3")))
   }
-
 }
 

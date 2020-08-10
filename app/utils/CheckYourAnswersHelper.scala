@@ -19,12 +19,11 @@ package utils
 import java.time.format.DateTimeFormatter
 
 import controllers.routes
-import models.{GenericError, UserAnswers}
+import models.UserAnswers
 import pages.ValidXMLPage
 import play.api.i18n.Messages
 import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
-import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels._
 
 class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messages) {
@@ -78,31 +77,6 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
       )
     }
   }
-
-  def mapErrorsToTable(listOfErrors: Seq[GenericError]) : Table = {
-
-    val head: Seq[Cell] = Seq(
-      Cell(msg"invalidXML.table.heading1", classes = Seq("govuk-!-width-one-quarter", "govuk-table__header")),
-      Cell(msg"invalidXML.table.heading2", classes = Seq("govuk-!-font-weight-bold"))
-    )
-
-    val rows: Seq[Seq[Cell]] =
-      for {
-        errors <- listOfErrors.sorted
-      } yield {
-        Seq(
-          Cell(msg"${errors.lineNumber}", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber")),
-          Cell(msg"${errors.messageKey}", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage"))
-        )
-      }
-
-    Table(
-      head = head,
-      rows = rows,
-      caption = Some(msg"invalidXML.h3"),
-      attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3")))
-  }
-
 }
 
 object CheckYourAnswersHelper {
