@@ -165,16 +165,22 @@ class BusinessRuleValidationService @Inject()() {
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
-    } yield
+      relevantTaxPayers <- noOfRelevantTaxPayers
+      taxPayerImplementingDates <- taxPayerImplementingDates
+    } yield {
+
+      val result = if(relevantTaxPayers > 0)
+        relevantTaxPayers == taxPayerImplementingDates.length
+      else true
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
-        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
-        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), doAllRelevantTaxpayersHaveImplementingDate = result)
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
+    }
   }
-  
   def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()
