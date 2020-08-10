@@ -20,7 +20,7 @@ import models.{GenericError, SaxParseError}
 
 import scala.collection.mutable.ListBuffer
 
-object XmlErrorMessageHelper {
+class XmlErrorMessageHelper {
 
   val defaultMessage = "There is a problem with this line number"
 

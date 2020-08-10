@@ -27,11 +27,11 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.Elem
-import scala.util.matching.Regex
 
 
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
+                                 xmlErrorMessageHelper: XmlErrorMessageHelper,
                                  businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
                                  idVerificationService: IdVerificationService) {
 
@@ -93,7 +93,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       (xmlErrors._1, ValidationSuccess(source))
     }else {
 
-      val filteredErrors = XmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+      val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
 
       (xmlErrors._1,  ValidationFailure(filteredErrors))
     }
