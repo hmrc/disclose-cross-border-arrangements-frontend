@@ -77,11 +77,11 @@ class XmlErrorMessageHelper {
   }
 
   def extractMissingElementValues(errorMessage1: String, errorMessage2: String): Option[String] = {
-    val formatOfFirstError = """cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.""".stripMargin.r
+    val formatOfFirstError = """cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type '(.*?)'.""".stripMargin.r
     val formatOfSecondError = """cvc-type.3.1.3: The value '' of element '(.*?)' is not valid.""".stripMargin.r
 
     errorMessage1 match {
-      case formatOfFirstError() =>
+      case formatOfFirstError(_) =>
         errorMessage2 match {
           case formatOfSecondError(element) =>
             Some(missingInfoMessage(element))

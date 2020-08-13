@@ -4,7 +4,7 @@
         <Timestamp>2020-05-14T17:10:00</Timestamp>
     </Header>
     <DAC6Disclosures>
-        <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+        <DisclosureImportInstruction></DisclosureImportInstruction>
         <Disclosing>
             <ID>
                 <Individual>
@@ -14,7 +14,7 @@
                         <Suffix>(Cat)</Suffix>
                     </IndividualName>
                     <BirthDate>2007-01-14</BirthDate>
-                    <BirthPlace>Hexham</BirthPlace>
+                    <BirthPlace></BirthPlace>
                     <TIN issuedBy="GB">AA000000D</TIN>
                     <Address>
                         <Street></Street>
