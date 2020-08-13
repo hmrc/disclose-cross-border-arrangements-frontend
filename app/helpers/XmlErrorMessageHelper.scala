@@ -32,8 +32,8 @@ class XmlErrorMessageHelper {
           val error1 = groupedErrors._2.head.errorMessage
           val error2 = groupedErrors._2.last.errorMessage
 
-          val error = extractInvalidEnumAttributeValues(error1, error2).orElse(
-            extractMissingElementValues(error1, error2)).orElse(
+          val error = extractMissingElementValues(error1, error2).orElse(
+            extractInvalidEnumAttributeValues(error1, error2)).orElse(
             extractMaxLengthErrorValues(error1, error2)).orElse(
             extractEnumErrorValues(error1, error2)).orElse(
             extractMissingAttributeValues(groupedErrors._2.head.errorMessage)).orElse(
