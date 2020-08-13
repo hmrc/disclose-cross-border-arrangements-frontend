@@ -4,26 +4,32 @@
         <Timestamp>2020-05-14T17:10:00</Timestamp>
     </Header>
     <DAC6Disclosures>
-        <DisclosureImportInstruction></DisclosureImportInstruction>
+        <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
         <Disclosing>
             <ID>
-              <Organisation>
-                                  <OrganisationName></OrganisationName>
-                                  <TIN issuedBy="GB">AA000000D</TIN>
-                                  <Address>
-                                      <Street>Sesame</Street>
-                                      <BuildingIdentifier>4</BuildingIdentifier>
-                                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
-                                      <FloorIdentifier>Second</FloorIdentifier>
-                                      <DistrictName>Westminster</DistrictName>
-                                      <POB>48</POB>
-                                      <PostCode>SW1A 4GG</PostCode>
-                                      <City>London</City>
-                                      <Country>GB</Country>
-                                  </Address>
-                                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
-                                  <ResCountryCode>VU</ResCountryCode>
-                              </Organisation>
+                <Individual>
+                    <IndividualName>
+                        <FirstName>Larry</FirstName>
+                        <LastName>C</LastName>
+                        <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2007-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AA000000D</TIN>
+                    <Address>
+                        <Street></Street>
+                        <BuildingIdentifier>No 10</BuildingIdentifier>
+                        <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                        <FloorIdentifier>Second</FloorIdentifier>
+                        <DistrictName>Westminster</DistrictName>
+                        <POB>48</POB>
+                        <PostCode>SW1A 4GG</PostCode>
+                        <City>London</City>
+                        <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                </Individual>
             </ID>
             <Liability>
                 <RelevantTaxpayerDiscloser>
@@ -44,7 +50,7 @@
                         </IndividualName>
                         <BirthDate>2007-01-14</BirthDate>
                         <BirthPlace>Hexham</BirthPlace>
-                        <TIN issuedBy="GB">huho</TIN>
+                        <TIN issuedBy="GB">AA000000D</TIN>
                         <Address>
                             <Street>Downing Street</Street>
                             <BuildingIdentifier>No 10</BuildingIdentifier>
@@ -103,7 +109,7 @@
                             <Suffix>(Cat)</Suffix>
                         </IndividualName>
                         <BirthDate>2007-01-14</BirthDate>
-                        <BirthPlace></BirthPlace>
+                        <BirthPlace>Hexham</BirthPlace>
                         <TIN issuedBy="GB">AA000000D</TIN>
                         <Address>
                             <Street>Downing Street</Street>
@@ -170,7 +176,7 @@
             <ConcernedMSs>
                 <ConcernedMS>CZ</ConcernedMS>
             </ConcernedMSs>
-            <MainBenefitTest1></MainBenefitTest1>
+            <MainBenefitTest1>false</MainBenefitTest1>
             <Hallmarks>
                 <ListHallmarks>
                     <Hallmark>DAC6A1</Hallmark>
