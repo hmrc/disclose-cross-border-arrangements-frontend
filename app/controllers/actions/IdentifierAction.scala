@@ -40,18 +40,20 @@ class AuthenticatedIdentifierAction @Inject()(
                                              (implicit val executionContext: ExecutionContext) extends IdentifierAction with AuthorisedFunctions {
 
   private val enrolmentKey: String = "DAC6"
+  private val enrolmentIDKey: String = "EnrolmentID"
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
-    authorised().retrieve(Retrievals.internalId and Retrievals.authorisedEnrolments) {
+    authorised(Enrolment(enrolmentKey)).retrieve(Retrievals.internalId and Retrievals.authorisedEnrolments) {
       case Some(internalID) ~ Enrolments(enrolments) =>
         val enrolmentID = {
           (for {
             enrolment <- enrolments.find(_.key.equals(enrolmentKey))
-            enrolmentIdentifier <- enrolment.getIdentifier(enrolmentKey)
-          } yield enrolmentIdentifier.value).getOrElse("EnrolmentID")//TODO Replace default once DAC6 enrolment has been implemented
+            enrolmentIdentifier <- enrolment.getIdentifier(enrolmentIDKey)
+          } yield enrolmentIdentifier.value)
+            .getOrElse(throw new Exception("EnrolmentID Required for DAC6"))
         }
 
         block(IdentifierRequest(request, internalID, enrolmentID))
