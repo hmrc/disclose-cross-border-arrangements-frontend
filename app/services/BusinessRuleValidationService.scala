@@ -24,6 +24,7 @@ import cats.implicits._
 import javax.inject.Inject
 import models.{Dac6MetaData, Validation}
 
+import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
 class BusinessRuleValidationService @Inject()() {
@@ -215,19 +216,28 @@ object BusinessRuleValidationService {
       Some {
         (xml \\ "TaxpayerImplementingDate")
           .map(_.text)
-          .map(dateFormat.parse)
+          .map(parseDate _)
       }
     })
 
-  val disclosureInformationImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] =
-    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+  def parseDate(dateString: String): Date = {
+    Try(dateFormat.parse(dateString)) match {
+      case Success(date) => date
+      case _ => new Date()
+    }
+
+  }
+
+  val disclosureInformationImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] = {
+  ReaderT[Option, NodeSeq, Seq[Date]](xml => {
       Some {
         (xml \\ "ImplementingDate")
           .map(_.text)
-          .map(dateFormat.parse)
+          .map(parseDate _)
       }
-    })
-
+    }
+    )
+  }
   val disclosureImportInstruction: ReaderT[Option, NodeSeq, String] =
     ReaderT[Option, NodeSeq, String](xml => {
       Some((xml \\ "DisclosureImportInstruction").text)
