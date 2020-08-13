@@ -26,18 +26,20 @@ import scala.xml.Elem
 
 class IdVerificationService @Inject()(connector: CrossBorderArrangementsConnector) {
 
-
   def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData])
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
-    connector.getSubmissionHistory("enrolmentId").flatMap {
+    dac6MetaData match {
+      case Some(metaData) =>
 
-      history =>
-        val intitialDisclosureMAResult = verifyInitialDisclosureMARules(source, elem, dac6MetaData, history)
-        val idResult = verifyIds(source, elem, dac6MetaData, history)
-        idResult.map { result =>
+        for {
+          history <- connector.getSubmissionHistory("enrolmentId")
+          idResult <- verifyIds(source, elem, metaData, history)
+        } yield {
 
-          (result, intitialDisclosureMAResult) match {
+          val intitialDisclosureMAResult = verifyInitialDisclosureMARules(source, elem, metaData, history)
+
+          (idResult, intitialDisclosureMAResult) match {
             case (ValidationFailure(errors), ValidationFailure(errors2)) => ValidationFailure(errors ++ errors2)
             case (ValidationSuccess(_, _), ValidationFailure(errors2)) => ValidationFailure(errors2)
             case (ValidationFailure(errors), ValidationSuccess(_, _)) => ValidationFailure(errors)
@@ -46,39 +48,44 @@ class IdVerificationService @Inject()(connector: CrossBorderArrangementsConnecto
           }
 
         }
+      case _ => Future(ValidationFailure(List(GenericError(0, "File does not contain necessary data"))))
     }
+
   }
-
-
-  def verifyIds(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], history: SubmissionHistory)
+  def verifyIds(source: String, elem: Elem, dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
     dac6MetaData match {
-      case Some(Dac6MetaData("DAC6ADD", Some(arrangementId), None, _)) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId)
-      case Some(Dac6MetaData("DAC6REP", Some(arrangementId), Some(disclosureId), _)) => verifyDAC6REP(source, elem, dac6MetaData, arrangementId, disclosureId)
-      case _ => Future(ValidationSuccess(source, dac6MetaData))
+      case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
+      case Dac6MetaData("DAC6REP", Some(arrangementId), Some(disclosureId), _) => Future(verifyDAC6REP(source, elem, dac6MetaData, arrangementId, disclosureId, history))
+      case _ => Future(ValidationSuccess(source, Some(dac6MetaData)))
 
     }
 
 
   }
 
-  private def verifyDAC6ADD(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], arrangmentId: String)
+  private def verifyDAC6ADD(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, history: SubmissionHistory)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
-    connector.verifyArrangementId(arrangmentId) map {
-      case true => ValidationSuccess(source, dac6MetaData)
-      case false =>
-        ValidationFailure(List(GenericError(getLineNumber(elem, "ArrangementID"), "ArrangementID does not match HMRC's records")))
-    }
+    val arrangementIdExists = history.submissionDetails.exists(submission => submission.arrangementID.contains(arrangementId))
 
+    if(arrangementIdExists) {
+      Future(ValidationSuccess(source, Some(dac6MetaData)))
+    }else {
+      connector.verifyArrangementId(arrangementId) map {
+        case true => ValidationSuccess(source, Some(dac6MetaData))
+        case false =>
+          ValidationFailure(List(GenericError(getLineNumber(elem, "ArrangementID"), "ArrangementID does not match HMRC's records")))
+      }
+    }
   }
 
-  private def verifyDAC6REP(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], arrangementId: String, disclosureId: String)
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
-    connector.getSubmissionHistory("enrolmentId") map { submissionHistory =>
-      val submissionContainingDisclosureId = submissionHistory.submissionDetails.find(submission => submission.disclosureID.contains(disclosureId))
+  private def verifyDAC6REP(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
+                            history: SubmissionHistory)
+                           (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
+      val submissionContainingDisclosureId = history.submissionDetails.find(submission => submission.disclosureID.contains(disclosureId))
       submissionContainingDisclosureId match {
         case Some(submission) => if (submission.arrangementID.contains(arrangementId)) {
-          ValidationSuccess(source, dac6MetaData)
+          ValidationSuccess(source,Some(dac6MetaData))
         } else ValidationFailure(List(GenericError(getLineNumber(elem, "DisclosureID"), "DisclosureID does not match the ArrangementID provided")))
 
 
@@ -86,23 +93,21 @@ class IdVerificationService @Inject()(connector: CrossBorderArrangementsConnecto
 
       }
 
-    }
-
   }
 
-  def verifyInitialDisclosureMARules(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], history: SubmissionHistory)
+  def verifyInitialDisclosureMARules(source: String, elem: Elem, dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                                     (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
 
-    val relevantArrangement = history.submissionDetails.filter(submission => submission.arrangementID.equals(dac6MetaData.get.arrangementID))
+    val relevantArrangement = history.submissionDetails.filter(submission => submission.arrangementID.equals(dac6MetaData.arrangementID))
 
     val isMA = relevantArrangement.exists(submission => submission.initialDisclosureMA)
 
-    dac6MetaData.get.importInstruction match {
-      case "DAC6ADD" => if (isMA && !dac6MetaData.get.doAllRelevantTaxpayersHaveImplementingDate) {
+    dac6MetaData.importInstruction match {
+      case "DAC6ADD" | "DAC6REP" => if (isMA && !dac6MetaData.doAllRelevantTaxpayersHaveImplementingDate) {
         ValidationFailure(List(GenericError(getLineNumber(elem, "RelevantTaxPayers"), "taxpayerDate Error")))
 
-      } else ValidationSuccess(source, dac6MetaData)
-      case _ => ValidationSuccess(source, dac6MetaData)
+      } else ValidationSuccess(source, Some(dac6MetaData))
+      case _ => ValidationSuccess(source, Some(dac6MetaData))
 
     }
 

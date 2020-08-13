@@ -21,14 +21,23 @@ import connectors.CrossBorderArrangementsConnector
 import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, ValidationFailure, ValidationSuccess}
 import org.joda.time.DateTime
 import org.mockito.Matchers.any
+import org.mockito.Mockito
 import org.mockito.Mockito.when
+import org.mockito.MockitoAnnotations.Mock
+import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.time.Seconds
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class IdVerificationServiceSpec extends SpecBase{
+class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+
+  override def beforeEach {
+    Mockito.reset(mockConnector)
+  }
 
   val arrangementId1 = "GBA20200101AAA123"
   val arrangementId2 = "GBA20200101BBB456"
@@ -74,7 +83,7 @@ class IdVerificationServiceSpec extends SpecBase{
 
   "IdVerificationService" -{
     "verifyIds" -{
-      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD" in {
+      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under another users arrangemntid" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
                                   doAllRelevantTaxpayersHaveImplementingDate = true))
@@ -83,6 +92,31 @@ class IdVerificationServiceSpec extends SpecBase{
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(List())))
         val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData), 10 seconds)
         result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+        verify(mockConnector, times(1)).verifyArrangementId(any())(any())
+
+      }
+
+      "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under their own arrangemntid" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
+                                  doAllRelevantTaxpayersHaveImplementingDate = true))
+
+        val submissionDetails = SubmissionDetails(enrolmentID = "enrolmentID",
+          submissionTime = DateTime.now(),
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails))
+
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+        val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+        verify(mockConnector, times(0)).verifyArrangementId(any())(any())
+
 
       }
 
@@ -95,7 +129,7 @@ class IdVerificationServiceSpec extends SpecBase{
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
         val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData), 10 seconds)
         result mustBe ValidationFailure(List(GenericError(6, "ArrangementID does not match HMRC's records")))
-
+        verify(mockConnector, times(1)).verifyArrangementId(any())(any())
       }
 
       "should return a ValidationSuccess if disclosureId relates to them for DAC6REP" in {
@@ -197,7 +231,7 @@ class IdVerificationServiceSpec extends SpecBase{
       "should return a ValidationFailure if DAC6ADD for a marketable arrangement does not have implementingDates populated for new RelevantTaxpayers" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2), doAllRelevantTaxpayersHaveImplementingDate = false))
+                                                 doAllRelevantTaxpayersHaveImplementingDate = false))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = "enrolmentID",
                                                   submissionTime = DateTime.now(),
@@ -209,6 +243,30 @@ class IdVerificationServiceSpec extends SpecBase{
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(10, "taxpayerDate Error")))
+      }
+
+      "should return a ValidationFailure if DAC6REP for a marketable arrangement does not have implementingDates populated for new RelevantTaxpayers" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), doAllRelevantTaxpayersHaveImplementingDate = false))
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = "enrolmentID",
+                                                  submissionTime = DateTime.now(),
+                                                  fileName = "fileName.xml",
+                                                  arrangementID = Some(arrangementId1),
+                                                  disclosureID = Some(disclosureId1),
+                                                  importInstruction = "DAC6REP",
+                                                  initialDisclosureMA = true)
+
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
 
@@ -217,11 +275,22 @@ class IdVerificationServiceSpec extends SpecBase{
       }
 
 
-//      "DisclosureID does not match HMRC's records
-//
-//      DisclosureID has not been generated by this individual or organisation
-//
-//      DisclosureID does not match the ArrangementID provided"
+      "should return a ValidationFailure if metData notDefined" in {
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = "enrolmentID",
+          submissionTime = DateTime.now(),
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6ADD",
+          initialDisclosureMA = true)
+
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+
+        val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, None), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(0, "File does not contain necessary data")))
+      }
 
     }
 
