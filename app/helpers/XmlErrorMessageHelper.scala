@@ -113,10 +113,12 @@ class XmlErrorMessageHelper {
     val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
     formattedError match {
-      case formatOfFirstError(_, allowedValues) =>
+      case formatOfFirstError(suppliedValue, allowedValues) =>
         errorMessage2 match {
           case formatOfSecondError(_, element) =>
-            invalidCodeMessage(element, Some(allowedValues))
+            if(suppliedValue.isEmpty){
+              Some(missingInfoMessage(element))
+            }else  invalidCodeMessage(element, Some(allowedValues))
           case _ =>  None
         }
       case _ => None

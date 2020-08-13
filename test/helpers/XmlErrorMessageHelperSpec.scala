@@ -60,6 +60,15 @@ class XmlErrorMessageHelperSpec extends SpecBase{
         result mustBe List(GenericError(lineNumber,"Enter a Street"))
       }
 
+      "must return correct error for missing ConcernedMS'" in {
+
+        val error1 =  SaxParseError(lineNumber, "cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[AT, BE, BG, CY, CZ, DK, EE, FI, FR, DE, GR, HU, HR, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE, GB]'. It must be a value from the enumeration.")
+        val error2 = SaxParseError(lineNumber, "cvc-type.3.1.3: The value '' of element 'ConcernedMS' is not valid.")
+
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber,"Enter a ConcernedMS"))
+      }
+
       "must return correct error when allowed length exceeded" in {
 
         val maxLengthError1 = SaxParseError(lineNumber, s"cvc-maxLength-valid: Value '$over400' with length = '401' is not facet-valid with respect to maxLength '400' for type 'StringMin1Max400_Type'.")
