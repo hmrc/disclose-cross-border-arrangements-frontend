@@ -25,6 +25,7 @@ class XmlErrorMessageHelperSpec extends SpecBase{
 
   val lineNumber = 20
   val over400 = "s"*401
+  val over200 = "s"*201
 
   val helper = new XmlErrorMessageHelper
   "ErrorMessageHelper"  - {
@@ -75,6 +76,16 @@ class XmlErrorMessageHelperSpec extends SpecBase{
         val error2 =  SaxParseError(lineNumber, "cvc-type.3.1.3: The value '' of element 'BirthPlace' is not valid.")
         val result = helper.generateErrorMessages(ListBuffer(error1, error2))
         result mustBe List(GenericError(lineNumber,"Enter a BirthPlace"))
+      }
+
+
+   "must return correct error for missing when length exceed for TIN'" in {
+
+        val error1 =   SaxParseError(lineNumber, s"cvc-maxLength-valid: Value '$over200' with length = '201' is not facet-valid with respect to maxLength '200' for type 'StringMin1Max200_Type'.")
+        val error2 = SaxParseError(lineNumber,"cvc-complex-type.2.2: Element 'TIN' must have no element [children], and the value must be valid.")
+
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber,"TIN must be 200 characters or less"))
       }
 
       "must return correct error when allowed length exceeded" in {

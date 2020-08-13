@@ -92,16 +92,24 @@ class XmlErrorMessageHelper {
   }
 
   def extractMaxLengthErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formattedError = errorMessage2.replaceAll("\\[", "").replaceAll("\\]","")
     val formatOfFirstError = """cvc-maxLength-valid: Value '(.*?)' with length = '(.*?)' is not facet-valid with respect to maxLength '(.*?)' for type '(.*?)'.""".stripMargin.r
     val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
-    errorMessage1 match {
+    val formatOfAlternativeSecondError = """cvc-complex-type.2.2: Element '(.*?)' must have no element children, and the value must be valid.""".stripMargin.r
+                                          //  cvc-complex-type.2.2: Element 'TIN' must have no element [children], and the value must be valid.
+
+   errorMessage1 match {
       case formatOfFirstError(_, _, allowedLength, _) =>
-        errorMessage2 match {
-          case formatOfSecondError(_, element) =>
+        formattedError match {
+          case formatOfSecondError(_, element)  =>
             Some(s"$element must be $allowedLength characters or less")
+
+          case formatOfAlternativeSecondError(element)  =>
+            Some(s"$element must be $allowedLength characters or less")
+
           case _ => None
-        }
+         }
       case _ =>  None
     }
   }
