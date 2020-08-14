@@ -30,7 +30,7 @@ GET        /error                                       controllers.UploadFormCo
 
 GET        /validator                                   controllers.FileValidationController.onPageLoad
 
-GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
+GET        /problem/data-error                          controllers.InvalidXMLController.onPageLoad
 
 GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
 
@@ -39,3 +39,5 @@ GET        /replaceConfirmation                         controllers.ReplaceConfi
 GET        /send-disclosure/upload-confirmation         controllers.UploadConfirmationController.onPageLoad()
 
 GET        /createConfirmation                          controllers.CreateConfirmationController.onPageLoad()
+
+GET        /send-disclosure/disclosure-has-been-deleted controllers.DeleteDisclosureConfirmationController.onPageLoad()

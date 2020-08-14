@@ -29,10 +29,9 @@ import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
-
   def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
@@ -47,6 +46,8 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
       override def adapter =
         new scala.xml.parsing.NoBindingFactoryAdapter
           with AccumulatorState
+
+
     }.load(new URL(downloadSrc))
 
    (elem, list)
@@ -66,6 +67,7 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
 trait XMLValidationParser {
   def validatingParser: SAXParser
 }
+
 
 class XMLDacXSDValidationParser extends XMLValidationParser {
   val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI

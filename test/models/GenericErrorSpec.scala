@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package helpers
+package models
 
-class BusinessRulesErrorMessageHelper {
+import base.SpecBase
 
-  import models.{GenericError, Validation}
+class GenericErrorSpec extends SpecBase {
 
-  import scala.xml.{Elem, NodeSeq}
+  val mockGenericErrorSeq = Seq(GenericError(4, "British Shorthair"), GenericError(1, "Maine Coon"),
+    GenericError(3, "Siamese Cat"), GenericError(2, "Ragdoll"))
 
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
+  "orderByLineNumber" - {
 
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
+    "must return a sequence of Generic Errors ordered by lineNumber" in {
 
-      valsWithLineNumber.map(validation => validation.toGenericError)
+      mockGenericErrorSeq.sorted mustBe Seq(GenericError(1, "Maine Coon"), GenericError(2, "Ragdoll"), GenericError(3, "Siamese Cat"), GenericError(4, "British Shorthair"))
 
     }
-
+  }
 }

@@ -18,7 +18,7 @@ package controllers
 
 import base.SpecBase
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{Dac6MetaData, UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when, _}
@@ -118,11 +118,12 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     "must redirect to invalid XML page if XML validation fails" in {
 
       val uploadId = UploadId("123")
+      val errors: Seq[GenericError] = Seq(GenericError(1, "error"))
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("invalidXML"-> "afile")
+      val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationFailure(Seq())))
+      when(mockValidationEngine.validateFile(any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationFailure(errors)))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]

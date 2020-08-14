@@ -25,6 +25,7 @@ class XmlErrorMessageHelperSpec extends SpecBase{
 
   val lineNumber = 20
   val over400 = "s"*401
+  val over200 = "s"*201
 
   val helper = new XmlErrorMessageHelper
   "ErrorMessageHelper"  - {
@@ -58,6 +59,41 @@ class XmlErrorMessageHelperSpec extends SpecBase{
 
         val result = helper.generateErrorMessages(ListBuffer(missingElementError1, missingElementError2))
         result mustBe List(GenericError(lineNumber,"Enter a Street"))
+      }
+
+      "must return correct error for missing ConcernedMS'" in {
+
+        val error1 =  SaxParseError(lineNumber, "cvc-enumeration-valid: Value '' is not facet-valid with respect to enumeration '[AT, BE, BG, CY, CZ, DK, EE, FI, FR, DE, GR, HU, HR, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE, GB]'. It must be a value from the enumeration.")
+        val error2 = SaxParseError(lineNumber, "cvc-type.3.1.3: The value '' of element 'ConcernedMS' is not valid.")
+
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber,"Enter a ConcernedMS"))
+      }
+
+      "must return correct error for missing birthplace'" in {
+
+        val error1 =   SaxParseError(lineNumber, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max200_Type'.")
+        val error2 =  SaxParseError(lineNumber, "cvc-type.3.1.3: The value '' of element 'BirthPlace' is not valid.")
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber,"Enter a BirthPlace"))
+      }
+
+
+   "must return correct error when length exceed for TIN'" in {
+
+        val error1 =   SaxParseError(lineNumber, s"cvc-maxLength-valid: Value '$over200' with length = '201' is not facet-valid with respect to maxLength '200' for type 'StringMin1Max200_Type'.")
+        val error2 = SaxParseError(lineNumber,"cvc-complex-type.2.2: Element 'TIN' must have no element [children], and the value must be valid.")
+
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber,"TIN must be 200 characters or less"))
+      }
+
+      "must return correct error for missing org name'" in {
+
+        val error1 = SaxParseError(lineNumber,"cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max200_Type'.")
+        val error2 = SaxParseError(lineNumber,"cvc-complex-type.2.2: Element 'OrganisationName' must have no element [children], and the value must be valid.")
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter an OrganisationName"))
       }
 
       "must return correct error when allowed length exceeded" in {

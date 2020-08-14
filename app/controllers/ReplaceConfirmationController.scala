@@ -18,12 +18,13 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import helpers.ViewHelper
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
-import uk.gov.hmrc.play.bootstrap.controller.FrontendBaseController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
@@ -34,13 +35,18 @@ class ReplaceConfirmationController @Inject()(
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
+    renderer: Renderer,
+    viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
       renderer.render("replaceConfirmation.njk",
-        Json.obj("discloseBorderArrangements" -> Json.toJson(frontEndAppConfig.discloseArrangeLink))).map(Ok(_))
+        Json.obj(
+          "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(frontEndAppConfig.discloseArrangeLink)),
+          "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(frontEndAppConfig.betaFeedbackUrl))
+        )
+      ).map(Ok(_))
   }
 }

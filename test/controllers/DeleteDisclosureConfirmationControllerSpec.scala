@@ -17,12 +17,13 @@
 package controllers
 
 import base.SpecBase
-import models.{GenericError, UserAnswers}
+import matchers.JsonMatchers
+import models.{Dac6MetaData, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.{GenericErrorPage, InvalidXMLPage}
+import pages.Dac6MetaDataPage
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -30,50 +31,53 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class InvalidXMLControllerSpec extends SpecBase with MockitoSugar {
+class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSugar with JsonMatchers {
 
-  "InvalidXMLController" - {
+  "DeleteDisclosureConfirmation Controller" - {
 
     "return OK and the correct view for a GET" in {
 
-      val mockErrors = Seq(GenericError(1, "test"))
-      val mockfileName = "fileName.xml"
+      val metaData = Dac6MetaData("DAC6NEW", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"),
+                                   doAllRelevantTaxpayersHaveImplementingDate = true)
 
-      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
-        .set(InvalidXMLPage, mockfileName)
-        .success.value
-        .set(GenericErrorPage, mockErrors)
+        .set(Dac6MetaDataPage, metaData)
         .success
         .value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-
-      val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
-
       val result = route(application, request).value
 
       status(result) mustEqual OK
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      templateCaptor.getValue mustEqual "invalidXML.njk"
-      jsonCaptor.getValue.value.get("fileName") mustBe Some(Json.toJson("fileName.xml"))
+      val expectedJson = Json.obj(
+        "arrangementID" -> "GBA20200701AAAB00",
+        "disclosureID" -> "GBD20200701AA0001"
+      )
+
+      templateCaptor.getValue mustEqual "deleteDisclosureConfirmation.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
     }
 
-    "throw Exception and redirect to Internal Server Error page when errors or fileName is missing" in {
+    "thrown an error then display the technical error page if there's no XML ID's and users go straight to this page" in {
 
-      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-
-      val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
       val result = route(application, request).value
 
       an[RuntimeException] mustBe thrownBy {

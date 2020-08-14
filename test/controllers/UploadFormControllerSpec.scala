@@ -97,9 +97,9 @@ class UploadFormControllerSpec extends SpecBase
       val expectedArgument = Json.obj("pageTitle" -> "Upload Error",
         "heading"-> "errorMessage",
         "message" -> s"Code: errorCode, RequestId: errorReqId",
-        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated",
-          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=play26frontend",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend",
+        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
+          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
+          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
           "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
       )
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
@@ -119,9 +119,9 @@ class UploadFormControllerSpec extends SpecBase
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       val expectedArgument = Json.obj(
-        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated",
-          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=play26frontend",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=play26frontend",
+        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
+          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
+          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
           "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements"),
           "guidanceLink" -> "???"
       )

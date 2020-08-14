@@ -46,9 +46,6 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
   val addressError2 = SaxParseError(20, "cvc-type.3.1.3: The value '' of element 'Street' is not valid.")
 
-  val cityError1 = SaxParseError(27, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.")
-  val cityError2 = SaxParseError(27, "cvc-type.3.1.3: The value '' of element 'City' is not valid.")
-
   val over400 = "a" * 401
   val over4000 = "a" * 4001
 
@@ -85,7 +82,11 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
   val issuedByError1 = SaxParseError(18,"cvc-enumeration-valid: Value 'GBf' is not facet-valid with respect to enumeration '[AF, AX]'. It must be a value from the enumeration.")
   val issuedByError2 = SaxParseError(18,"cvc-attribute.3: The value 'GBf' of attribute 'issuedBy' on element 'TIN' is not valid with respect to its type, 'CountryCode_Type'.")
 
-  val enrolmentId = "123456"
+
+  val cityError1 = SaxParseError(27, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.")
+  val cityError2 = SaxParseError(27, "cvc-type.3.1.3: The value '' of element 'City' is not valid.")
+
+val enrolmentId = "123456"
 
   implicit val hc = HeaderCarrier()
   trait SetUp {
@@ -150,7 +151,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
   }
   "ValidationEngine" - {
-    "ValidateXml" -{
+    "ValidateXml" - {
 
       "must return ValidationSuccess for valid file" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
@@ -179,7 +180,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
       "must return ValidationFailure for file missing mandatory attributes" in new SetUp {
 
-        val missingAttributeError = SaxParseError(175,"cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'.")
+        val missingAttributeError = SaxParseError(175, "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'.")
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
@@ -352,5 +353,4 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
    }
 
   }
-
 }

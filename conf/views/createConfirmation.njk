@@ -18,23 +18,18 @@
           html: arrangementID
         }) }}
 
-        <p class="govuk-body">{{ messages("createConfirmation.p1") }}</p>
+        <div class="govuk-body">
+            <p>{{ messages("createConfirmation.p1") }}</p>
 
-        <h2 class="govuk-heading-m">
-          {{ messages("uploadConfirmation.h2") }}
-        </h2>
+            <h2 class="govuk-heading-m">
+              {{ messages("uploadConfirmation.h2") }}
+            </h2>
 
-        <p class="govuk-body">{{ messages("createConfirmation.p2") }}</p>
-        <p class="govuk-body">{{ messages("createConfirmation.p3", disclosureID) }}</p>
-
-        <ul class="govuk-list">
-            <li>{{ messages("confirmation.li1") }}
-              <a class="govuk-link" href="{{ routes.controllers.UploadFormController.onPageLoad().url }}">{{messages("confirmation.li1.a")}}</a>.
-            </li>
-            <li>
-              <a class="govuk-link" href="#">{{ messages("confirmation.li2.a") }}</a> {{ messages("confirmation.li2") }}
-            </li>
-        </ul>
+            <p>{{ messages("createConfirmation.p2") }}</p>
+            <p>{{ messages("createConfirmation.p3", disclosureID) }}</p>
+            <p>{{ homePageLink | safe }}</p>
+            <p>{{ betaFeedbackSurvey | safe }}</p>
+        </div>
 
       </div>
     </div>

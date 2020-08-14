@@ -39,10 +39,13 @@ object SaxParseError {
   implicit val format = Json.format[SaxParseError]
 }
 
-
 case class GenericError(lineNumber: Int, messageKey: String)
 
 object GenericError {
+
+  implicit def orderByLineNumber[A <: GenericError]: Ordering[A] =
+    Ordering.by(ge => (ge.lineNumber, ge.messageKey))
+
   implicit val format = Json.format[GenericError]
 }
 

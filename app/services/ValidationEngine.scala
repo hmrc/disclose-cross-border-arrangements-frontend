@@ -42,7 +42,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
     val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
 
-
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
     val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 

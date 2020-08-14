@@ -1324,6 +1324,61 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     service.validateDAC6D1OtherInfoHasNecessaryHallmark()(xml).get.value mustBe true
   }
 
+  "must recover from exception if implementing date is not in parseable format" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <ImplementingDate>wrong format</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6D1Other</Hallmark>
+              </ListHallmarks>
+              <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateFile()(xml) mustBe Some(List())
+  }
+
+  "must recover from exception if taxpayerImplementing date is not in parseable format" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Disclosing>
+              <Liability>
+                <RelevantTaxpayerDiscloser>
+                  <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                  <Capacity>DAC61105</Capacity>
+                </RelevantTaxpayerDiscloser>
+              </Liability>
+              <RelevantTaxPayers>
+                <RelevantTaxpayer>
+                  <TaxpayerImplementingDate>wrong format</TaxpayerImplementingDate>
+                </RelevantTaxpayer>
+              </RelevantTaxPayers>
+            </Disclosing>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateFile()(xml) mustBe Some(List())
+  }
+
   "must correctly invalidate that other info is provided when hallmark absent" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

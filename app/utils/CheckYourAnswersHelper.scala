@@ -77,9 +77,10 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
       )
     }
   }
-
 }
 
 object CheckYourAnswersHelper {
   private val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
 }
+
+

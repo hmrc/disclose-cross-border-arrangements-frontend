@@ -21,50 +21,42 @@ import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
 import javax.inject.Inject
-import pages.GeneratedIDPage
-import play.api.i18n.{I18nSupport, Messages, MessagesApi}
+import pages.Dac6MetaDataPage
+import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import uk.gov.hmrc.viewmodels.Html
 
 import scala.concurrent.ExecutionContext
 
-class UploadConfirmationController @Inject()(
+class DeleteDisclosureConfirmationController @Inject()(
     override val messagesApi: MessagesApi,
+    appConfig: FrontendAppConfig,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer,
     errorHandler: ErrorHandler,
-    viewHelper: ViewHelper,
-    appConfig: FrontendAppConfig
+    viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(xmlData) =>
+          renderer.render(
+            "deleteDisclosureConfirmation.njk",
+            Json.obj(
+              "disclosureID" -> xmlData.disclosureID,
+              "arrangementID" -> xmlData.arrangementID,
+              "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
+              "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
+            )
+          ).map(Ok(_))
 
-      val disclosureID = request.userAnswers.get(GeneratedIDPage) match {
-        case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
-        case _ => ""
+        case _ => errorHandler.onServerError(request, throw new RuntimeException("ID's from XML are missing"))
       }
-
-      if (disclosureID.isEmpty) {
-        errorHandler.onServerError(request, throw new Exception("Disclosure ID is missing"))
-      } else {
-        val json = Json.obj(
-          "disclosureID" -> confirmationPanelText(disclosureID),
-          "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
-          "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
-        )
-
-        renderer.render("uploadConfirmation.njk", json).map(Ok(_))
-      }
-  }
-
-  private def confirmationPanelText(id: String)(implicit messages: Messages): Html = {
-    Html(s"${{ messages("uploadConfirmation.panel.html") }}<br><strong>$id</strong>")
   }
 }

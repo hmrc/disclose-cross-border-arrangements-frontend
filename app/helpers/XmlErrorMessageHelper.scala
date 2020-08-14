@@ -32,8 +32,8 @@ class XmlErrorMessageHelper {
           val error1 = groupedErrors._2.head.errorMessage
           val error2 = groupedErrors._2.last.errorMessage
 
-          val error = extractInvalidEnumAttributeValues(error1, error2).orElse(
-            extractMissingElementValues(error1, error2)).orElse(
+          val error = extractMissingElementValues(error1, error2).orElse(
+            extractInvalidEnumAttributeValues(error1, error2)).orElse(
             extractMaxLengthErrorValues(error1, error2)).orElse(
             extractEnumErrorValues(error1, error2)).orElse(
             extractMissingAttributeValues(groupedErrors._2.head.errorMessage)).orElse(
@@ -79,13 +79,18 @@ class XmlErrorMessageHelper {
   }
 
   def extractMissingElementValues(errorMessage1: String, errorMessage2: String): Option[String] = {
-    val formatOfFirstError = """cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.""".stripMargin.r
+
+    val formattedError = errorMessage2.replaceAll("\\[", "").replaceAll("\\]","")
+    val formatOfFirstError = """cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type '(.*?)'.""".stripMargin.r
     val formatOfSecondError = """cvc-type.3.1.3: The value '' of element '(.*?)' is not valid.""".stripMargin.r
+    val formatOfAlternativeSecondError = """cvc-complex-type.2.2: Element '(.*?)' must have no element children, and the value must be valid.""".stripMargin.r
 
     errorMessage1 match {
-      case formatOfFirstError() =>
-        errorMessage2 match {
+      case formatOfFirstError(_) =>
+        formattedError match {
           case formatOfSecondError(element) =>
+            Some(missingInfoMessage(element))
+          case formatOfAlternativeSecondError(element) =>
             Some(missingInfoMessage(element))
           case _ => None
         }
@@ -94,16 +99,23 @@ class XmlErrorMessageHelper {
   }
 
   def extractMaxLengthErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {
+    val formattedError = errorMessage2.replaceAll("\\[", "").replaceAll("\\]","")
     val formatOfFirstError = """cvc-maxLength-valid: Value '(.*?)' with length = '(.*?)' is not facet-valid with respect to maxLength '(.*?)' for type '(.*?)'.""".stripMargin.r
     val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
+    val formatOfAlternativeSecondError = """cvc-complex-type.2.2: Element '(.*?)' must have no element children, and the value must be valid.""".stripMargin.r
+
     errorMessage1 match {
       case formatOfFirstError(_, _, allowedLength, _) =>
-        errorMessage2 match {
-          case formatOfSecondError(_, element) =>
+        formattedError match {
+          case formatOfSecondError(_, element)  =>
             Some(s"$element must be $allowedLength characters or less")
+
+          case formatOfAlternativeSecondError(element)  =>
+            Some(s"$element must be $allowedLength characters or less")
+
           case _ => None
-        }
+         }
       case _ =>  None
     }
   }
@@ -115,10 +127,12 @@ class XmlErrorMessageHelper {
     val formatOfSecondError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
 
     formattedError match {
-      case formatOfFirstError(_, allowedValues) =>
+      case formatOfFirstError(suppliedValue, allowedValues) =>
         errorMessage2 match {
           case formatOfSecondError(_, element) =>
-            invalidCodeMessage(element, Some(allowedValues))
+            if(suppliedValue.isEmpty){
+              Some(missingInfoMessage(element))
+            }else  invalidCodeMessage(element, Some(allowedValues))
           case _ =>  None
         }
       case _ => None

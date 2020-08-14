@@ -18,23 +18,18 @@
           html: disclosureID
         }) }}
 
-        <p class="govuk-body">{{ messages("uploadConfirmation.p1") }}</p>
+        <div class="govuk-body">
+            <p>{{ messages("uploadConfirmation.p1") }}</p>
 
-        <h2 class="govuk-heading-m">
-          {{ messages("uploadConfirmation.h2") }}
-        </h2>
+            <h2 class="govuk-heading-m">
+              {{ messages("uploadConfirmation.h2") }}
+            </h2>
 
-        <p class="govuk-body">{{ messages("uploadConfirmation.p2") }}</p>
-        <p class="govuk-body">{{ messages("uploadConfirmation.p3") }}</p>
-
-        <ul class="govuk-list">
-            <li>{{ messages("confirmation.li1") }}
-              <a class="govuk-link" href="{{ routes.controllers.UploadFormController.onPageLoad().url }}">{{messages("confirmation.li1.a")}}</a>.
-            </li>
-            <li>
-              <a class="govuk-link" href="#">{{ messages("confirmation.li2.a") }}</a> {{ messages("confirmation.li2") }}
-            </li>
-        </ul>
+            <p>{{ messages("uploadConfirmation.p2") }}</p>
+            <p>{{ messages("uploadConfirmation.p3") }}</p>
+            <p>{{ homePageLink | safe }}</p>
+            <p>{{ betaFeedbackSurvey | safe }}</p>
+        </div>
 
       </div>
     </div>
