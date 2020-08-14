@@ -33,7 +33,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
                                  xmlErrorMessageHelper: XmlErrorMessageHelper,
                                  businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
-                                 idVerificationService: IdVerificationService) {
+                                 metaDataValidationService: MetaDataValidationService) {
 
 
 
@@ -46,7 +46,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
     val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 
-    idVerificationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId) map { idVerificationResult =>
+    metaDataValidationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId) map { idVerificationResult =>
 
       combineResults(xmlAndXmlValidationStatus._2, businessRulesValidationResult, idVerificationResult) match {
         case ValidationFailure(errors) => ValidationFailure(errors)
@@ -83,8 +83,6 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
 
  }
-
-
 
   def performXmlValidation(source: String): (Elem, XMLValidationStatus) = {
 

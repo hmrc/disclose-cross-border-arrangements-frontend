@@ -33,7 +33,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   override def beforeEach {
     Mockito.reset(mockConnector)
@@ -47,7 +47,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
   val mockConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
-  val idVerificationService = new IdVerificationService(mockConnector)
+  val idVerificationService = new MetaDataValidationService(mockConnector)
 
   val downloadSource = "download-src"
 

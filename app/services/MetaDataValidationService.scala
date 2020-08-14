@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
-class IdVerificationService @Inject()(connector: CrossBorderArrangementsConnector) {
+class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector) {
 
   implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
 
