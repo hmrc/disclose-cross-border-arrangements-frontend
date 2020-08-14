@@ -37,7 +37,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
 
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true)
+  def validateFile(downloadUrl: String, enrolmentId: String, businessRulesCheckRequired: Boolean = true)
                   (implicit hc: HeaderCarrier, ec: ExecutionContext ) : Future[XMLValidationStatus] = {
 
     val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
@@ -46,7 +46,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
     val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 
-    idVerificationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData) map { idVerificationResult =>
+    idVerificationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId) map { idVerificationResult =>
 
       combineResults(xmlAndXmlValidationStatus._2, businessRulesValidationResult, idVerificationResult) match {
         case ValidationFailure(errors) => ValidationFailure(errors)

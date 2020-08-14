@@ -26,14 +26,14 @@ import scala.xml.Elem
 
 class IdVerificationService @Inject()(connector: CrossBorderArrangementsConnector) {
 
-  def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData])
+  def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId : String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
     dac6MetaData match {
       case Some(metaData) =>
 
         for {
-          history <- connector.getSubmissionHistory("enrolmentId")
+          history <- connector.getSubmissionHistory(enrolmentId)
           idResult <- verifyIds(source, elem, metaData, history)
         } yield {
 

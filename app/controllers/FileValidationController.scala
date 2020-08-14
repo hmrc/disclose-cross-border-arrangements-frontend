@@ -52,7 +52,7 @@ class FileValidationController @Inject()(
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl)
+        validation = validationEngine.validateFile(downloadUrl, request.enrolmentID)
       } yield {
         validation flatMap   {
           case ValidationSuccess(_,Some(metaData)) =>
