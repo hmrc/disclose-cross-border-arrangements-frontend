@@ -58,6 +58,10 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
 
   val enrolmentId = "123456"
 
+  val submissionDateTime1 = DateTime.now()
+  val submissionDateTime2 = DateTime.now().plusDays(1)
+  val submissionDateTime3 = DateTime.now().plusDays(2)
+
   val testXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
       <Header>
@@ -106,7 +110,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
                                   doAllRelevantTaxpayersHaveImplementingDate = true))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = DateTime.now(),
+          submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
@@ -142,7 +146,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
           disclosureID = Some(disclosureId1), doAllRelevantTaxpayersHaveImplementingDate = true))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
@@ -164,7 +168,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
           disclosureID = Some(disclosureId1), doAllRelevantTaxpayersHaveImplementingDate = true))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId2),
@@ -186,7 +190,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
           disclosureID = Some(disclosureId2), doAllRelevantTaxpayersHaveImplementingDate = true))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
@@ -194,7 +198,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
                                                   initialDisclosureMA = false)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime2,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId2),
                                                   disclosureID = Some(disclosureId2),
@@ -216,7 +220,7 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
           disclosureID = Some(disclosureId2), doAllRelevantTaxpayersHaveImplementingDate = true))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
@@ -238,11 +242,11 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
                                                  doAllRelevantTaxpayersHaveImplementingDate = false))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6REP",
+                                                  importInstruction = "DAC6NEW",
                                                   initialDisclosureMA = true)
 
 
@@ -261,11 +265,11 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
           disclosureID = Some(disclosureId1), doAllRelevantTaxpayersHaveImplementingDate = false))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = DateTime.now(),
+                                                  submissionTime = submissionDateTime1,
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6REP",
+                                                  importInstruction = "DAC6NEW",
                                                   initialDisclosureMA = true)
 
 
@@ -278,16 +282,79 @@ class IdVerificationServiceSpec extends SpecBase with MockitoSugar with BeforeAn
         result mustBe ValidationFailure(List(GenericError(10, "taxpayerDate Error")))
       }
 
+      "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates populated for new RelevantTaxpayers" in {
 
-      "should return a ValidationFailure if metData notDefined" in {
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
+          doAllRelevantTaxpayersHaveImplementingDate = false))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = DateTime.now(),
+          submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
-          importInstruction = "DAC6ADD",
+          importInstruction = "DAC6NEW",
           initialDisclosureMA = true)
+
+        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime2,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false)
+
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+      }
+
+      "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates " +
+      "populated for new RelevantTaxpayers 2" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
+          doAllRelevantTaxpayersHaveImplementingDate = false))
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6NEW",
+          initialDisclosureMA = true)
+
+        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime2,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = true)
+
+        val submissionDetails3 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime3,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false)
+
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2, submissionDetails3))
+        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+
+        val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+      }
+
+
+      "should return a ValidationFailure if metData notDefined" in {
 
         val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, None, enrolmentId), 10 seconds)
         result mustBe ValidationFailure(List(GenericError(0, "File does not contain necessary data")))
