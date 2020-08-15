@@ -155,6 +155,8 @@ index.heading = Disclose cross-border arrangements for DAC6
 index.guidance = Upload an XML file to tell us about an arrangement.
 index.continue = Disclose a cross-border arrangement
 
+history.link = View uploaded files
+
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
 session_expired.guidance = The details you have given have been deleted because you did not continue the service for 15 minutes.

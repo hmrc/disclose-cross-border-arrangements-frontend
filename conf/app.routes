@@ -41,3 +41,5 @@ GET        /send-disclosure/upload-confirmation         controllers.UploadConfir
 GET        /createConfirmation                          controllers.CreateConfirmationController.onPageLoad()
 
 GET        /send-disclosure/disclosure-has-been-deleted controllers.DeleteDisclosureConfirmationController.onPageLoad()
+
+GET        /your-disclosures                            controllers.HistoryController.onPageLoad()

@@ -24,6 +24,12 @@
                           href: routes.controllers.UploadFormController.onPageLoad().url,
                           attributes: {id:"submit"}
                         }) }}
+
+        {% if hasSubmissions %}
+         <p class="govuk-body">
+            <a href="{{routes.controllers.HistoryController.onPageLoad().url}}">{{messages("history.link")}}</a>
+         </p>
+        {% endif %}
       </div>
     </div>
   </div>

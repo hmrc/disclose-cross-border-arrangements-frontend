@@ -31,7 +31,8 @@ import scala.xml.Elem
 class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfig,
                                                  httpClient: HttpClient)(implicit val ec: ExecutionContext) {
 
-  val submitUrl = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/submit"
+  val baseUrl = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
+  val submitUrl = s"$baseUrl/submit"
 
   private val headers = Seq(
     HeaderNames.CONTENT_TYPE -> "application/xml"
@@ -40,5 +41,8 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] = {
     httpClient.POSTString[GeneratedIDs](submitUrl, constructSubmission(fileName, enrolmentID, xmlDocument).toString(), headers)
   }
+
+  def findNoOfPreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[Long] =
+    httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
 
 }
