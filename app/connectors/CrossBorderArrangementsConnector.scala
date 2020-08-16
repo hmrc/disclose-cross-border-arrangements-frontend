@@ -18,7 +18,7 @@ package connectors
 
 import config.FrontendAppConfig
 import javax.inject.Inject
-import models.GeneratedIDs
+import models.{GeneratedIDs, SubmissionHistory}
 import play.api.http.HeaderNames
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.HttpClient
@@ -44,5 +44,9 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
 
   def findNoOfPreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[Long] =
     httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
+
+  //TODO: should have paging to support large no of filings
+  def retrievePreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
+    httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
 
 }
