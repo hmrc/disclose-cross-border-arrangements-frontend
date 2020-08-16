@@ -156,6 +156,12 @@ index.guidance = Upload an XML file to tell us about an arrangement.
 index.continue = Disclose a cross-border arrangement
 
 history.link = View uploaded files
+submissionHistory.title = Your disclosures
+submissionHistory.heading = Your disclosures
+submissionHistory.arn.label = Arrangement reference number
+submissionHistory.disclosureID.label = Disclosure ID
+submissionHistory.submissionDate.label = Date submitted
+submissionHistory.fileName.label = File name
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset

@@ -16,16 +16,18 @@
 
 package connectors
 
+import java.time.LocalDateTime
+
 import base.SpecBase
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
-import models.GeneratedIDs
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.WireMockHelper
 
@@ -106,6 +108,44 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           val error = e.asInstanceOf[UpstreamErrorResponse]
           error.statusCode mustBe SERVICE_UNAVAILABLE
         }
+      }
+    }
+
+    "should return a submission details returned from backend" in {
+      val json = Json.obj(
+        "details" -> JsArray(Seq(Json.obj(
+          "enrolmentID" -> "enrolmentID",
+          "submissionTime" -> "2007-12-03T10:15:30",
+          "fileName" -> "fileName",
+          "importInstruction" -> "New",
+          "initialDisclosureMA" -> false
+        )))
+      )
+
+      server.stubFor(
+        get(urlEqualTo("/disclose-cross-border-arrangements/history/submissions/enrolmentID"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(json.toString())
+          )
+      )
+
+      whenReady(connector.retrievePreviousSubmissions("enrolmentID")) {
+        result =>
+          result mustBe SubmissionHistory(
+            Seq(
+              SubmissionDetails(
+                "enrolmentID",
+                LocalDateTime.parse("2007-12-03T10:15:30"),
+                "fileName",
+                None,
+                None,
+                "New",
+                initialDisclosureMA = false
+              )
+            )
+          )
       }
     }
 
