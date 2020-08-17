@@ -18,14 +18,14 @@ package controllers
 
 import com.google.inject.Inject
 import connectors.CrossBorderArrangementsConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.{AuditService, XMLValidationService}
+import services.{EmailService, AuditService, XMLValidationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
@@ -37,9 +37,11 @@ class CheckYourAnswersController @Inject()(
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    contactRetrievalAction: ContactRetrievalAction,
     sessionRepository: SessionRepository,
     xmlValidationService: XMLValidationService,
     auditService: AuditService,
+    emailService: EmailService,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
@@ -64,7 +66,7 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
@@ -75,7 +77,7 @@ class CheckYourAnswersController @Inject()(
             _              <- sessionRepository.set(userAnswersWithIDs)
             _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
             //TODO: send confirmation emails
-
+            emailResult <- emailService.sendEmail(request.contacts, fileName, ids)
           } yield {
             val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text

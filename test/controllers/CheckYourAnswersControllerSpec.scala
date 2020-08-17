@@ -17,8 +17,9 @@
 package controllers
 
 import base.SpecBase
-import connectors.CrossBorderArrangementsConnector
-import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
+import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector}
+import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
+import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
@@ -29,6 +30,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
 import services.XMLValidationService
+import utils.EnrolmentConstants
 
 import scala.concurrent.Future
 
@@ -44,6 +46,16 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   val mockXmlValidationService: XMLValidationService =  mock[XMLValidationService]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+  val mockEnrolmentStoreConnector: EnrolmentStoreConnector = mock[EnrolmentStoreConnector]
+
+  val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "id"))
+  val verifiers = Seq(
+    KnownFact("CONTACTNAME", "test testing"),
+    KnownFact("EMAIL", "me@test.com"))
+  val enrolmentResponse = EnrolmentResponse(EnrolmentConstants.dac6EnrolmentKey, Seq(Enrolment(identifiers, verifiers)))
+
+   when(mockEnrolmentStoreConnector.getEnrolments(any())(any())).
+     thenReturn(Future.successful(Some(enrolmentResponse)))
 
   "Check Your Answers Controller" - {
 
@@ -60,7 +72,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         .set(Dac6MetaDataPage, metaData)
         .success.value
 
-      val application = applicationBuilder(Some(userAnswers)).build()
+      val application = applicationBuilder(Some(userAnswers))
+        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
+        .build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -81,7 +95,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
+        .build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -96,7 +112,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
     "must redirect to Session Expired for a GET if no existing data is found" in {
 
-      val application = applicationBuilder(userAnswers = None).build()
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
+        .build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -114,7 +132,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val application = applicationBuilder(Some(userAnswers))
       .overrides(
         bind[XMLValidationService].toInstance(mockXmlValidationService),
-        bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+        bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
       ).build()
 
       when(mockXmlValidationService.loadXML(any[String]())).
@@ -138,7 +157,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
         ).build()
 
       val xml =
@@ -167,7 +187,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
         ).build()
 
       val xml =
@@ -196,8 +217,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
-        ).build()
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+            bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
+      ).build()
 
       val xml =
         <DAC6_Arrangement version="First">
