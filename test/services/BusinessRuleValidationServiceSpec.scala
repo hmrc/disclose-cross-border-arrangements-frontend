@@ -1170,7 +1170,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
     service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
   }
 
-  "must correctly invalidate the hallmarks when MainBenefitTest1 is set and doesnt contain any of the necessary" in {
+  "must correctly validate the hallmarks when MainBenefitTest1 is set and doesnt contain any of the necessary" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
         <Header>
@@ -1185,6 +1185,31 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
             <Hallmarks>
               <ListHallmarks>
                 <Hallmark>DAC6C1bii</Hallmark>
+              </ListHallmarks>
+            </Hallmarks>
+          </DisclosureInformation>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.validateMainBenefitTestHasASpecifiedHallmark()(xml).get.value mustBe true
+  }
+
+  "must correctly invalidate the hallmarks when MainBenefitTest1 is not set and doesnt contain any of the necessary hallmarks" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureInformation>
+            <ImplementingDate>2020-01-14</ImplementingDate>
+            <Reason>DAC6704</Reason>
+            <MainBenefitTest1>false</MainBenefitTest1>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6A1</Hallmark>
               </ListHallmarks>
             </Hallmarks>
           </DisclosureInformation>
