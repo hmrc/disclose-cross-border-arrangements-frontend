@@ -52,6 +52,6 @@ class ViewHelper @Inject()() {
         Cell(msg"invalidXML.table.heading2", classes = Seq("govuk-!-font-weight-bold"))),
       rows = rows,
       caption = Some(msg"invalidXML.h3"),
-      attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3")))
+      attributes = Map("id" -> "errorTable"))
   }
 }

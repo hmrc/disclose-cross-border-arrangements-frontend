@@ -66,7 +66,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
           Cell(msg"Enter your cats name in meow format", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_11"))
         )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
       )
     }
 
@@ -87,7 +87,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
             Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_33"))
           )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
       )
     }
 
@@ -111,7 +111,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
             Cell(msg"You gotta be kitten me", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_48"))
           )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
       )
     }
   }
