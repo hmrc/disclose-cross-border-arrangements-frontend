@@ -20,9 +20,9 @@ import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierA
 import handlers.ErrorHandler
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{Dac6MetaDataPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, GenericErrorPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.{SessionRepository, UploadSessionRepository}
@@ -67,10 +67,11 @@ class FileValidationController @Inject()(
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-          case ValidationFailure(_) =>
+          case ValidationFailure(errors: Seq[GenericError]) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
-              _              <- sessionRepository.set(updatedAnswers)
+              updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
+              _              <- sessionRepository.set(updatedAnswersWithErrors)
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }

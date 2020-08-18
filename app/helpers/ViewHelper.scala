@@ -17,9 +17,11 @@
 package helpers
 
 import com.google.inject.Inject
+import models.GenericError
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.viewmodels.Html
+import uk.gov.hmrc.viewmodels.Table.Cell
+import uk.gov.hmrc.viewmodels.{Html, Table, _}
 
 
 class ViewHelper @Inject()() {
@@ -30,5 +32,26 @@ class ViewHelper @Inject()() {
 
   def surveyLinkText(href: JsValue)(implicit messages: Messages): Html = {
     Html(s"<a id='feedback-link' href=$href>${{ messages("confirmation.survey.link")}}</a> ${{ messages("confirmation.survey.text")}}")
+  }
+
+  def mapErrorsToTable(listOfErrors: Seq[GenericError])(implicit messages: Messages) : Table = {
+
+    val rows: Seq[Seq[Cell]] =
+      for {
+        error <- listOfErrors.sorted
+      } yield {
+        Seq(
+          Cell(msg"${error.lineNumber}", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> s"lineNumber_${error.lineNumber}")),
+          Cell(msg"${error.messageKey}", classes = Seq("govuk-table__cell"), attributes = Map("id" -> s"errorMessage_${error.lineNumber}"))
+        )
+      }
+
+    Table(
+      head = Seq(
+        Cell(msg"invalidXML.table.heading1", classes = Seq("govuk-!-width-one-quarter", "govuk-table__header")),
+        Cell(msg"invalidXML.table.heading2", classes = Seq("govuk-!-font-weight-bold"))),
+      rows = rows,
+      caption = Some(msg"invalidXML.h3"),
+      attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3")))
   }
 }

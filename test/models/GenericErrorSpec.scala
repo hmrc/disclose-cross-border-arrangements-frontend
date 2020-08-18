@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package helpers
+package models
 
-import models.Validation
+import base.SpecBase
 
-import scala.xml.{Elem, NodeSeq}
+class GenericErrorSpec extends SpecBase {
 
-class LineNumberHelper {
+  val mockGenericErrorSeq = Seq(GenericError(4, "British Shorthair"), GenericError(1, "Maine Coon"),
+    GenericError(3, "Siamese Cat"), GenericError(2, "Ragdoll"))
 
-  def getLineNumbersOfErrors(validations: Seq[Validation], xml: Elem): Seq[Validation] = {
-    val xmlArray = xml.toString().split("\n")
-    validations.map(validation => validation.setLineNumber(xmlArray))
+  "orderByLineNumber" - {
+
+    "must return a sequence of Generic Errors ordered by lineNumber" in {
+
+      mockGenericErrorSeq.sorted mustBe Seq(GenericError(1, "Maine Coon"), GenericError(2, "Ragdoll"), GenericError(3, "Siamese Cat"), GenericError(4, "British Shorthair"))
+
+    }
   }
-
- }
+}

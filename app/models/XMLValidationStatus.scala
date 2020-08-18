@@ -36,7 +36,17 @@ object SaxParseError {
   implicit val format = Json.format[SaxParseError]
 }
 
-case class ValidationFailure (error: Seq[SaxParseError]) extends XMLValidationStatus
+case class GenericError(lineNumber: Int, messageKey: String)
+
+object GenericError {
+
+  implicit def orderByLineNumber[A <: GenericError]: Ordering[A] =
+    Ordering.by(ge => (ge.lineNumber, ge.messageKey))
+
+  implicit val format = Json.format[GenericError]
+}
+
+case class ValidationFailure (errors: Seq[GenericError]) extends XMLValidationStatus
 
 object ValidationFailure {
   implicit val format = Json.format[ValidationFailure]
@@ -61,7 +71,7 @@ object XMLValidationStatus {
       "_type" -> "ValidationSuccess")
 
     case ValidationFailure (error) => Json.obj(
-      "error" -> JsArray(error.map(Json.toJson[SaxParseError](_))),
+      "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
       "_type" -> "ValidationFailure"
     )
   }

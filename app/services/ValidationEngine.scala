@@ -16,24 +16,30 @@
 
 package services
 
-import helpers.LineNumberHelper
+import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
 import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 
 import scala.xml.Elem
 
+
 class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
-                                 lineNumberHelper: LineNumberHelper){
+                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
+                                 xmlErrorMessageHelper: XmlErrorMessageHelper) {
+
+
 
   def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
 
-    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = xmlValidationService.validateXml(downloadUrl)
+    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
+
 
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
     (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => ValidationFailure(xmlErrors ++ businessRulesErrors)
+      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
+                                                                                     ValidationFailure(orderedErrors)
       case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
       case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
       case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>
@@ -44,16 +50,31 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
  }
 
 
+
+  def performXmlValidation(source: String): (Elem, XMLValidationStatus) = {
+
+    val xmlErrors = xmlValidationService.validateXml(source)
+    if(xmlErrors._2.isEmpty) {
+      (xmlErrors._1, ValidationSuccess(source))
+    }else {
+
+      val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
+
+      (xmlErrors._1,  ValidationFailure(filteredErrors))
+    }
+  }
+
   def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
 
     if (businessRulesCheckRequired) {
       businessRuleValidationService.validateFile()(elem) match {
         case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(lineNumberHelper.getLineNumbersOfErrors(errors, elem).map(error => error.toSaxParseError))
+        case Some(errors) => ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(errors, elem))
         case None => ValidationSuccess(source)
       }
     } else {
       ValidationSuccess(source)
     }
   }
+
 }

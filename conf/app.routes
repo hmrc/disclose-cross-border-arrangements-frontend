@@ -30,7 +30,7 @@ GET        /error                                       controllers.UploadFormCo
 
 GET        /validator                                   controllers.FileValidationController.onPageLoad
 
-GET        /file-error                                  controllers.InvalidXMLController.onPageLoad
+GET        /problem/data-error                          controllers.InvalidXMLController.onPageLoad
 
 GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
 
