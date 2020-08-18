@@ -66,7 +66,8 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
+  //ToDo add "andThen contactRetrievalAction" when contact storage corrected
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
@@ -75,9 +76,9 @@ class CheckYourAnswersController @Inject()(
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _              <- sessionRepository.set(userAnswersWithIDs)
-            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
-            //TODO: send confirmation emails
-            emailResult <- emailService.sendEmail(request.contacts, fileName, ids)
+ _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
+            //TODO: send confirmation emails when contact details retrieval is corrected
+            //emailResult <- emailService.sendEmail(request.contacts, fileName, ids)
           } yield {
             val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
