@@ -20,10 +20,8 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
 
   def toGenericError: GenericError = GenericError(lineNumber.getOrElse(0), getErrorMessage)
 
-  def setLineNumber(xmlArray: Array[String]): Validation ={
-    val index = xmlArray.indexWhere(str => str.contains(path)) + 1
-    copy(lineNumber = Some(index))
-  }
+
+
 
 
    def getErrorMessage: String ={
@@ -44,26 +42,6 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
 
      }
   }
-
-
-
-//  disclosureImportInstruction match {
-//    case "DAC6NEW" => Validation(
-//      key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
-//      value = arrangementID.isEmpty && disclosureID.isEmpty)
-//    case "DAC6ADD" => Validation(
-//      key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
-//      value = arrangementID.nonEmpty && disclosureID.isEmpty)
-//    case "DAC6REP" => Validation(
-//      key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-//      value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-//    case "DAC6DEL" => Validation(
-//      key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-//      value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-//    case _ =>  Validation(
-//      key = "businessrules.disclosure.notAValidDisclosureInstruction",
-//      value = false) //TODO: This is because I haven't used an enum
-//  }
 
   def path: String = {
 

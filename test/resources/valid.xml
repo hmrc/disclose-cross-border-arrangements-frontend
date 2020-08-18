@@ -9,22 +9,22 @@
             <ID>
                 <Individual>
                     <IndividualName>
-                        <FirstName>Larry</FirstName>
-                        <LastName>C</LastName>
-                        <Suffix>(Cat)</Suffix>
+                        <FirstName>John</FirstName>
+                        <LastName>Charles</LastName>
+                        <Suffix>Mr</Suffix>
                     </IndividualName>
                     <BirthDate>2007-01-14</BirthDate>
-                    <BirthPlace>Hexham</BirthPlace>
+                    <BirthPlace>Random Town</BirthPlace>
                     <TIN issuedBy="GB">AA000000D</TIN>
                     <Address>
-                        <Street>Downing Street</Street>
+                        <Street>Random Street</Street>
                         <BuildingIdentifier>No 10</BuildingIdentifier>
-                        <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                        <SuiteIdentifier>Random Suite</SuiteIdentifier>
                         <FloorIdentifier>Second</FloorIdentifier>
-                        <DistrictName>Westminster</DistrictName>
+                        <DistrictName>Random District</DistrictName>
                         <POB>48</POB>
                         <PostCode>SW1A 4GG</PostCode>
-                        <City>London</City>
+                        <City>Random City</City>
                         <Country>GB</Country>
                     </Address>
                     <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
@@ -46,17 +46,17 @@
                         <IndividualName>
                             <FirstName>Larry</FirstName>
                             <LastName>C</LastName>
-                            <Suffix>(Cat)</Suffix>
+                            <Suffix>Mr</Suffix>
                         </IndividualName>
                         <BirthDate>2007-01-14</BirthDate>
-                        <BirthPlace>Hexham</BirthPlace>
+                        <BirthPlace>Birthplace</BirthPlace>
                         <TIN issuedBy="GB">AA000000D</TIN>
                         <Address>
-                            <Street>Downing Street</Street>
-                            <BuildingIdentifier>No 10</BuildingIdentifier>
-                            <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                            <Street>Street</Street>
+                            <BuildingIdentifier>1</BuildingIdentifier>
+                            <SuiteIdentifier>Suite</SuiteIdentifier>
                             <FloorIdentifier>Second</FloorIdentifier>
-                            <DistrictName>Westminster</DistrictName>
+                            <DistrictName>DistrictName</DistrictName>
                             <POB>48</POB>
                             <PostCode>SW1A 4GG</PostCode>
                             <City>London</City>
@@ -72,19 +72,19 @@
                         <AssociatedEnterpriseID>
                             <Individual>
                                 <IndividualName>
-                                    <FirstName>Larry</FirstName>
+                                    <FirstName>Name</FirstName>
                                     <LastName>C</LastName>
                                     <Suffix>(Cat)</Suffix>
                                 </IndividualName>
                                 <BirthDate>2007-01-14</BirthDate>
-                                <BirthPlace>Hexham</BirthPlace>
+                                <BirthPlace>BirthPlace</BirthPlace>
                                 <TIN issuedBy="GB">AA000000D</TIN>
                                 <Address>
-                                    <Street>Downing Street</Street>
+                                    <Street>Street</Street>
                                     <BuildingIdentifier>No 10</BuildingIdentifier>
-                                    <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                                    <SuiteIdentifier>Suite</SuiteIdentifier>
                                     <FloorIdentifier>Second</FloorIdentifier>
-                                    <DistrictName>Westminster</DistrictName>
+                                    <DistrictName>DistrictName</DistrictName>
                                     <POB>48</POB>
                                     <PostCode>SW1A 4GG</PostCode>
                                     <City>London</City>
@@ -106,17 +106,17 @@
                         <IndividualName>
                             <FirstName>Larry</FirstName>
                             <LastName>C</LastName>
-                            <Suffix>(Cat)</Suffix>
+                            <Suffix>DDD</Suffix>
                         </IndividualName>
                         <BirthDate>2007-01-14</BirthDate>
-                        <BirthPlace>Hexham</BirthPlace>
+                        <BirthPlace>BirthPlace</BirthPlace>
                         <TIN issuedBy="GB">AA000000D</TIN>
                         <Address>
                             <Street>Downing Street</Street>
                             <BuildingIdentifier>No 10</BuildingIdentifier>
-                            <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                            <SuiteIdentifier>Suite</SuiteIdentifier>
                             <FloorIdentifier>Second</FloorIdentifier>
-                            <DistrictName>Westminster</DistrictName>
+                            <DistrictName>DistrictName</DistrictName>
                             <POB>48</POB>
                             <PostCode>SW1A 4GG</PostCode>
                             <City>London</City>
@@ -140,22 +140,22 @@
                 <AffectedPersonID>
                     <Individual>
                         <IndividualName>
-                            <FirstName>Palmerston</FirstName>
-                            <LastName>C</LastName>
-                            <Suffix>(Cat)</Suffix>
+                            <FirstName>FirstName</FirstName>
+                            <LastName>LastName</LastName>
+                            <Suffix>Suffix</Suffix>
                         </IndividualName>
                         <BirthDate>2012-01-14</BirthDate>
-                        <BirthPlace>Hexham</BirthPlace>
+                        <BirthPlace>BirthPlace</BirthPlace>
                         <TIN issuedBy="GB">AB000000D</TIN>
                         <Address>
-                            <Street>King Charles Street</Street>
+                            <Street>Street</Street>
                             <BuildingIdentifier>No 10</BuildingIdentifier>
-                            <SuiteIdentifier>Lord Palmerston Suite</SuiteIdentifier>
+                            <SuiteIdentifier>BuildingIdentifier</SuiteIdentifier>
                             <FloorIdentifier>Second</FloorIdentifier>
-                            <DistrictName>Westminster</DistrictName>
+                            <DistrictName>DistrictName</DistrictName>
                             <POB>48</POB>
                             <PostCode>SW1A 4GG</PostCode>
-                            <City>London</City>
+                            <City>City</City>
                             <Country>GB</Country>
                         </Address>
                         <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
@@ -168,12 +168,13 @@
             <ImplementingDate>2020-01-14</ImplementingDate>
             <Reason>DAC6704</Reason>
             <Summary>
-                <Disclosure_Name>Catnip Advice</Disclosure_Name>
-                <Disclosure_Description>I will give advice on expensing catnip for money</Disclosure_Description>
+                <Disclosure_Name>Name of Disclosure</Disclosure_Name>
+                <Disclosure_Description>Description of disclosure</Disclosure_Description>
             </Summary>
-            <NationalProvision>I don't know what this is as I am just a cat</NationalProvision>
+            <NationalProvision>NationalProvision</NationalProvision>
             <Amount currCode="VUV">4000</Amount>
             <ConcernedMSs>
+
                 <ConcernedMS>CZ</ConcernedMS>
             </ConcernedMSs>
             <MainBenefitTest1>false</MainBenefitTest1>

@@ -131,16 +131,6 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         validationEngine.validateFile(source) mustBe ValidationSuccess(source, mockMetaData)
       }
 
-//      "must return ValidationFailure for file which fails xsd validation" in new SetUp {
-//        val saxParseError = SaxParseError(lineNumber, xsdError)
-//        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,  ListBuffer(saxParseError)))
-//
-//        val expectedError = Seq(GenericError(lineNumber, xsdError))
-//
-//        validationEngine.validateFile(source) mustBe ValidationFailure(expectedError)
-//      }
-
-
       "must return ValidationFailure for file which multiple pieces of mandatory information missing" in new SetUp {
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
