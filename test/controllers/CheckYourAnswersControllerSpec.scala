@@ -17,6 +17,7 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector}
 import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
 import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
@@ -56,6 +57,8 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
    when(mockEnrolmentStoreConnector.getEnrolments(any())(any())).
      thenReturn(Future.successful(Some(enrolmentResponse)))
+
+  when(mockAppConfig.sendEmailToggle).thenReturn(false)
 
   "Check Your Answers Controller" - {
 
@@ -133,8 +136,11 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       .overrides(
         bind[XMLValidationService].toInstance(mockXmlValidationService),
         bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-        bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
+        bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
+        bind[FrontendAppConfig].toInstance(mockAppConfig)
       ).build()
+
+      when(mockAppConfig.sendEmailToggle).thenReturn(false)
 
       when(mockXmlValidationService.loadXML(any[String]())).
         thenReturn(<test><value>Success</value></test>)
@@ -158,9 +164,11 @@ class CheckYourAnswersControllerSpec extends SpecBase {
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
+            bind[FrontendAppConfig].toInstance(mockAppConfig)
         ).build()
 
+      when(mockAppConfig.sendEmailToggle).thenReturn(false)
       val xml =
         <DAC6_Arrangement version="First">
           <DAC6Disclosures>

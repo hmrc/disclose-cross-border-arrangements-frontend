@@ -29,12 +29,15 @@ import org.mockito.Matchers.any
 import utils.EnrolmentConstants
 class ContactRetrievalActionImplSpec extends SpecBase {
 
-  class Harness(enrolmentConnector: EnrolmentStoreConnector) extends ContactRetrievalActionImpl(enrolmentConnector) {
+
+
+  class Harness(enrolmentConnector: EnrolmentStoreConnector) extends ContactRetrievalActionImpl(enrolmentConnector, mockAppConfig) {
     def callTransform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] = transform(request)
   }
 
   "Contact retrieval action" - {
     "return request with contactinformation" in {
+      when(mockAppConfig.sendEmailToggle).thenReturn(true)
       val mockEnrolmentConnector = mock[EnrolmentStoreConnector]
       when(mockEnrolmentConnector.getEnrolments(any())(any())).thenReturn(
         Future.successful(Some(

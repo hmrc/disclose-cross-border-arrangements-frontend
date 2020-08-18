@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import config.FrontendAppConfig
 import javax.inject.Inject
 import models.requests.{DataRequest, DataRequestWithContacts}
 import play.api.mvc.ActionTransformer
@@ -24,20 +25,27 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 import connectors.EnrolmentStoreConnector
 import models.ContactDetails
+import uk.gov.hmrc.http.HeaderCarrier
 
-class ContactRetrievalActionImpl @Inject()(enrolmentStoreConnecter: EnrolmentStoreConnector)
+class ContactRetrievalActionImpl @Inject()(enrolmentStoreConnecter: EnrolmentStoreConnector, frontendAppConfig: FrontendAppConfig)
                                           (implicit val executionContext: ExecutionContext) extends ContactRetrievalAction {
 
   override protected def transform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] = {
 
-    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
-    enrolmentStoreConnecter.getEnrolments(request.enrolmentID)(hc) map { enrolmentsResponse =>
-      val contacts: Option[ContactDetails] = for {
-                enres <- enrolmentsResponse
-                enr <- enres.getEnrolment(request.enrolmentID)
-            } yield enr.getContactDetails
-      DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, request.userAnswers, contacts)
+    if (!frontendAppConfig.sendEmailToggle) {
+      Future.successful(DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, request.userAnswers, None))
+    }
+    else {
+      enrolmentStoreConnecter.getEnrolments(request.enrolmentID)(hc) map {
+        enrolmentsResponse =>
+          val contacts: Option[ContactDetails] = for {
+            enres <- enrolmentsResponse
+            enr <- enres.getEnrolment(request.enrolmentID)
+          } yield enr.getContactDetails
+          DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, request.userAnswers, contacts)
+      }
     }
   }
 
