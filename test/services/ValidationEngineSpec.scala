@@ -164,7 +164,8 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
       }
 
-      "must return ValidationFailure for file where element is too long (1-4000 allowed)" in new SetUp {
+
+       "must return ValidationFailure for file where element is too long (1-4000 allowed)" in new SetUp {
 
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError3, maxlengthError4)))
@@ -290,5 +291,4 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
    }
 
   }
-
 }

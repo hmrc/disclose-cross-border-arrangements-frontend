@@ -20,9 +20,10 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
 
   def toGenericError: GenericError = GenericError(lineNumber.getOrElse(0), getErrorMessage)
 
-
-
-
+  def setLineNumber(xmlArray: Array[String]): Validation ={
+    val index = xmlArray.indexWhere(str => str.contains(path)) + 1
+    copy(lineNumber = Some(index))
+  }
 
    def getErrorMessage: String ={
      key match {
