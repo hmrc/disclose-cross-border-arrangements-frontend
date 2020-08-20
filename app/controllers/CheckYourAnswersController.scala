@@ -25,7 +25,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.XMLValidationService
+import services.{AuditService, XMLValidationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
@@ -40,6 +40,7 @@ class CheckYourAnswersController @Inject()(
     sessionRepository: SessionRepository,
     xmlValidationService: XMLValidationService,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+    auditService: AuditService,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -71,9 +72,9 @@ class CheckYourAnswersController @Inject()(
           for {
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
-            _              <- sessionRepository.set(userAnswersWithIDs)
-            //TODO: send confirmation emails
-
+            _ =  auditService.submissionAudit(request.enrolmentID, fileName)
+            _ <- sessionRepository.set(userAnswersWithIDs)
+            //ToDo send confirmation email
           } yield {
             val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
