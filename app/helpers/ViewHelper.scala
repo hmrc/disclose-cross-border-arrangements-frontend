@@ -16,12 +16,14 @@
 
 package helpers
 
+import java.time.format.DateTimeFormatter
+
 import com.google.inject.Inject
-import models.GenericError
+import models.{GenericError, SubmissionHistory}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.Table.Cell
-import uk.gov.hmrc.viewmodels.{Html, Table, _}
+import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 
 
 class ViewHelper @Inject()() {
@@ -53,5 +55,30 @@ class ViewHelper @Inject()() {
       rows = rows,
       caption = Some(msg"invalidXML.h3"),
       attributes = Map("id" -> "errorTable"))
+  }
+
+  def buildDisclosuresTable(retrievedHistory: SubmissionHistory)(implicit messages: Messages) : Table = {
+
+    val submissionDateFormat = DateTimeFormatter.ofPattern("hh:mm a 'on' d MMMM yyyy")
+
+    val rows = retrievedHistory.details.zipWithIndex.map {
+      case (submission, count) =>
+        Seq(
+          Cell(msg"${submission.arrangementID.get}", attributes = Map("id" -> s"arrangementID_$count")),
+          Cell(msg"${submission.disclosureID.get}", attributes = Map("id" -> s"disclosureID_$count")),
+          Cell(msg"${submission.submissionTime.format(submissionDateFormat)}", attributes = Map("id" -> s"submissionTime_$count")),
+          Cell(msg"${submission.fileName}", attributes = Map("id" -> s"fileName_$count"))
+        )
+    }
+
+    Table(
+      head = Seq(
+        Cell(msg"submissionHistory.arn.label", classes = Seq("govuk-!-width-one-quarter")),
+        Cell(msg"submissionHistory.disclosureID.label", classes = Seq("govuk-!-width-one-quarter")),
+        Cell(msg"submissionHistory.submissionDate.label", classes = Seq("govuk-table__header")),
+        Cell(msg"submissionHistory.fileName.label", classes = Seq("govuk-!-width-one-quarter"))
+      ),
+      rows = rows,
+      attributes = Map("id" -> "disclosuresTable"))
   }
 }

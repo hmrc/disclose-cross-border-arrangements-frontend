@@ -16,13 +16,12 @@
 
 package controllers
 
-import java.time.format.DateTimeFormatter
-
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.IdentifierAction
+import helpers.ViewHelper
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -33,23 +32,15 @@ class HistoryController @Inject()(
                                    identify: IdentifierAction,
                                    crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
                                    val controllerComponents: MessagesControllerComponents,
-                                   renderer: Renderer
+                                   renderer: Renderer,
+                                   viewHelper: ViewHelper,
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify).async { implicit request =>
-    val submissionDateFormat = DateTimeFormatter.ofPattern("hh:mm a 'on' d MMMM yyyy")
+  def onPageLoad: Action[AnyContent] = identify.async { implicit request =>
 
     {for {
       retrievedDetails <- crossBorderArrangementsConnector.retrievePreviousSubmissions(request.enrolmentID)
-      context = Json.obj("datarows" -> retrievedDetails.details.map {
-        submission =>
-          JsArray(Seq(
-            Json.obj("text" -> submission.arrangementID),
-            Json.obj("text" -> submission.disclosureID),
-            Json.obj("text" -> submission.submissionTime.format(submissionDateFormat)),
-            Json.obj("text" -> submission.fileName)
-          ))
-      })
+      context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
     } yield {
       renderer.render("submissionHistory.njk", context).map(Ok(_))
     }}.flatten

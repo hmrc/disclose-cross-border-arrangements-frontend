@@ -26,26 +26,7 @@
           {{ messages("submissionHistory.heading") }}
         </h1>
 
-        {{ govukTable({
-          firstCellIsHeader: false,
-          head: [
-            {
-              text: messages("submissionHistory.arn.label")
-            },
-            {
-              text: messages("submissionHistory.disclosureID.label")
-            },
-            {
-              text: messages("submissionHistory.submissionDate.label"),
-              classes: 'govuk-!-width-one-quarter'
-            },
-            {
-               text: messages("submissionHistory.fileName.label")
-            }
-          ],
-          rows: datarows
-        }) }}
-
+        {{ govukTable(disclosuresTable) }}
 
       </div>
     </div>
