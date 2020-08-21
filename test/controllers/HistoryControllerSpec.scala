@@ -43,8 +43,8 @@ class HistoryControllerSpec extends SpecBase {
             "enrolmentID",
             LocalDateTime.parse("2007-12-03T10:15:30"),
             "fileName",
-            None,
-            None,
+            Some("arrangementID"),
+            Some("disclosureID"),
             "New",
             initialDisclosureMA = false
           )

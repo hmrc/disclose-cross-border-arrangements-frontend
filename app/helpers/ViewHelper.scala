@@ -59,14 +59,16 @@ class ViewHelper @Inject()() {
 
   def buildDisclosuresTable(retrievedHistory: SubmissionHistory)(implicit messages: Messages) : Table = {
 
-    val submissionDateFormat = DateTimeFormatter.ofPattern("hh:mm a 'on' d MMMM yyyy")
+    val submissionDateFormat = DateTimeFormatter.ofPattern("hh:mma 'on' d MMMM yyyy")
 
     val rows = retrievedHistory.details.zipWithIndex.map {
       case (submission, count) =>
         Seq(
           Cell(msg"${submission.arrangementID.get}", attributes = Map("id" -> s"arrangementID_$count")),
           Cell(msg"${submission.disclosureID.get}", attributes = Map("id" -> s"disclosureID_$count")),
-          Cell(msg"${submission.submissionTime.format(submissionDateFormat)}", attributes = Map("id" -> s"submissionTime_$count")),
+          Cell(msg"${submission.submissionTime.format(submissionDateFormat)
+                    .replace("AM", "am")
+                    .replace("PM","pm")}", attributes = Map("id" -> s"submissionTime_$count")),
           Cell(msg"${submission.fileName}", attributes = Map("id" -> s"fileName_$count"))
         )
     }
