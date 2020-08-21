@@ -21,22 +21,37 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.ExecutionContext
+import scala.xml.{Elem, NodeSeq}
 
 class AuditService @Inject()(auditConnector: AuditConnector)(implicit ex: ExecutionContext) {
-  private val auditType = "discloseCrossBorderArrangement"
+  private val auditType = "disclosureXMlSubmission"
   private val emptyMap: Map[String, String] = Map.empty
+  val nodeVal = (node: NodeSeq) => if (node.isEmpty) "" else node.text
 
   type MapCont = Map[String, String] => Map[String, String]
 
   def withFileName(filename: String): MapCont = _ + ("fileName" -> filename)
   def withEnrolmentID(enrolmentId: String): MapCont = _ + ("enrolmentID" -> enrolmentId)
+  def withArrangementID(arrangementID: Option[String]): MapCont = _ + ("arrangementID" -> arrangementID.getOrElse("None Provided"))
+  def withDisclosureID(disclosureID: Option[String]): MapCont = _ + ("disclosureID" -> disclosureID.getOrElse("None Provided"))
+  def messageRefID(xml: Elem): MapCont = _ + ("messageRefID" -> nodeVal(xml \ "Header" \ "MessageRefId"))
+  def importInstruction(xml: Elem): MapCont = _ + ("disclosureImportInstruction" -> nodeVal(xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"))
+  def initialDisclosureMA(xml: Elem): MapCont = _ + ("initialDisclosureMA" -> nodeVal(xml \ "DAC6Disclosures" \ "InitialDisclosureMA"))
 
-  def submissionAudit(enrolmentId: String, filename: String)(implicit hc: HeaderCarrier): Unit = {
+  def submissionAudit(enrolmentId: String, filename: String, arrangementID: Option[String],
+                      disclosureID: Option[String], xml: Elem)(implicit hc: HeaderCarrier): Unit = {
 
     val auditMap = (
-      withFileName(filename) andThen withEnrolmentID(enrolmentId)
-    )(emptyMap)
+      withFileName(filename) andThen
+        withEnrolmentID(enrolmentId) andThen
+        withArrangementID(arrangementID) andThen
+        withDisclosureID(disclosureID) andThen
+        messageRefID(xml) andThen
+        importInstruction(xml) andThen
+        initialDisclosureMA(xml)
+      ) (emptyMap)
 
     auditConnector.sendExplicitAudit(auditType, auditMap)
   }
+
 }

@@ -72,7 +72,7 @@ class CheckYourAnswersController @Inject()(
           for {
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
-            _ =  auditService.submissionAudit(request.enrolmentID, fileName)
+            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
             _ <- sessionRepository.set(userAnswersWithIDs)
             //ToDo send confirmation email
           } yield {

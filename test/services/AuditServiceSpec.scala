@@ -17,6 +17,7 @@
 package services
 
 import base.SpecBase
+import fixtures.XMLFixture
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import org.mockito.Matchers.{eq => eqTo, _}
@@ -34,16 +35,25 @@ class AuditServiceSpec extends SpecBase {
 
   "AuditService.submissionAudit" - {
     "must generate correct payload for disclosure submission audit" in {
-      forAll(arbitrary[String], arbitrary[String]) { ( enrolmentID, fileName) =>
+      val xml = XMLFixture.dac6NotInitialDisclosureMA
+      forAll(arbitrary[String], arbitrary[String], arbitrary[Option[String]], arbitrary[Option[String]])
+      { ( enrolmentID, fileName,  arrangementID, disclosureID) =>
         reset(auditConnector)
 
-        auditService.submissionAudit(enrolmentID, fileName)
+        auditService.submissionAudit(enrolmentID, fileName, arrangementID, disclosureID, xml)
+
         val expected = Map(
           "fileName" -> fileName,
-          "enrolmentID" -> enrolmentID
+          "enrolmentID" -> enrolmentID,
+          "arrangementID" -> arrangementID.getOrElse("None Provided"),
+          "disclosureID" -> disclosureID.getOrElse("None Provided"),
+          "messageRefID" -> "GB0000000XXX",
+          "disclosureImportInstruction" ->"DAC6NEW",
+          "initialDisclosureMA" -> "false"
+
         )
 
-        verify(auditConnector, times(1)).sendExplicitAudit(eqTo("discloseCrossBorderArrangement"),eqTo(expected))(any(),any())
+        verify(auditConnector, times(1)).sendExplicitAudit(eqTo("disclosureXMlSubmission"),eqTo(expected))(any(),any())
       }
     }
   }
