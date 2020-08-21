@@ -28,7 +28,7 @@ import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.{AuditService, XMLValidationService}
+import services.XMLValidationService
 
 import scala.concurrent.Future
 
@@ -44,7 +44,6 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
   val mockXmlValidationService: XMLValidationService =  mock[XMLValidationService]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
-  val mockAuditService : AuditService = mock[AuditService]
 
   "Check Your Answers Controller" - {
 
