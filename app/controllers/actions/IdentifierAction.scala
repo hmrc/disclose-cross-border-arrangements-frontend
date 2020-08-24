@@ -51,7 +51,7 @@ class AuthenticatedIdentifierAction @Inject()(
           (for {
             enrolment <- enrolments.find(_.key.equals(enrolmentKey))
             enrolmentIdentifier <- enrolment.getIdentifier(enrolmentKey)
-          } yield enrolmentIdentifier.value).getOrElse("EnrolmentID")//TODO Replace default once DAC6 enrolment has been implemented
+          } yield enrolmentIdentifier.value).getOrElse("EnrolmentID")
         }
 
         block(IdentifierRequest(request, internalID, enrolmentID))
