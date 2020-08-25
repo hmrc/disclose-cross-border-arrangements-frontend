@@ -143,8 +143,8 @@ class BusinessRuleValidationService @Inject()() {
       hallmarks <- hallmarks
     } yield Validation(
       key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
-      value = if(mainBenefitTest1)
-                hallmarks.toSet.intersect(hallmarksForMainBenefitTest).nonEmpty
+      value = if(!mainBenefitTest1)
+                hallmarks.toSet.intersect(hallmarksForMainBenefitTest).isEmpty
               else true
     )
   }

@@ -205,7 +205,8 @@ val enrolmentId = "123456"
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe ValidationFailure(expectedErrors)
       }
 
-      "must return ValidationFailure for file where element is too long (1-4000 allowed)" in new SetUp {
+
+       "must return ValidationFailure for file where element is too long (1-4000 allowed)" in new SetUp {
 
        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError3, maxlengthError4)))

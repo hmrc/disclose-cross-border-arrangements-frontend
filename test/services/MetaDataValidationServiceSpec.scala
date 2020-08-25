@@ -16,6 +16,8 @@
 
 package services
 
+import java.time.LocalDateTime
+
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
 import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, ValidationFailure, ValidationSuccess}
@@ -58,9 +60,9 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
   val enrolmentId = "123456"
 
-  val submissionDateTime1 = DateTime.now()
-  val submissionDateTime2 = DateTime.now().plusDays(1)
-  val submissionDateTime3 = DateTime.now().plusDays(2)
+  val submissionDateTime1 = LocalDateTime.now()
+  val submissionDateTime2 = submissionDateTime1.plusDays(1)
+  val submissionDateTime3 = submissionDateTime1.plusDays(2)
 
   val testXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

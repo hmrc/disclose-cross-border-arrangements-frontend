@@ -16,17 +16,21 @@
 
 package connectors
 
+import java.time.LocalDateTime
+
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.joda.time.DateTime
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, OK, SERVICE_UNAVAILABLE, INTERNAL_SERVER_ERROR}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import utils.WireMockHelper
 
@@ -110,6 +114,44 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       }
     }
 
+    "should return a submission details returned from backend" in {
+      val json = Json.obj(
+        "details" -> JsArray(Seq(Json.obj(
+          "enrolmentID" -> "enrolmentID",
+          "submissionTime" -> "2007-12-03T10:15:30",
+          "fileName" -> "fileName",
+          "importInstruction" -> "New",
+          "initialDisclosureMA" -> false
+        )))
+      )
+
+      server.stubFor(
+        get(urlEqualTo("/disclose-cross-border-arrangements/history/submissions/enrolmentID"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(json.toString())
+          )
+      )
+
+      whenReady(connector.retrievePreviousSubmissions("enrolmentID")) {
+        result =>
+          result mustBe SubmissionHistory(
+            Seq(
+              SubmissionDetails(
+                "enrolmentID",
+                LocalDateTime.parse("2007-12-03T10:15:30"),
+                "fileName",
+                None,
+                None,
+                "New",
+                initialDisclosureMA = false
+              )
+            )
+          )
+      }
+    }
+
     "verify ArrangementIDs" - {
       "should return true when arrangement Id is one issued by HMRC" in {
 
@@ -154,14 +196,14 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
 
         val submissionDetails =  SubmissionDetails(
           enrolmentID = "enrolmentID",
-          submissionTime = DateTime.now(),
+          submissionTime = LocalDateTime.now(),
           fileName = "fileName.xml",
           arrangementID = Some("GBA20200601AAA000"),
           disclosureID = Some("GBD20200601AAA000"),
           importInstruction = "DAC6ADD",
           initialDisclosureMA = false)
 
-        val submissionHistory = SubmissionHistory(List(submissionDetails))
+        val submissionHistory = SubmissionHistory(Seq(submissionDetails))
 
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/get-history/$enrolmentId"))

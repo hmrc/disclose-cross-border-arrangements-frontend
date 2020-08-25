@@ -16,37 +16,53 @@
 
 package controllers
 
+import java.time.LocalDateTime
+
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
+import models.{SubmissionDetails, SubmissionHistory}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito._
+import org.mockito.Mockito.{times, verify, when}
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.{GET, route, status}
 import play.twirl.api.Html
+import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class IndexControllerSpec extends SpecBase {
-
-  "Index Controller" - {
-
+class HistoryControllerSpec extends SpecBase {
+  
+  "History Controller" - {
     "must return OK and the correct view for a GET" in {
       val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
+      val submissionHistory = SubmissionHistory(
+        List(
+          SubmissionDetails(
+            "enrolmentID",
+            LocalDateTime.parse("2007-12-03T10:15:30"),
+            "fileName",
+            Some("arrangementID"),
+            Some("disclosureID"),
+            "New",
+            initialDisclosureMA = false
+          )
+        )
+      )
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("foo")))
 
-      when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
-        .thenReturn(Future.successful(0L))
+      when(mockCrossBorderArrangementsConnector.retrievePreviousSubmissions(any())(any()))
+        .thenReturn(Future.successful(submissionHistory))
 
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
         ).build()
 
-      val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.HistoryController.onPageLoad().url)
 
       val result = route(application, request).value
 
@@ -56,7 +72,7 @@ class IndexControllerSpec extends SpecBase {
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
 
-      templateCaptor.getValue mustEqual "index.njk"
+      templateCaptor.getValue mustEqual "submissionHistory.njk"
 
       application.stop()
     }

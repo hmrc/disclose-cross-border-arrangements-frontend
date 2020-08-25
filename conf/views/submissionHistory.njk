@@ -1,0 +1,35 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "govuk/components/table/macro.njk"         import govukTable %}
+
+{% block pageTitle %}
+  {{ title(messages("submissionHistory.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back"),
+      href: routes.controllers.IndexController.onPageLoad().url
+    })
+  }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("submissionHistory.heading") }}
+        </h1>
+
+        {{ govukTable(disclosuresTable) }}
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

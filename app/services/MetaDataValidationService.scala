@@ -16,6 +16,8 @@
 
 package services
 
+import java.time.{LocalDate, LocalDateTime}
+
 import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
 import models.{Dac6MetaData, GenericError, SubmissionHistory, ValidationFailure, ValidationSuccess, XMLValidationStatus}
@@ -27,7 +29,7 @@ import scala.xml.Elem
 
 class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector) {
 
-  implicit def dateTimeOrdering: Ordering[DateTime] = Ordering.fromLessThan(_ isBefore _)
+  implicit val localDateOrdering: Ordering[LocalDateTime] = Ordering.by(_.toLocalTime)
 
   def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
@@ -70,7 +72,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
   private def verifyDAC6ADD(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, history: SubmissionHistory)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
-    val arrangementIdExists = history.submissionDetails.exists(submission => submission.arrangementID.contains(arrangementId))
+    val arrangementIdExists = history.details.exists(submission => submission.arrangementID.contains(arrangementId))
 
     if (arrangementIdExists) {
       Future(ValidationSuccess(source, Some(dac6MetaData)))
@@ -86,7 +88,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   private def verifyDAC6REP(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
                             history: SubmissionHistory)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
-    val submissionContainingDisclosureId = history.submissionDetails.find(submission => submission.disclosureID.contains(disclosureId))
+    val submissionContainingDisclosureId = history.details.find(submission => submission.disclosureID.contains(disclosureId))
     submissionContainingDisclosureId match {
       case Some(submission) => if (submission.arrangementID.contains(arrangementId)) {
         ValidationSuccess(source, Some(dac6MetaData))
@@ -114,14 +116,14 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   }
 
   private def isMarketableArrangement(dac6MetaData: Dac6MetaData, history: SubmissionHistory): Boolean = {
-    val relevantArrangement = history.submissionDetails.filter(submission => submission.arrangementID.equals(dac6MetaData.arrangementID))
+    val relevantArrangement = history.details.filter(submission => submission.arrangementID.equals(dac6MetaData.arrangementID))
     val firstDisclosureId = relevantArrangement.find(submissionDetails => submissionDetails.importInstruction.equals("DAC6NEW")) match {
       case Some(details) =>
         details.disclosureID
 
       case _ => None
     }
-    val filterOnDisclosureId = history.submissionDetails.filter(submissionDetails => submissionDetails.disclosureID.equals(firstDisclosureId))
+    val filterOnDisclosureId = history.details.filter(submissionDetails => submissionDetails.disclosureID.equals(firstDisclosureId))
     filterOnDisclosureId.sortBy(_.submissionTime).lastOption match {
       case Some(submission) => submission.initialDisclosureMA
       case _ => false

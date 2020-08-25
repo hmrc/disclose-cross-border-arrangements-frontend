@@ -18,6 +18,7 @@ package controllers
 
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.IdentifierAction
+import helpers.ViewHelper
 import javax.inject.Inject
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
@@ -25,21 +26,24 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-class IndexController @Inject()(
-                                 identify: IdentifierAction,
-                                 crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
-                                 val controllerComponents: MessagesControllerComponents,
-                                 renderer: Renderer
-                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class HistoryController @Inject()(
+                                   identify: IdentifierAction,
+                                   crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+                                   val controllerComponents: MessagesControllerComponents,
+                                   renderer: Renderer,
+                                   viewHelper: ViewHelper,
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify).async { implicit request =>
+  def onPageLoad: Action[AnyContent] = identify.async { implicit request =>
+
     {for {
-      noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
+      retrievedDetails <- crossBorderArrangementsConnector.retrievePreviousSubmissions(request.enrolmentID)
+      context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
     } yield {
-      val context = Json.obj("hasSubmissions" -> (noOfPreviousSubmissions > 0))
-      renderer.render("index.njk", context).map(Ok(_))
+      renderer.render("submissionHistory.njk", context).map(Ok(_))
     }}.flatten
   }
+
 }

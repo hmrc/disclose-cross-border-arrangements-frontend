@@ -16,8 +16,10 @@
 
 package helpers
 
+import java.time.LocalDateTime
+
 import base.SpecBase
-import models.GenericError
+import models.{GenericError, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.viewmodels.Table.Cell
@@ -66,7 +68,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
           Cell(msg"Enter your cats name in meow format", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_11"))
         )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
       )
     }
 
@@ -87,7 +89,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
             Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_33"))
           )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
       )
     }
 
@@ -111,7 +113,46 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
             Cell(msg"You gotta be kitten me", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_48"))
           )),
         caption = Some(msg"invalidXML.h3"),
-        attributes = Map("id" -> "errorTable", "aria-describedby" -> messages("invalidXML.h3"))
+        attributes = Map("id" -> "errorTable")
+      )
+    }
+  }
+
+  "buildDisclosuresTable" - {
+    "must return a table of the submission history" in {
+      val head: Seq[Cell] = Seq(
+        Cell(msg"submissionHistory.arn.label", classes = Seq("govuk-!-width-one-quarter")),
+        Cell(msg"submissionHistory.disclosureID.label", classes = Seq("govuk-!-width-one-quarter")),
+        Cell(msg"submissionHistory.submissionDate.label", classes = Seq("govuk-table__header")),
+        Cell(msg"submissionHistory.fileName.label", classes = Seq("govuk-!-width-one-quarter"))
+      )
+
+      val mockSubmissionHistory = SubmissionHistory(
+        List(
+          SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-01T10:23:30"),
+            "fileName", Some("arrangementID"), Some("disclosureID"), "New", initialDisclosureMA = false),
+          SubmissionDetails("enrolmentI2", LocalDateTime.parse("2020-07-02T20:23:30"),
+            "fileName2", Some("arrangementID2"), Some("disclosureID2"), "Add", initialDisclosureMA = false),
+        )
+      )
+
+      viewHelper.buildDisclosuresTable(mockSubmissionHistory) mustBe Table(
+        head = head,
+        rows = Seq(
+          Seq(
+            Cell(msg"arrangementID", attributes = Map("id" -> s"arrangementID_0")),
+            Cell(msg"disclosureID", attributes = Map("id" -> s"disclosureID_0")),
+            Cell(msg"10:23am on 1 July 2020", attributes = Map("id" -> s"submissionTime_0")),
+            Cell(msg"fileName", attributes = Map("id" -> s"fileName_0"))
+          ),
+          Seq(
+            Cell(msg"arrangementID2", attributes = Map("id" -> s"arrangementID_1")),
+            Cell(msg"disclosureID2", attributes = Map("id" -> s"disclosureID_1")),
+            Cell(msg"08:23pm on 2 July 2020", attributes = Map("id" -> s"submissionTime_1")),
+            Cell(msg"fileName2", attributes = Map("id" -> s"fileName_1"))
+          )
+        ),
+        attributes = Map("id" -> "disclosuresTable")
       )
     }
   }

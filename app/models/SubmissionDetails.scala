@@ -16,14 +16,18 @@
 
 package models
 
-import play.api.libs.json.JodaWrites._
-import play.api.libs.json.JodaReads._
-import org.joda.time.DateTime
+import java.time.LocalDateTime
+
 import play.api.libs.json.{Json, OFormat}
 
+case class SubmissionHistory(details: Seq[SubmissionDetails])
+
+object SubmissionHistory {
+  implicit val format: OFormat[SubmissionHistory] = Json.format[SubmissionHistory]
+}
 
 case class SubmissionDetails(enrolmentID: String,
-                             submissionTime: DateTime,
+                             submissionTime: LocalDateTime,
                              fileName: String,
                              arrangementID: Option[String],
                              disclosureID: Option[String],
@@ -32,14 +36,4 @@ case class SubmissionDetails(enrolmentID: String,
 
 object SubmissionDetails {
   implicit val format: OFormat[SubmissionDetails] = Json.format[SubmissionDetails]
-  implicit val writes = Json.writes[SubmissionDetails]
-}
-
-case class SubmissionHistory(submissionDetails: List[SubmissionDetails])
-
-object SubmissionHistory {
-  implicit val format: OFormat[SubmissionHistory] = Json.format[SubmissionHistory]
-
-  implicit val writes = Json.writes[SubmissionHistory]
-
 }

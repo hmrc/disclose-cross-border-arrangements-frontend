@@ -25,7 +25,6 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
     copy(lineNumber = Some(index))
   }
 
-
    def getErrorMessage: String ={
      key match {
        case "businessrules.initialDisclosure.needRelevantTaxPayer" => "InitialDisclosureMA is false so there should be a RelevantTaxpayer"
