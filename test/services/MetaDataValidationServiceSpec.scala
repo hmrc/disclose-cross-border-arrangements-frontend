@@ -256,7 +256,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
 
         val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe ValidationFailure(List(GenericError(10, "taxpayerDate Error")))
+        result mustBe ValidationFailure(List(GenericError(10, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate")))
       }
 
       "should return a ValidationFailure if DAC6REP for a marketable arrangement does not have implementingDates populated for new RelevantTaxpayers" in {
@@ -279,7 +279,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
 
         val result = Await.result(idVerificationService.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe ValidationFailure(List(GenericError(10, "taxpayerDate Error")))
+        result mustBe ValidationFailure(List(GenericError(10, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate")))
       }
 
       "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates populated for new RelevantTaxpayers" in {

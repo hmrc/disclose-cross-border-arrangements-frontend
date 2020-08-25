@@ -102,13 +102,9 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   def verifyInitialDisclosureMARules(source: String, elem: Elem, dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                                     (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
 
-    val relevantArrangement = history.submissionDetails.filter(submission => submission.arrangementID.equals(dac6MetaData.arrangementID))
-
-    val isMA = isMarketableArrangement(dac6MetaData, history)
-
     dac6MetaData.importInstruction match {
-      case "DAC6ADD" | "DAC6REP" => if (isMA && !dac6MetaData.doAllRelevantTaxpayersHaveImplementingDate) {
-        ValidationFailure(List(GenericError(getLineNumber(elem, "RelevantTaxPayers"), "taxpayerDate Error")))
+      case "DAC6ADD" | "DAC6REP" => if (isMarketableArrangement(dac6MetaData, history) && !dac6MetaData.doAllRelevantTaxpayersHaveImplementingDate) {
+        ValidationFailure(List(GenericError(getLineNumber(elem, "RelevantTaxPayers"), "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate")))
 
       } else ValidationSuccess(source, Some(dac6MetaData))
       case _ => ValidationSuccess(source, Some(dac6MetaData))
