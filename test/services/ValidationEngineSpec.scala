@@ -24,7 +24,6 @@ import models.{Dac6MetaData, GenericError, SaxParseError, Validation, Validation
 import org.mockito.Matchers._
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import org.xml.sax.SAXParseException
 
 import scala.collection.mutable.ListBuffer
 import scala.xml.{Elem, NodeSeq}
@@ -294,7 +293,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         an[Exception] mustBe thrownBy {
           when(mockXmlValidationService.validateXml(any())).thenThrow(new RuntimeException)
-          validationEngine.validateFile(source)
+          validationEngine.validateFile(source) mustBe Left(new RuntimeException)
         }
       }
 

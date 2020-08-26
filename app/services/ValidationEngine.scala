@@ -19,6 +19,7 @@ package services
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
 import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import org.slf4j.LoggerFactory
 
 import scala.xml.Elem
 
@@ -28,6 +29,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
                                  xmlErrorMessageHelper: XmlErrorMessageHelper) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
 
 
   def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : Either[Exception, XMLValidationStatus] = {
@@ -48,7 +50,9 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
           Right(ValidationSuccess(downloadUrl, retrieveMetaData))
       }
     } catch {
-      case e: Exception => Left(e)
+      case e: Exception =>
+        logger.warn(s"XML validation failed. The XML parser has thrown the exception: $e")
+        Left(e)
     }
  }
 
