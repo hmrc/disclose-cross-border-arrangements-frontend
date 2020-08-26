@@ -289,12 +289,10 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
       }
 
       "must throw an exception if XML parser throws an exception (e.g. missing closing tags)" in new SetUp {
-        when(mockXmlValidationService.validateXml(any())).thenThrow(new RuntimeException)
+        val exception = new RuntimeException
+        when(mockXmlValidationService.validateXml(any())).thenThrow(exception)
 
-        an[Exception] mustBe thrownBy {
-          when(mockXmlValidationService.validateXml(any())).thenThrow(new RuntimeException)
-          validationEngine.validateFile(source) mustBe Left(new RuntimeException)
-        }
+        validationEngine.validateFile(source) mustBe Left(exception)
       }
 
    }
