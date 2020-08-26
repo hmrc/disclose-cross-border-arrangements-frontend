@@ -30,22 +30,25 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
 
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : XMLValidationStatus = {
+  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : Either[Exception, XMLValidationStatus] = {
 
-    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
+    try {
+      val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
 
+      val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
-    val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
-
-    (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-      case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) => val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
-                                                                                     ValidationFailure(orderedErrors)
-      case (ValidationFailure(xmlErrors), ValidationSuccess(_,_)) => ValidationFailure(xmlErrors)
-      case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
-      case (ValidationSuccess(_,_), ValidationSuccess(_,_)) =>
-        val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
-        ValidationSuccess(downloadUrl, retrieveMetaData)
-
+      (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
+        case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) =>
+          val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
+          Right(ValidationFailure(orderedErrors))
+        case (ValidationFailure(xmlErrors), ValidationSuccess(_, _)) => Right(ValidationFailure(xmlErrors))
+        case (ValidationSuccess(_, _), ValidationFailure(errors)) => Right(ValidationFailure(errors))
+        case (ValidationSuccess(_, _), ValidationSuccess(_, _)) =>
+          val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
+          Right(ValidationSuccess(downloadUrl, retrieveMetaData))
+      }
+    } catch {
+      case e: Exception => Left(e)
     }
  }
 
@@ -56,7 +59,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val xmlErrors = xmlValidationService.validateXml(source)
     if(xmlErrors._2.isEmpty) {
       (xmlErrors._1, ValidationSuccess(source))
-    }else {
+    } else {
 
       val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
 

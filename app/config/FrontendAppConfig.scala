@@ -37,7 +37,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated?service=$contactFormServiceIdentifier"
   val signOutUrl: String             = configuration.get[String]("urls.logout")
 
-  val discloseArrangeLink: String = configuration.get[String]("urls.homepage")
+  lazy val discloseArrangeLink: String = configuration.get[String]("urls.homepage")
 
   lazy val authUrl: String = configuration.get[Service]("auth").baseUrl
   lazy val loginUrl: String = configuration.get[String]("urls.login")
@@ -62,7 +62,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
 
-val upscanUseSSL: Boolean = upscanProtocol == "https"
+  val upscanUseSSL: Boolean = upscanProtocol == "https"
 
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")
