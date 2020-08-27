@@ -31,6 +31,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
   implicit val localDateOrdering: Ordering[LocalDateTime] = Ordering.by(_.toLocalTime)
 
+  val replaceOrDelete = List("DAC6REP", "DAC6DEL")
   def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
@@ -62,7 +63,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
     dac6MetaData match {
       case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
-      case Dac6MetaData("DAC6REP", Some(arrangementId), Some(disclosureId), _) => Future(verifyDAC6REP(source, elem, dac6MetaData, arrangementId, disclosureId, history))
+      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _) if replaceOrDelete.contains(instruction)  => Future(verifyReplaceOrDelete(source, elem, dac6MetaData, arrangementId, disclosureId, history))
       case _ => Future(ValidationSuccess(source, Some(dac6MetaData)))
 
     }
@@ -85,7 +86,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
     }
   }
 
-  private def verifyDAC6REP(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
+  private def verifyReplaceOrDelete(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
                             history: SubmissionHistory)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
     val submissionContainingDisclosureId = history.details.find(submission => submission.disclosureID.contains(disclosureId))
