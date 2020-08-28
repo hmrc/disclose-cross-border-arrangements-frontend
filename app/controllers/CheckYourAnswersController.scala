@@ -25,7 +25,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.XMLValidationService
+import services.{AuditService, XMLValidationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
@@ -39,6 +39,7 @@ class CheckYourAnswersController @Inject()(
     requireData: DataRequiredAction,
     sessionRepository: SessionRepository,
     xmlValidationService: XMLValidationService,
+    auditService: AuditService,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
@@ -72,6 +73,7 @@ class CheckYourAnswersController @Inject()(
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _              <- sessionRepository.set(userAnswersWithIDs)
+            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
             //TODO: send confirmation emails
 
           } yield {
