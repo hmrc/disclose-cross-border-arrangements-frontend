@@ -44,6 +44,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
 
 
+
+  lazy val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
+  lazy val getEnrolmentsUrl: String = configuration.get[String]("microservice.services.enrolment-store-proxy.get-enrolments-url")
+
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
   //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
@@ -53,6 +57,10 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
 
   lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
+
+  lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
+
+  lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
 
 val upscanUseSSL: Boolean = upscanProtocol == "https"
 

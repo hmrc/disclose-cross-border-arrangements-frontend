@@ -17,15 +17,18 @@
 package controllers
 
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import models.GeneratedIDs
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.{AuditService, XMLValidationService}
+import services.{EmailService, AuditService, XMLValidationService}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
@@ -37,9 +40,12 @@ class CheckYourAnswersController @Inject()(
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    contactRetrievalAction: ContactRetrievalAction,
     sessionRepository: SessionRepository,
     xmlValidationService: XMLValidationService,
     auditService: AuditService,
+    emailService: EmailService,
+    frontendAppConfig: FrontendAppConfig,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
@@ -64,18 +70,26 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
+
+          def sendMail(ids: GeneratedIDs) = if(frontendAppConfig.sendEmailToggle) {
+            emailService.sendEmail(request.contacts, fileName, ids)
+          }
+          else {
+            Future.successful(None)
+          }
+
           for {
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _              <- sessionRepository.set(userAnswersWithIDs)
-            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
-            //TODO: send confirmation emails
-
+ _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
+            //TODO: send confirmation emails when contact details retrieval is corrected
+            emailResult <- sendMail(ids)
           } yield {
             val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
