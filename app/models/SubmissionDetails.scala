@@ -34,6 +34,6 @@ case class SubmissionDetails(enrolmentID: String,
                              importInstruction: String,
                              initialDisclosureMA: Boolean)
 
-object SubmissionDetails {
+object SubmissionDetails extends MongoDateTimeFormats {
   implicit val format: OFormat[SubmissionDetails] = Json.format[SubmissionDetails]
 }

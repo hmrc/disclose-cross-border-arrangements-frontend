@@ -16,7 +16,7 @@
 
 package connectors
 
-import java.time.LocalDateTime
+import java.time.{LocalDateTime, ZoneOffset}
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
@@ -28,7 +28,7 @@ import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import utils.WireMockHelper
 
 class CrossBorderArrangementsConnectorSpec extends SpecBase
@@ -114,7 +114,11 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       val json = Json.obj(
         "details" -> JsArray(Seq(Json.obj(
           "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> "2007-12-03T10:15:30",
+          "submissionTime" -> Json.obj(
+            "$date" -> LocalDateTime
+              .of(2007, 12, 3, 10, 15, 30)
+              .atZone(ZoneOffset.UTC).toInstant.toEpochMilli
+          ),
           "fileName" -> "fileName",
           "importInstruction" -> "New",
           "initialDisclosureMA" -> false
