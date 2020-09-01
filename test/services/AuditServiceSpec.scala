@@ -43,7 +43,6 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
 
 class AuditServiceSpec extends SpecBase {
-  implicit val hc = HeaderCarrier()
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   val auditConnector = mock[AuditConnector]
