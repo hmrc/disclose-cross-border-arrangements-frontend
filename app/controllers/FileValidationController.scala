@@ -55,7 +55,7 @@ class FileValidationController @Inject()(
         validation = validationEngine.validateFile(downloadUrl)
       } yield {
         validation match {
-          case ValidationSuccess(_,Some(metaData)) =>
+          case Right(ValidationSuccess(_,Some(metaData))) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
@@ -67,13 +67,20 @@ class FileValidationController @Inject()(
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-          case ValidationFailure(errors: Seq[GenericError]) =>
+          case Right(ValidationFailure(errors: Seq[GenericError])) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
               _              <- sessionRepository.set(updatedAnswersWithErrors)
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
+          case Left(_) =>
+            for {
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(routes.FileErrorController.onPageLoad())
             }
           case _ =>
             errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))

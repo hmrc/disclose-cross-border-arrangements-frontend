@@ -1,0 +1,46 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+
+
+{% block pageTitle %}
+  {{ title(messages("fileError.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+      text: messages("site.back")
+      }) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("fileError.heading") }}
+        </h1>
+
+        <div class="govuk-body">
+
+          <p>{{ messages("fileError.p1", fileName) }}</p>
+
+          <p>{{ messages("fileError.p2") }}</p>
+
+          <ui class="govuk-list">
+            <li>
+              <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileError.li1") }}</a>
+            </li>
+            <li>
+              <a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileError.li2") }}</a>
+            </li>
+          </ui>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

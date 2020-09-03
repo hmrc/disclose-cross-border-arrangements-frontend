@@ -128,7 +128,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
       "must return ValidationSuccess for valid file" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
-        validationEngine.validateFile(source) mustBe ValidationSuccess(source, mockMetaData)
+        validationEngine.validateFile(source) mustBe Right(ValidationSuccess(source, mockMetaData))
       }
 
       "must return ValidationFailure for file which multiple pieces of mandatory information missing" in new SetUp {
@@ -138,7 +138,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(27, "Enter a City"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file missing mandatory attributes" in new SetUp {
@@ -150,7 +150,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(175, "Enter an Amount currCode"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
 
@@ -161,7 +161,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(116, "BuildingIdentifier must be 400 characters or less"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
 
@@ -172,7 +172,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid country code" in new SetUp {
@@ -182,7 +182,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(123, "Country is not one of the ISO country codes"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid countryMS code" in new SetUp {
@@ -192,7 +192,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(177, "ConcernedMS is not one of the ISO EU Member State country codes"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid countryExemption code" in new SetUp {
@@ -202,7 +202,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(133, "CountryExemption is not one of the ISO country codes"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
 
@@ -213,7 +213,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(169, "Reason is not one of the allowed values"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid Intermediary Capacity code" in new SetUp {
@@ -223,7 +223,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid RelevantTaxpayer Discloser Capacity code" in new SetUp {
@@ -233,7 +233,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file with invalid issuedBy code" in new SetUp {
@@ -243,7 +243,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(18, "TIN issuedBy is not one of the ISO country codes"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
 
@@ -256,7 +256,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
         val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return ValidationFailure for file which fails business rules validation" in new SetUp {
@@ -265,7 +265,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, noErrors))
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError))
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
 
@@ -276,7 +276,7 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
-        validationEngine.validateFile(source) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source) mustBe Right(ValidationFailure(expectedErrors))
       }
 
       "must return a ValidationFailure with only xmlErrors if Business Rules check is not required" in new SetUp {
@@ -285,7 +285,14 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"))
-        validationEngine.validateFile(source, businessRulesCheckRequired = false) mustBe ValidationFailure(expectedErrors)
+        validationEngine.validateFile(source, businessRulesCheckRequired = false) mustBe Right(ValidationFailure(expectedErrors))
+      }
+
+      "must throw an exception if XML parser throws an exception (e.g. missing closing tags)" in new SetUp {
+        val exception = new RuntimeException
+        when(mockXmlValidationService.validateXml(any())).thenThrow(exception)
+
+        validationEngine.validateFile(source) mustBe Left(exception)
       }
 
    }

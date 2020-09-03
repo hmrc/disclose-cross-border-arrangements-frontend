@@ -192,6 +192,13 @@ invalidXML.h3 = Errors
 invalidXML.table.heading1 = Line number
 invalidXML.table.heading2 = Error
 
+fileError.title = There is a problem with your file
+fileError.heading = There is a problem with your file
+fileError.p1 = Your file {0} has not been formatted correctly.
+fileError.p2 = You can restructure the XML and upload it again.
+fileError.li1 = Upload a different file
+fileError.li2 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
+
 fileToLargeError.title = There is a problem with your file
 fileToLargeError.heading = There is a problem with your file
 fileToLargeError.instruction = Your file must be 100MB or less.
