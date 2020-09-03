@@ -19,8 +19,11 @@ package services
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
 import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import uk.gov.hmrc.http.HeaderCarrier
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.xml.Elem
 
 
@@ -32,22 +35,26 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   private val logger = LoggerFactory.getLogger(getClass)
 
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : Either[Exception, XMLValidationStatus] = {
+  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : Future[Either[Exception, XMLValidationStatus]] = {
 
     try {
       val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
 
-      val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
+      val businessRulesValidationResult: Future[XMLValidationStatus] =
+        performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
 
-      (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
-        case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) =>
-          val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
-          Right(ValidationFailure(orderedErrors))
-        case (ValidationFailure(xmlErrors), ValidationSuccess(_, _)) => Right(ValidationFailure(xmlErrors))
-        case (ValidationSuccess(_, _), ValidationFailure(errors)) => Right(ValidationFailure(errors))
-        case (ValidationSuccess(_, _), ValidationSuccess(_, _)) =>
-          val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
-          Right(ValidationSuccess(downloadUrl, retrieveMetaData))
+
+      businessRulesValidationResult.map { validationStatus =>
+        (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
+          case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) =>
+            val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
+            Right(ValidationFailure(orderedErrors))
+          case (ValidationFailure(xmlErrors), ValidationSuccess(_, _)) => Right(ValidationFailure(xmlErrors))
+          case (ValidationSuccess(_, _), ValidationFailure(errors)) => Right(ValidationFailure(errors))
+          case (ValidationSuccess(_, _), ValidationSuccess(_, _)) =>
+            val retrieveMetaData: Option[Dac6MetaData] = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
+            Right(ValidationSuccess(downloadUrl, retrieveMetaData))
+        }
       }
     } catch {
       case e: Exception =>
@@ -71,16 +78,24 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     }
   }
 
-  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean): XMLValidationStatus = {
+  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean)
+                                    (implicit hc: HeaderCarrier): Future[XMLValidationStatus] = {
 
     if (businessRulesCheckRequired) {
-      businessRuleValidationService.validateFile()(elem) match {
-        case Some(List()) => ValidationSuccess(source)
-        case Some(errors) => ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(errors, elem))
-        case None => ValidationSuccess(source)
+      businessRuleValidationService.validateFile()(hc)(elem) match {
+        case Some(value) => value.map {
+          seqValidation =>
+            if (seqValidation.isEmpty) {
+              ValidationSuccess(source)
+            }
+            else {
+              ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
+            }
+        }
+        case None => Future.successful(ValidationSuccess(source))
       }
     } else {
-      ValidationSuccess(source)
+      Future.successful(ValidationSuccess(source))
     }
   }
 
