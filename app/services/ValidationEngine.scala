@@ -22,8 +22,7 @@ import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidation
 import uk.gov.hmrc.http.HeaderCarrier
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
 
@@ -35,7 +34,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   private val logger = LoggerFactory.getLogger(getClass)
 
 
-  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true) : Future[Either[Exception, XMLValidationStatus]] = {
+  def validateFile(downloadUrl: String, businessRulesCheckRequired: Boolean = true)
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Either[Exception, XMLValidationStatus]] = {
 
     try {
       val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
@@ -45,7 +45,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
 
 
       businessRulesValidationResult.map { validationStatus =>
-        (xmlAndXmlValidationStatus._2, businessRulesValidationResult) match {
+        (xmlAndXmlValidationStatus._2, validationStatus) match {
           case (ValidationFailure(xmlErrors), ValidationFailure(businessRulesErrors)) =>
             val orderedErrors = (xmlErrors ++ businessRulesErrors).sortBy(_.lineNumber)
             Right(ValidationFailure(orderedErrors))
@@ -59,7 +59,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     } catch {
       case e: Exception =>
         logger.warn(s"XML validation failed. The XML parser has thrown the exception: $e")
-        Left(e)
+        Future.successful(Left(e))
     }
  }
 
@@ -79,10 +79,10 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   }
 
   def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean)
-                                    (implicit hc: HeaderCarrier): Future[XMLValidationStatus] = {
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
     if (businessRulesCheckRequired) {
-      businessRuleValidationService.validateFile()(hc)(elem) match {
+      businessRuleValidationService.validateFile()(hc, ec)(elem) match {
         case Some(value) => value.map {
           seqValidation =>
             if (seqValidation.isEmpty) {

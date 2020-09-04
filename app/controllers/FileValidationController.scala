@@ -52,7 +52,7 @@ class FileValidationController @Inject()(
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl)
+        validation <- validationEngine.validateFile(downloadUrl)
       } yield {
         validation match {
           case Right(ValidationSuccess(_,Some(metaData))) =>

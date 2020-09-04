@@ -24,15 +24,17 @@ import cats.implicits._
 import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
 import models.{Dac6MetaData, Validation}
+import org.slf4j.LoggerFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
 class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: CrossBorderArrangementsConnector) {
   import BusinessRuleValidationService._
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def validateInitialDisclosureHasRelevantTaxPayer(): ReaderT[Option, NodeSeq, Validation] = {
     for {
@@ -126,7 +128,8 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
-  def validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicit hc: HeaderCarrier): ReaderT[Option, NodeSeq, Future[Validation]] = {
+  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
+                    (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
     for {
       relevantTaxPayers <- noOfRelevantTaxPayers
       taxPayerImplementingDate <- taxPayerImplementingDates
@@ -142,36 +145,13 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
           )
       }.recover {
         case _ =>
+          logger.info("No first disclosure found")
           Validation(
             key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
             value = true)
       }
     }
   }
-
-  /* TODO: Delete later
-  * If InitialDisclosureMA is false but ArrangementID is present and relates to a previous InitialDisclosure then if
-  * RelevantTaxpayer is present TaxpayerImplementingDate is Mandatory.
-  * Recognise that the first disclosure for the arrangement had true in InitialDisclosureMA
-  *
-  * e.g. Need to check arrID and discID is the same in mongo when user submits a DAC6ADD
-  * e.g. If user submits a DAC6REP for first disclosure to change value to false then any subsequent disclosures with the
-  *      same arrID doesn't necessarily need implementing date. Other business rules will still apply as normal.
-  *
-  * Possible scenarios:
-  * 1. User submits a DAC6NEW (first disclosure) and an arrID and discID are generated. InitialDisclosureMA is true
-  * 2a. User submits a DAC6REP for first disclosure. InitialDisclosureMA is false. TaxpayerImplementingDate depends on this now.
-  * 2b. User submits a DAC6ADD for first disclosure. InitialDisclosureMA is false but it's true for first disclosure. TaxpayerImplementingDate is mandatory.
-  * 3a. No validation error if TaxpayerImplementingDate is missing.
-  * 3b. Validation error if TaxpayerImplementingDate is missing.
-  *
-  * TODO:
-  *  - Need to return first disclosure's submission details for arrID
-  *  - Need to also check if InitialDisclosureMA value has been changed from true to false
-  *  - Return to frontend the correct submission details for that arrID and discID
-  *  - OR do all this in the backend and create a new case class for InitialDisclosureMA
-  *    - e.g. case class Name(isInitialDisclosureMA: Boolean, updatedInitialDisclosureMA: Boolean)
-  * */
 
   def validateMainBenefitTestHasASpecifiedHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
@@ -212,7 +192,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       }
   }
   
-  def validateFile()(implicit hc: HeaderCarrier): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
+  def validateFile()(implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()
        v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()

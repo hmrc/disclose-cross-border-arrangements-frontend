@@ -50,6 +50,6 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
     httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
 
   def retrieveFirstDisclosureForArrangementID(arrangementID: String)(implicit hc: HeaderCarrier): Future[SubmissionDetails] =
-    httpClient.GET[SubmissionDetails](s"$baseUrl/retrieve-first-disclosure/$arrangementID")
+    httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
 
 }
