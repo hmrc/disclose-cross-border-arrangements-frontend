@@ -76,7 +76,8 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(Right(ValidationSuccess(downloadURL, Some(metaData))))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -98,7 +99,8 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(Right(ValidationSuccess(downloadURL, Some(metaData))))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -119,7 +121,8 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(Right(ValidationFailure(errors)))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(ValidationFailure(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -138,7 +141,8 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
       //noinspection ScalaStyle
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(Left(new SAXParseException("", null)))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())(any(), any()))
+        .thenReturn(Future.successful(Left(new SAXParseException("", null))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -167,7 +171,8 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val uploadId = UploadId("123")
 
       when(mockRepository.findByUploadId(uploadId)).thenReturn(Future.successful(Some(uploadDetails)))
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())).thenReturn(Right(ValidationSuccess(downloadURL, None)))
+      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any())(any(), any()))
+        .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, None))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]

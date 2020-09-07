@@ -23,6 +23,8 @@ import fixtures.XMLFixture
 import models.{Dac6MetaData, Validation}
 import org.scalatest.concurrent.IntegrationPatience
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatience {
 
   "BusinessRuleValidationService" - {
@@ -1339,7 +1341,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateFile()(xml) mustBe Some(List())
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List()
+    }
   }
 
   "must recover from exception if taxpayerImplementing date is not in parseable format" in {
@@ -1368,7 +1374,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
         </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateFile()(xml) mustBe Some(List())
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List()
+    }
   }
 
   "must correctly invalidate that other info is provided when hallmark absent" in {
@@ -1417,9 +1427,12 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateFile()(xml) mustBe
-    Some(List(Validation("businessrules.initialDisclosure.needRelevantTaxPayer",false),
-              Validation("businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo",false)))
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List(Validation("businessrules.initialDisclosure.needRelevantTaxPayer", false),
+        Validation("businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo", false))
+    }
   }
 
   "must return no errors for valid xml" in {
@@ -1445,7 +1458,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateFile()(xml) mustBe Some(List())
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List()
+    }
   }
 
   "must return correct metadata for import instruction DAC6NEW" in {
