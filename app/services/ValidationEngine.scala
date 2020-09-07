@@ -22,6 +22,7 @@ import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidation
 import models.{GenericError, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.scalactic.ErrorMessage
 import uk.gov.hmrc.http.HeaderCarrier
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,12 +36,14 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
                                  metaDataValidationService: MetaDataValidationService) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
 
 
   def validateFile(downloadUrl: String, enrolmentId: String, businessRulesCheckRequired: Boolean = true)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext ) : Future[XMLValidationStatus] = {
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext ): Future[Either[Exception, XMLValidationStatus]] = {
 
-    val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
+    try {
+      val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
 
     val businessRulesValidationResult: XMLValidationStatus = performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
     val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
@@ -48,10 +51,16 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     metaDataValidationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId) map { idVerificationResult =>
 
       combineResults(xmlAndXmlValidationStatus._2, businessRulesValidationResult, idVerificationResult) match {
-        case ValidationFailure(errors) => ValidationFailure(errors)
+        case ValidationFailure(errors) => Right(ValidationFailure(errors))
 
-        case ValidationSuccess(_,_)=> ValidationSuccess(downloadUrl, metaData)
+        case ValidationSuccess(_,_)=> Right(ValidationSuccess(downloadUrl, metaData))
       }
+    }
+    } catch {
+      case e: Exception =>
+        logger.warn(s"XML validation failed. The XML parser has thrown the exception: $e")
+       Future(Left(e))
+
     }
   }
 
@@ -88,7 +97,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     val xmlErrors = xmlValidationService.validateXml(source)
     if(xmlErrors._2.isEmpty) {
       (xmlErrors._1, ValidationSuccess(source))
-    }else {
+    } else {
 
       val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
 

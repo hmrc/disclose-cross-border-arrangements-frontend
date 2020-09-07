@@ -37,12 +37,16 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val betaFeedbackUnauthenticatedUrl = s"$contactHost/contact/beta-feedback-unauthenticated?service=$contactFormServiceIdentifier"
   val signOutUrl: String             = configuration.get[String]("urls.logout")
 
-  val discloseArrangeLink: String = configuration.get[String]("urls.homepage")
+  lazy val discloseArrangeLink: String = configuration.get[String]("urls.homepage")
 
   lazy val authUrl: String = configuration.get[Service]("auth").baseUrl
   lazy val loginUrl: String = configuration.get[String]("urls.login")
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
 
+
+
+  lazy val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
+  lazy val getEnrolmentsUrl: String = configuration.get[String]("microservice.services.enrolment-store-proxy.get-enrolments-url")
 
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
   //ToDo this host maybe different without the stubs
@@ -54,7 +58,11 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
 
-val upscanUseSSL: Boolean = upscanProtocol == "https"
+  lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
+
+  lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
+
+  val upscanUseSSL: Boolean = upscanProtocol == "https"
 
   lazy val languageTranslationEnabled: Boolean =
     configuration.get[Boolean]("microservice.services.features.welsh-translation")

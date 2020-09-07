@@ -53,8 +53,6 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
   val downloadSource = "download-src"
 
-  implicit val hc = HeaderCarrier()
-
   implicit val postFixOps = scala.language.postfixOps
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 

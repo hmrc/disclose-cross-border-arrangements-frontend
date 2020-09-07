@@ -46,7 +46,6 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
     ).build()
 
   lazy val connector: CrossBorderArrangementsConnector = app.injector.instanceOf[CrossBorderArrangementsConnector]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "Cross Border Arrangements Connector" - {
     "should return a GeneratedIDs" - {
