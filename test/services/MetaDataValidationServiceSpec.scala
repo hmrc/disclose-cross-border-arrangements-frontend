@@ -237,7 +237,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
       }
 
-      "should return a ValidationSuccess if DAC6ADD for a marketable arrangment has implementingDates populated for new RelevantTaxpayers" in {
+      "should return a ValidationSuccess if DAC6ADD for a marketable arrangement has implementingDates populated for new RelevantTaxpayers" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId2), doAllRelevantTaxpayersHaveImplementingDate = true))
@@ -269,7 +269,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6NEW",
+                                                  importInstruction = "New",
                                                   initialDisclosureMA = true)
 
 
@@ -292,7 +292,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   fileName = "fileName.xml",
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6NEW",
+                                                  importInstruction = "New",
                                                   initialDisclosureMA = true)
 
 

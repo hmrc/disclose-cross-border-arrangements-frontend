@@ -118,7 +118,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
   private def isMarketableArrangement(dac6MetaData: Dac6MetaData, history: SubmissionHistory): Boolean = {
     val relevantArrangement = history.details.filter(submission => submission.arrangementID.equals(dac6MetaData.arrangementID))
-    val firstDisclosureId = relevantArrangement.find(submissionDetails => submissionDetails.importInstruction.equals("DAC6NEW")) match {
+    val firstDisclosureId = relevantArrangement.find(submissionDetails => submissionDetails.importInstruction.equals("New")) match {
       case Some(details) =>
         details.disclosureID
 
