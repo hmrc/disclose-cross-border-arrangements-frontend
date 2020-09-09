@@ -16,16 +16,34 @@
 
 package services
 
+import java.time.LocalDateTime
 import java.util.{Calendar, GregorianCalendar}
 
 import base.SpecBase
+import connectors.CrossBorderArrangementsConnector
 import fixtures.XMLFixture
-import models.{Dac6MetaData, Validation}
+import models.{Dac6MetaData, SubmissionDetails, Validation}
+import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.IntegrationPatience
+import org.scalatestplus.mockito.MockitoSugar
+import play.api.Application
+import play.api.inject.bind
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatience {
+class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with IntegrationPatience {
+
+  val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
+
+  override def beforeEach: Unit = {
+    reset(mockCrossBorderArrangementsConnector)
+  }
+
+  val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+    .overrides(
+      bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+    ).build()
 
   "BusinessRuleValidationService" - {
     "must be able to extract the initial disclosure when set" in {
@@ -1170,6 +1188,152 @@ class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatienc
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
+  }
+
+  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is true, " +
+    "first disclosure for arrangement ID is not found and Relevant Tax Payers exist" in {
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(""))
+      .thenReturn(Future.failed(new Exception("Backend threw a 404 Not Found")))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }
+  }
+
+  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is false, " +
+    "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
+
+    val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
+      .thenReturn(Future.successful(firstDisclosure))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }
+  }
+
+  "must correctly validate a file that has missing TaxPayer Implementation Dates if initial disclosure MA is false, " +
+    "first disclosure has been replaced and now InitialDisclosureMA is false, and Relevant Tax Payers exist" in {
+
+    val replacedFirstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace", initialDisclosureMA = false)
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
+      .thenReturn(Future.successful(replacedFirstDisclosure))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }
+  }
+
+  "must correctly invalidate a file with missing TaxPayer Implementation Dates if initial disclosure MA is false, " +
+    "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
+
+    val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
+      .thenReturn(Future.successful(firstDisclosure))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe false
+    }
   }
 
   "must correctly validate the hallmarks when MainBenefitTest1 is set and doesnt contain any of the necessary" in {

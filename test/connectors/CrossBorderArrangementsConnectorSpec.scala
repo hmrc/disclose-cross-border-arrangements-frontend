@@ -28,7 +28,7 @@ import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import utils.WireMockHelper
 
 class CrossBorderArrangementsConnectorSpec extends SpecBase
@@ -145,6 +145,43 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
               )
             )
           )
+      }
+    }
+
+    "should return the submission details for the first disclosure from backend" in {
+      val arrangementID = "GBA20200904AAAAAA"
+      val disclosureID = "GBD20200904AAAAAA"
+      val json = Json.obj(
+        "enrolmentID" -> "enrolmentID",
+        "submissionTime" -> "2020-05-14T17:10:00",
+        "fileName" -> "fileName",
+        "arrangementID" -> arrangementID,
+        "disclosureID" -> disclosureID,
+        "importInstruction" -> "New",
+        "initialDisclosureMA" -> true
+        )
+
+      server.stubFor(
+        get(urlEqualTo(s"/disclose-cross-border-arrangements/history/first-disclosure/$arrangementID"))
+          .willReturn(
+            aResponse()
+              .withStatus(OK)
+              .withBody(json.toString())
+          )
+      )
+
+      whenReady(connector.retrieveFirstDisclosureForArrangementID(arrangementID)) {
+        result =>
+          result mustBe
+            SubmissionDetails(
+              "enrolmentID",
+              LocalDateTime.parse("2020-05-14T17:10:00"),
+              "fileName",
+              Some(arrangementID),
+              Some(disclosureID),
+              "New",
+              initialDisclosureMA = true
+            )
       }
     }
 

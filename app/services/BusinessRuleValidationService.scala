@@ -128,31 +128,6 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
-  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
-                    (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
-    for {
-      relevantTaxPayers <- noOfRelevantTaxPayers
-      taxPayerImplementingDate <- taxPayerImplementingDates
-      arrangementID <- arrangementID
-    } yield {
-      crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
-        submissionDetails =>
-          Validation(
-            key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
-            value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0)
-              relevantTaxPayers == taxPayerImplementingDate.length
-            else true
-          )
-      }.recover {
-        case _ =>
-          logger.info("No first disclosure found")
-          Validation(
-            key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
-            value = true)
-      }
-    }
-  }
-
   def validateMainBenefitTestHasASpecifiedHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       mainBenefitTest1 <- hasMainBenefitTest1
@@ -175,6 +150,34 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         hallmarks.contains("DAC6D1Other")
       else true
     )
+  }
+
+  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+    for {
+      relevantTaxPayers <- noOfRelevantTaxPayers
+      taxPayerImplementingDate <- taxPayerImplementingDates
+      arrangementID <- arrangementID
+    } yield {
+      crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
+        submissionDetails =>
+          Validation(
+            key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
+            value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
+              relevantTaxPayers == taxPayerImplementingDate.length
+            }
+            else {
+              true
+            }
+          )
+      }.recover {
+        case _ =>
+          logger.info("No first disclosure found")
+          Validation(
+            key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
+            value = true)
+      }
+    }
   }
 
   def extractDac6MetaData(): ReaderT[Option, NodeSeq, Dac6MetaData] = {
