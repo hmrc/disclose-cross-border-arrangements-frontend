@@ -128,7 +128,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
       )
 
       val mockSubmissionHistory = SubmissionHistory(
-        Seq(
+        List(
           SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-01T10:23:30"),
             "fileName", Some("arrangementID"), Some("disclosureID"), "New", initialDisclosureMA = false),
           SubmissionDetails("enrolmentI2", LocalDateTime.parse("2020-07-02T20:23:30"),

@@ -45,16 +45,16 @@ class FileValidationController @Inject()(
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async{
     implicit request =>
     {
       for {
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl)
+        validation = validationEngine.validateFile(downloadUrl, request.enrolmentID)
       } yield {
-        validation match {
+        validation flatMap   {
           case Right(ValidationSuccess(_,Some(metaData))) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
