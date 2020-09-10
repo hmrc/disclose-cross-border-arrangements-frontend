@@ -28,11 +28,9 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
-import scala.concurrent.duration._
-
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with IntegrationPatience {
 
@@ -1227,9 +1225,6 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
   "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is true, " +
     "first disclosure for arrangement ID is not found and Relevant Tax Payers exist" in {
-
-    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(""))
-      .thenReturn(Future.failed(new Exception("Backend threw a 404 Not Found")))
 
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

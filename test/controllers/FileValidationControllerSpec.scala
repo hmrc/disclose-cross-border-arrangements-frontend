@@ -34,14 +34,13 @@ import play.api.test.Helpers._
 import reactivemongo.bson.BSONObjectID
 import repositories.{SessionRepository, UploadSessionRepository}
 import services.{ValidationEngine, XMLValidationService}
-import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
   val mockValidationEngine = mock[ValidationEngine]
-  val mockXmlValidationService =  mock[XMLValidationService]
+  val mockXmlValidationService = mock[XMLValidationService]
   val mockRepository = mock[UploadSessionRepository]
   val mockSessionRepository = mock[SessionRepository]
 
