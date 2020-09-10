@@ -40,7 +40,9 @@ class XmlErrorMessageHelper {
             extractInvalidIntegerErrorValues(error1, error2)).orElse(
             extractInvalidDateErrorValues(error1, error2)).orElse(
             extractMissingTagValues(error1)).orElse(
-            extractBooleanErrorValues(error1, error2))
+            extractBooleanErrorValues(error1, error2)).orElse(
+            extractInvalidIdErrorValues(error2)
+          )
 
           GenericError(groupedErrors._1, error.getOrElse(defaultMessage))
         }else GenericError(groupedErrors._1, defaultMessage)
@@ -171,6 +173,21 @@ class XmlErrorMessageHelper {
         }
       case _ => None
     }
+  }
+
+  def extractInvalidIdErrorValues(errorMessage: String): Option[String] = {
+    val formatOfError = """cvc-type.3.1.3: The value '(.*?)' of element '(.*?)' is not valid.""".stripMargin.r
+
+
+    errorMessage match {
+          case formatOfError(_, idType) =>
+            if(idType.equals("DisclosureID")){
+              Some(s"Enter DisclosureID in the format CCDYYYYMMDDXXXXXX")
+            }else
+            Some(s"Enter ArrangementID in the format CCAYYYYMMDDXXXXXX")
+          case _ =>  None
+        }
+
   }
 
   def extractInvalidDateErrorValues(errorMessage1: String, errorMessage2: String): Option[String] = {

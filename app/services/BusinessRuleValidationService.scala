@@ -115,6 +115,21 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         }
   }
 
+  def validateDisclosureImportInstructionAndInitialDisclosureFlag(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      initialDisclosureMA <- isInitialDisclosureMA
+    } yield
+      disclosureImportInstruction match {
+        case "DAC6ADD" => Validation(
+          key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
+          value = !initialDisclosureMA)
+        case _ => Validation(
+          key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+          value = true)
+
+      }
+  }
   def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       initialDisclosureMA <- isInitialDisclosureMA
@@ -185,16 +200,22 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
-    } yield
+      relevantTaxPayers <- noOfRelevantTaxPayers
+      taxPayerImplementingDates <- taxPayerImplementingDates
+    } yield {
+
+      val result = if(relevantTaxPayers > 0)
+        relevantTaxPayers == taxPayerImplementingDates.length
+      else true
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
-        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
-        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), doAllRelevantTaxpayersHaveImplementingDate = result)
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), doAllRelevantTaxpayersHaveImplementingDate = result)
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
+    }
   }
-  
   def validateFile()(implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()
@@ -206,10 +227,12 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
        v8 <- validateMainBenefitTestHasASpecifiedHallmark()
        v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
-       v10 <- validateTaxPayerImplementingDateAgainstFirstDisclosure()
+       v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
+       v11 <- validateTaxPayerImplementingDateAgainstFirstDisclosure()
+
     } yield {
-      v10.map { v10Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation).filterNot(_.value)
+      v11.map { v11Validation =>
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation).filterNot(_.value)
       }
     }
   }

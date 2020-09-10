@@ -16,19 +16,19 @@
 
 package helpers
 
-import models.{GenericError, Validation}
-
-import scala.xml.Elem
-
 class BusinessRulesErrorMessageHelper {
 
-  def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-    val xmlArray = xml.toString().split("\n")
+  import models.{GenericError, Validation}
 
-   val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
+  import scala.xml.{Elem, NodeSeq}
 
-   valsWithLineNumber.map(validation => validation.toGenericError)
+    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
+      val xmlArray = xml.toString().split("\n")
 
-  }
- }
+      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
 
+      valsWithLineNumber.map(validation => validation.toGenericError)
+
+    }
+
+}
