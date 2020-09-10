@@ -20,8 +20,7 @@ import play.api.libs.json._
 
 case class Dac6MetaData(importInstruction: String,
                         arrangementID: Option[String] = None,
-                        disclosureID: Option[String] = None,
-                        doAllRelevantTaxpayersHaveImplementingDate: Boolean)
+                        disclosureID: Option[String] = None)
 
 object Dac6MetaData {
   implicit val format = Json.format[Dac6MetaData]

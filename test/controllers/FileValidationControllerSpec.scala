@@ -74,7 +74,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     "must redirect to Check your answers and present the correct view for a GET" in {
 
       val uploadId = UploadId("123")
-      val metaData = Dac6MetaData("DAC6NEW", doAllRelevantTaxpayersHaveImplementingDate = true)
+      val metaData = Dac6MetaData("DAC6NEW")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
@@ -97,8 +97,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     "must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
 
       val uploadId = UploadId("123")
-      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"),
-                                  doAllRelevantTaxpayersHaveImplementingDate = true)
+      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"))
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
