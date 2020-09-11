@@ -45,3 +45,4 @@ GET        /createConfirmation                          controllers.CreateConfir
 GET        /send-disclosure/disclosure-has-been-deleted controllers.DeleteDisclosureConfirmationController.onPageLoad()
 
 GET        /your-disclosures                            controllers.HistoryController.onPageLoad()
+POST       /your-disclosures-results                    controllers.HistoryController.onSearch()

@@ -18,8 +18,10 @@ package controllers
 
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.IdentifierAction
+import forms.SearchDisclosuresFormProvider
 import helpers.ViewHelper
 import javax.inject.Inject
+import models.SubmissionHistory
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -34,6 +36,7 @@ class HistoryController @Inject()(
                                    val controllerComponents: MessagesControllerComponents,
                                    renderer: Renderer,
                                    viewHelper: ViewHelper,
+                                   formProvider: SearchDisclosuresFormProvider
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = identify.async { implicit request =>
@@ -44,6 +47,26 @@ class HistoryController @Inject()(
     } yield {
       renderer.render("submissionHistory.njk", context).map(Ok(_))
     }}.flatten
+  }
+
+  def onSearch: Action[AnyContent] = identify.async { implicit request =>
+
+    val form = formProvider()
+
+    form.bindFromRequest().fold(
+      _ => {
+        val context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(SubmissionHistory(Seq())))
+        renderer.render("submissionHistory.njk", context).map(BadRequest(_))
+      },
+      searchCriteria => {
+        for {
+          retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
+          context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
+        } yield {
+          renderer.render("submissionHistory.njk", context).map(Ok(_))
+        }
+      }.flatten
+    )
   }
 
 }
