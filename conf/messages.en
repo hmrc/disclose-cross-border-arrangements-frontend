@@ -158,6 +158,7 @@ index.continue = Disclose a cross-border arrangement
 history.link = View uploaded files
 submissionHistory.title = Your disclosures
 submissionHistory.heading = Your disclosures
+submissionHistory.caption = Your disclosures
 submissionHistory.p1 = Search by:
 submissionHistory.li1 = arrangement reference number
 submissionHistory.li2 = disclosure ID

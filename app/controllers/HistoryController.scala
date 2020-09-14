@@ -63,7 +63,7 @@ class HistoryController @Inject()(
           retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
           context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
         } yield {
-          renderer.render("submissionHistory.njk", context).map(Ok(_))
+          renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
         }
       }.flatten
     )
