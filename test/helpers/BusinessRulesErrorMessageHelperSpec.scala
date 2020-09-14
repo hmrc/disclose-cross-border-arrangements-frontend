@@ -17,12 +17,8 @@
 package helpers
 
 import base.SpecBase
-import cats.data.ReaderT
 import models.{GenericError, Validation}
-import services.BusinessRuleValidationService.{hallmarks, hallmarksForMainBenefitTest, hasIntermediaryDiscloser, hasMainBenefitTest1, implementationStartDate, isInitialDisclosureMA, noOfIntermediaries, noOfRelevantTaxPayers, taxPayerImplementingDates}
 import utils.TestXml
-
-import scala.xml.NodeSeq
 
 class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
@@ -120,6 +116,18 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
         result mustBe List(GenericError(8, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
+      }
+
+      "must  return correct error message when InitialDisclosureMA is true in the Initial disclosure and relevant taxpayers do not have implementing Date" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+        result mustBe List(GenericError(8, "Arrangement ID relates to a previous initial disclosure where " +
+          "InitialDisclosureMA is true so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
       }
 
      "must  return correct error message when main benefit test does not have a specified hallmark" in {

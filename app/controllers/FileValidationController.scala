@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{Dac6MetaDataPage, GenericErrorPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
+import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.{SessionRepository, UploadSessionRepository}
@@ -52,9 +52,9 @@ class FileValidationController @Inject()(
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl, request.enrolmentID)
+        validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
       } yield {
-        validation flatMap   {
+        validation match   {
           case Right(ValidationSuccess(_,Some(metaData))) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))

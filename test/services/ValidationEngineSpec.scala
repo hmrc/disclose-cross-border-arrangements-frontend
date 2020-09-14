@@ -19,6 +19,7 @@ package services
 import base.SpecBase
 import cats.data.ReaderT
 import cats.implicits._
+import connectors.CrossBorderArrangementsConnector
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import models.{Dac6MetaData, GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Matchers._
@@ -27,6 +28,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import scala.xml.{Elem, NodeSeq}
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.{Await, Future}
@@ -92,6 +96,7 @@ val enrolmentId = "123456"
     val doesFileHaveBusinessErrors = false
 
     val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
+    val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
     val mockMetaDataValidationService: MetaDataValidationService = mock[MetaDataValidationService]
 
@@ -99,35 +104,36 @@ val enrolmentId = "123456"
 
     val xmlErrorMessageHelper: XmlErrorMessageHelper = new XmlErrorMessageHelper
 
-    val mockBusinessRuleValidationService: BusinessRuleValidationService = new BusinessRuleValidationService {
+    val mockBusinessRuleValidationService: BusinessRuleValidationService =
+      new BusinessRuleValidationService(mockCrossBorderArrangementsConnector) {
 
-      val dummyReader: ReaderT[Option, NodeSeq, Boolean] =
-        ReaderT[Option, NodeSeq, Boolean](xml => {
-          Some(!doesFileHaveBusinessErrors)
-        })
+        val dummyReader: ReaderT[Option, NodeSeq, Boolean] =
+          ReaderT[Option, NodeSeq, Boolean](xml => {
+            Some(!doesFileHaveBusinessErrors)
+          })
 
-      def dummyValidation(): ReaderT[Option, NodeSeq, Validation] = {
-        for {
-          result <- dummyReader
-        } yield
-          Validation(
-            key = defaultError,
-            value = result
-          )
+        def dummyValidation(): ReaderT[Option, NodeSeq, Validation] = {
+          for {
+            result <- dummyReader
+          } yield
+            Validation(
+              key = defaultError,
+              value = result
+            )
       }
 
-      override def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
+      override def validateFile()(implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
         for {
           v1 <- dummyValidation()
         } yield
-          Seq(v1).filterNot(_.value)
+          Future.successful(Seq(v1).filterNot(_.value))
       }
 
       override def extractDac6MetaData(): ReaderT[Option, NodeSeq, Dac6MetaData] = {
         for {
           _ <-  dummyReader
         }yield {
-          Dac6MetaData("DAC6NEW", doAllRelevantTaxpayersHaveImplementingDate = true)
+          Dac6MetaData("DAC6NEW")
 
         }
 
@@ -146,7 +152,7 @@ val enrolmentId = "123456"
     val source = "src"
     val elem: Elem = <dummyElement>Test</dummyElement>
     val mockXML: Elem = <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-    val mockMetaData = Some(Dac6MetaData("DAC6NEW", doAllRelevantTaxpayersHaveImplementingDate = true))
+    val mockMetaData = Some(Dac6MetaData("DAC6NEW"))
 
   }
   "ValidationEngine" - {
@@ -194,7 +200,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file where element is too long (1-400 allowed)" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError1, maxlengthError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -207,10 +213,10 @@ val enrolmentId = "123456"
 
        "must return ValidationFailure for file where element is too long (1-4000 allowed)" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError3, maxlengthError4)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
 
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
@@ -219,7 +225,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid country code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryCodeError1, countryCodeError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -230,8 +236,7 @@ val enrolmentId = "123456"
       }
 
       "must return ValidationFailure for file with invalid countryMS code" in new SetUp {
-
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(concernedMsError1, concernedMsError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -243,7 +248,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid countryExemption code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryExemptionError1, countryExemptionError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -256,7 +261,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid Reason entry code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(reasonError1, reasonError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -268,7 +273,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid Intermediary Capacity code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(intermediaryCapacityError1, intermediaryCapacityError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -280,7 +285,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid RelevantTaxpayer Discloser Capacity code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(relevantTpDiscloserCapacityError1, relevantTpDiscloserCapacityError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
@@ -292,7 +297,7 @@ val enrolmentId = "123456"
 
       "must return ValidationFailure for file with invalid issuedBy code" in new SetUp {
 
-       when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
+        when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(issuedByError1, issuedByError2)))
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
