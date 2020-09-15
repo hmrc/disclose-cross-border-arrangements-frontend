@@ -24,32 +24,34 @@ import models.{SubmissionDetails, SubmissionHistory}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import play.api.Application
 import play.api.inject.bind
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{GET, route, status}
+import play.api.test.Helpers.{GET, route, status, _}
 import play.twirl.api.Html
-import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
 class HistoryControllerSpec extends SpecBase {
-  
+
+  val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
+
+  val submissionHistory: SubmissionHistory = SubmissionHistory(
+    List(
+      SubmissionDetails(
+        "enrolmentID",
+        LocalDateTime.parse("2007-12-03T10:15:30"),
+        "fileName",
+        Some("arrangementID"),
+        Some("disclosureID"),
+        "New",
+        initialDisclosureMA = true
+      )
+    )
+  )
+
   "History Controller" - {
     "must return OK and the correct view for a GET" in {
-      val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
-      val submissionHistory = SubmissionHistory(
-        List(
-          SubmissionDetails(
-            "enrolmentID",
-            LocalDateTime.parse("2007-12-03T10:15:30"),
-            "fileName",
-            Some("arrangementID"),
-            Some("disclosureID"),
-            "New",
-            initialDisclosureMA = false
-          )
-        )
-      )
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("foo")))
@@ -73,6 +75,35 @@ class HistoryControllerSpec extends SpecBase {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
 
       templateCaptor.getValue mustEqual "submissionHistory.njk"
+
+      application.stop()
+    }
+
+    "must return OK and the search results for a POST" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("foo")))
+
+      when(mockCrossBorderArrangementsConnector.searchDisclosures(any())(any()))
+        .thenReturn(Future.successful(submissionHistory))
+
+      val application: Application = applicationBuilder(userAnswers = None)
+        .overrides(
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        ).build()
+
+      val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
+        .withFormUrlEncodedBody(("searchBox", "fileName.xml"))
+
+      val result = route(application, request).value
+
+      status(result) mustEqual OK
+
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+      templateCaptor.getValue mustEqual "submissionHistorySearchResults.njk"
 
       application.stop()
     }

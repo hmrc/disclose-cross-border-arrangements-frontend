@@ -21,14 +21,11 @@ import java.time.LocalDateTime
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
-import org.joda.time.DateTime
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
-import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, OK, SERVICE_UNAVAILABLE, INTERNAL_SERVER_ERROR}
+import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, Json}
 import uk.gov.hmrc.http.UpstreamErrorResponse
@@ -299,6 +296,50 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
 
       }
 
+    }
+
+    "searchDisclosures" - {
+      "return submission history for search criteria" in {
+        val search = "fileName.xml"
+        val submissionDetails =  SubmissionDetails(
+          enrolmentID = "enrolmentID",
+          submissionTime = LocalDateTime.now(),
+          fileName = search,
+          arrangementID = Some("GBA20200601AAA000"),
+          disclosureID = Some("GBD20200601AAA000"),
+          importInstruction = "Add",
+          initialDisclosureMA = false)
+        val submissionHistory = SubmissionHistory(Seq(submissionDetails))
+
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/history/search-submissions/$search"))
+            .willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(Json.toJson(submissionHistory).toString())
+            )
+        )
+
+        whenReady(connector.searchDisclosures(search)) {
+          _ mustBe submissionHistory
+        }
+      }
+
+      "return an empty submission history for search criteria if 404 is received" in {
+        val search = "fileName.xml"
+
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/history/search-submissions/$search"))
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
+
+        whenReady(connector.searchDisclosures(search)) {
+          _ mustBe SubmissionHistory(Seq())
+        }
+      }
     }
 
   }

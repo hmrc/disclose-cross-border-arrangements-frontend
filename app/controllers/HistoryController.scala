@@ -56,7 +56,8 @@ class HistoryController @Inject()(
     form.bindFromRequest().fold(
       _ => {
         val context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(SubmissionHistory(Seq())))
-        renderer.render("submissionHistory.njk", context).map(BadRequest(_))
+
+        renderer.render("submissionHistorySearchResults.njk", context).map(BadRequest(_))
       },
       searchCriteria => {
         for {
