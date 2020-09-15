@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package helpers
+package models.requests
 
-class BusinessRulesErrorMessageHelper {
+import models.{ContactDetails, UserAnswers}
+import play.api.mvc.{Request, WrappedRequest}
 
-  import models.{GenericError, Validation}
-
-  import scala.xml.{Elem, NodeSeq}
-
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
-
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-      valsWithLineNumber.map(validation => validation.toGenericError)
-
-    }
-
-}
+case class DataRequestWithContacts[A](request: Request[A],
+                                      internalId: String,
+                                      enrolmentID: String,
+                                      userAnswers: UserAnswers,
+                                      contacts: Option[ContactDetails]) extends WrappedRequest[A](request)

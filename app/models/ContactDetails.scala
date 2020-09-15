@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package helpers
+package models
 
-class BusinessRulesErrorMessageHelper {
-
-  import models.{GenericError, Validation}
-
-  import scala.xml.{Elem, NodeSeq}
-
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
-
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-      valsWithLineNumber.map(validation => validation.toGenericError)
-
-    }
-
-}
+case class ContactDetails(contactName: Option[String],
+                          contactEmail: Option[String],
+                          secondContactName: Option[String],
+                          secondEmail: Option[String]
+                         )

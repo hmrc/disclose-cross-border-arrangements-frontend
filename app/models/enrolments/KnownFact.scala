@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package helpers
+package models.enrolments
 
-class BusinessRulesErrorMessageHelper {
+import play.api.libs.json.{Json, OFormat}
 
-  import models.{GenericError, Validation}
+case class KnownFact(key: String, value: String)
 
-  import scala.xml.{Elem, NodeSeq}
-
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
-
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-      valsWithLineNumber.map(validation => validation.toGenericError)
-
-    }
-
+object KnownFact {
+  implicit val formats: OFormat[KnownFact] = Json.format[KnownFact]
 }

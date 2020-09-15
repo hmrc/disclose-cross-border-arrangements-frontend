@@ -38,7 +38,7 @@ class HistoryControllerSpec extends SpecBase {
     "must return OK and the correct view for a GET" in {
       val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
       val submissionHistory = SubmissionHistory(
-        Seq(
+        List(
           SubmissionDetails(
             "enrolmentID",
             LocalDateTime.parse("2007-12-03T10:15:30"),

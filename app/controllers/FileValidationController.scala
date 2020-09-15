@@ -22,7 +22,7 @@ import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator
-import pages.{Dac6MetaDataPage, GenericErrorPage, InvalidXMLPage, URLPage, UploadIDPage, ValidXMLPage}
+import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.{SessionRepository, UploadSessionRepository}
@@ -45,17 +45,17 @@ class FileValidationController @Inject()(
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async{
     implicit request =>
     {
       for {
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- repository.findByUploadId(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation = validationEngine.validateFile(downloadUrl)
+        validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
       } yield {
-        validation match {
-          case ValidationSuccess(_,Some(metaData)) =>
+        validation match   {
+          case Right(ValidationSuccess(_,Some(metaData))) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
@@ -67,13 +67,20 @@ class FileValidationController @Inject()(
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-          case ValidationFailure(errors: Seq[GenericError]) =>
+          case Right(ValidationFailure(errors: Seq[GenericError])) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
               _              <- sessionRepository.set(updatedAnswersWithErrors)
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
+          case Left(_) =>
+            for {
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
+              _              <- sessionRepository.set(updatedAnswers)
+            } yield {
+              Redirect(routes.FileErrorController.onPageLoad())
             }
           case _ =>
             errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))

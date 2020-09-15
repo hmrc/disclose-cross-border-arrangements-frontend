@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package helpers
+package utils
 
-class BusinessRulesErrorMessageHelper {
-
-  import models.{GenericError, Validation}
-
-  import scala.xml.{Elem, NodeSeq}
-
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
-
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-      valsWithLineNumber.map(validation => validation.toGenericError)
-
-    }
-
+object EnrolmentConstants {
+  final val dac6EnrolmentKey = "HMRC-DAC6-ORG"
+  final val dac6IdentifierKey = "DAC6ID"
+  final val contactNameKey = "CONTACTNAME"
+  final val contactEmailKey = "EMAIL"
+  final val secondContactNameKey = "SECCONTACTNAME"
+  final val secondContactEmailKey = "SECEMAIL"
 }

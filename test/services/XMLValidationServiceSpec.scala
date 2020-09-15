@@ -25,6 +25,7 @@ import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
 import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
@@ -67,7 +68,7 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
     val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
     //val testUrl: URL = getClass.getResource("/sitemap-v0.9.xsd")
     val isoXsdUrl: URL = getClass.getResource("/schemas/IsoTypes_v1.01.xsd")
-    val xsdUrl: URL = getClass.getResource("/schemas/UKDac6XSD_v0.2.xsd")
+    val xsdUrl: URL = getClass.getResource("/schemas/UKDac6XSD_v0.4.xsd")
 
     val isoXsdStream: StreamSource = new StreamSource(isoXsdUrl.openStream())
     val ukDAC6XsdStream: StreamSource = new StreamSource(xsdUrl.openStream())

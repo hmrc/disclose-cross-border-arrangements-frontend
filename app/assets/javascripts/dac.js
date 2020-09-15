@@ -21,3 +21,8 @@ if(backLink){
         }
   });
 }
+
+document.getElementById('printLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.print();
+});

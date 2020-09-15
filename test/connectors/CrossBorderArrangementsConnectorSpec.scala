@@ -21,14 +21,17 @@ import java.time.LocalDateTime
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
+import org.joda.time.DateTime
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
+import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
+import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, NO_CONTENT, OK, SERVICE_UNAVAILABLE, INTERNAL_SERVER_ERROR}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import utils.WireMockHelper
 
 class CrossBorderArrangementsConnectorSpec extends SpecBase
@@ -43,7 +46,6 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
     ).build()
 
   lazy val connector: CrossBorderArrangementsConnector = app.injector.instanceOf[CrossBorderArrangementsConnector]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "Cross Border Arrangements Connector" - {
     "should return a GeneratedIDs" - {
@@ -147,6 +149,156 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
           )
       }
+    }
+
+    "retrieveFirstDisclosureForArrangementID" - {
+      val arrangementID = "GBA20200904AAAAAA"
+      val disclosureID = "GBD20200904AAAAAA"
+
+      "should return the submission details for the first disclosure from backend" in {
+        val json = Json.obj(
+          "enrolmentID" -> "enrolmentID",
+          "submissionTime" -> "2020-05-14T17:10:00",
+          "fileName" -> "fileName",
+          "arrangementID" -> arrangementID,
+          "disclosureID" -> disclosureID,
+          "importInstruction" -> "New",
+          "initialDisclosureMA" -> true
+        )
+
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/history/first-disclosure/$arrangementID"))
+            .willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(json.toString())
+            )
+        )
+
+        whenReady(connector.retrieveFirstDisclosureForArrangementID(arrangementID)) {
+          result =>
+            result mustBe
+              SubmissionDetails(
+                "enrolmentID",
+                LocalDateTime.parse("2020-05-14T17:10:00"),
+                "fileName",
+                Some(arrangementID),
+                Some(disclosureID),
+                "New",
+                initialDisclosureMA = true
+              )
+        }
+      }
+
+      "return throw an exception when call to backend fails" in {
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/history/first-disclosure/$arrangementID"))
+            .willReturn(
+            aResponse()
+                .withStatus(NOT_FOUND)
+          )
+        )
+
+        val result = connector.retrieveFirstDisclosureForArrangementID(arrangementID)
+
+        whenReady(result.failed){ e =>
+          e mustBe an[UpstreamErrorResponse]
+          val error = e.asInstanceOf[UpstreamErrorResponse]
+          error.statusCode mustBe NOT_FOUND
+        }
+      }
+    }
+
+    "verify ArrangementIDs" - {
+      "should return true when arrangement Id is one issued by HMRC" in {
+
+       val arrangementId = "GBA20200601AAA000"
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
+            .willReturn(
+              aResponse()
+                .withStatus(NO_CONTENT)
+            )
+        )
+
+       whenReady(connector.verifyArrangementId(arrangementId)){
+          result =>
+            result mustBe true
+        }
+
+
+      }
+
+      "should return false when arrangement Id is one issued by HMRC" in {
+
+       val arrangementId = "GBA20200601AAA000"
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
+            .willReturn(
+              aResponse()
+                .withStatus(NOT_FOUND)
+            )
+        )
+
+       whenReady(connector.verifyArrangementId(arrangementId)){
+          result =>
+            result mustBe false
+        }
+     }
+    }
+    "Get history" -{
+      "return submission history" in {
+
+        val enrolmentId= "123456"
+
+        val submissionDetails =  SubmissionDetails(
+          enrolmentID = "enrolmentID",
+          submissionTime = LocalDateTime.now(),
+          fileName = "fileName.xml",
+          arrangementID = Some("GBA20200601AAA000"),
+          disclosureID = Some("GBD20200601AAA000"),
+          importInstruction = "DAC6ADD",
+          initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(Seq(submissionDetails))
+
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/get-history/$enrolmentId"))
+            .willReturn(
+              aResponse()
+                .withStatus(OK)
+                .withBody(Json.toJson(submissionHistory).toString())
+            )
+        )
+
+        whenReady(connector.getSubmissionHistory(enrolmentId)){
+          result =>
+            result mustBe submissionHistory
+        }
+
+
+      }
+
+      "return empty history when call to backend fails" in {
+
+        val enrolmentId= "123456"
+
+        server.stubFor(
+          get(urlEqualTo(s"/disclose-cross-border-arrangements/get-history/$enrolmentId"))
+            .willReturn(
+              aResponse()
+                .withStatus(INTERNAL_SERVER_ERROR)
+            )
+        )
+
+        whenReady(connector.getSubmissionHistory(enrolmentId)){
+          result =>
+            result mustBe SubmissionHistory(List())
+        }
+
+
+      }
+
     }
 
   }

@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package helpers
+package models.enrolments
 
-class BusinessRulesErrorMessageHelper {
+import play.api.libs.json.{Json, OFormat}
 
-  import models.{GenericError, Validation}
 
-  import scala.xml.{Elem, NodeSeq}
+case class EnrolmentRequest(service: String, knownFacts:  Seq[KnownFact])
 
-    def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
+object EnrolmentRequest {
 
-      val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
-
-      valsWithLineNumber.map(validation => validation.toGenericError)
-
-    }
-
+  implicit val formats: OFormat[EnrolmentRequest] = Json.format[EnrolmentRequest]
 }
+

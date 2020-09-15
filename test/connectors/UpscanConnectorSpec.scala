@@ -41,7 +41,6 @@ class UpscanConnectorSpec extends SpecBase
     ).build()
 
   lazy val connector: UpscanConnector = app.injector.instanceOf[UpscanConnector]
-  implicit val hc: HeaderCarrier = HeaderCarrier()
   val request: UpscanInitiateRequest = UpscanInitiateRequest("callbackUrl", "successRedirectUrl", "errorRedirectUrl")
 
   "getUpscanFormData" - {

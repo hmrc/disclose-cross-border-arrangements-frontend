@@ -21,14 +21,20 @@ import java.util.{Calendar, Date, GregorianCalendar}
 
 import cats.data.ReaderT
 import cats.implicits._
+import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
 import models.{Dac6MetaData, Validation}
+import org.slf4j.LoggerFactory
+import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
-class BusinessRuleValidationService @Inject()() {
+class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: CrossBorderArrangementsConnector) {
   import BusinessRuleValidationService._
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def validateInitialDisclosureHasRelevantTaxPayer(): ReaderT[Option, NodeSeq, Validation] = {
     for {
@@ -109,6 +115,21 @@ class BusinessRuleValidationService @Inject()() {
         }
   }
 
+  def validateDisclosureImportInstructionAndInitialDisclosureFlag(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      initialDisclosureMA <- isInitialDisclosureMA
+    } yield
+      disclosureImportInstruction match {
+        case "DAC6ADD" => Validation(
+          key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
+          value = !initialDisclosureMA)
+        case _ => Validation(
+          key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+          value = true)
+
+      }
+  }
   def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       initialDisclosureMA <- isInitialDisclosureMA
@@ -146,12 +167,48 @@ class BusinessRuleValidationService @Inject()() {
     )
   }
 
+  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+    for {
+      disclosureImportInstruction <- disclosureImportInstruction
+      relevantTaxPayers <- noOfRelevantTaxPayers
+      taxPayerImplementingDate <- taxPayerImplementingDates
+      arrangementID <- arrangementID
+    } yield {
+      if ((disclosureImportInstruction == "DAC6ADD") || (disclosureImportInstruction == "DAC6REP")) {
+        crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
+          submissionDetails =>
+            Validation(
+              key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+              value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
+                relevantTaxPayers == taxPayerImplementingDate.length
+              }
+              else {
+                true
+              }
+            )
+        }.recover {
+          case _ =>
+            logger.info("No first disclosure found")
+            Validation(
+              key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+              value = true)
+        }
+      } else {
+        Future(Validation(
+          key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+          value = true))
+      }
+    }
+  }
+
   def extractDac6MetaData(): ReaderT[Option, NodeSeq, Dac6MetaData] = {
     for {
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
-    } yield
+    } yield {
+
       disclosureImportInstruction match {
         case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
         case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
@@ -159,9 +216,9 @@ class BusinessRuleValidationService @Inject()() {
         case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
+    }
   }
-  
-  def validateFile(): ReaderT[Option, NodeSeq, Seq[Validation]] = {
+  def validateFile()(implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
     for {
        v1 <- validateInitialDisclosureHasRelevantTaxPayer()
        v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()
@@ -172,8 +229,13 @@ class BusinessRuleValidationService @Inject()() {
        v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
        v8 <- validateMainBenefitTestHasASpecifiedHallmark()
        v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
-    } yield
-      Seq(v1,v2,v3,v4,v5,v6,v7,v8,v9).filterNot(_.value)
+       v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
+       v11 <- validateTaxPayerImplementingDateAgainstFirstDisclosure()
+    } yield {
+      v11.map { v11Validation =>
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation).filterNot(_.value)
+      }
+    }
   }
 }
 
