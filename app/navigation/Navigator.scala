@@ -28,6 +28,7 @@ class Navigator @Inject()() {
   private val normalRoutes: Page => UserAnswers => Call = {
     case InvalidXMLPage => _ => routes.InvalidXMLController.onPageLoad()
     case ValidXMLPage => _ => routes.CheckYourAnswersController.onPageLoad()
+    case HistoryPage => _ => routes.SearchHistoryResultsController.onPageLoad()
     case _ => _ => routes.IndexController.onPageLoad()
   }
 

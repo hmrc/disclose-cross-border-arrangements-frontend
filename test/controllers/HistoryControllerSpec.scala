@@ -23,22 +23,26 @@ import connectors.CrossBorderArrangementsConnector
 import forms.SearchDisclosuresFormProvider
 import matchers.JsonMatchers
 import models.{SubmissionDetails, SubmissionHistory}
+import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
-import play.api.Application
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, route, status, _}
 import play.twirl.api.Html
+import repositories.SessionRepository
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
 
 class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatchers {
 
+  def onwardRoute: Call = Call("GET", "/foo")
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
   val submissionHistory: SubmissionHistory = SubmissionHistory(
@@ -87,31 +91,24 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
       application.stop()
     }
 
-    "must return OK and the search results for a POST" in {
+    "must redirect to the next page when valid data is submitted" in {
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("foo")))
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      when(mockCrossBorderArrangementsConnector.searchDisclosures(any())(any()))
-        .thenReturn(Future.successful(submissionHistory))
-
-      val application: Application = applicationBuilder(userAnswers = None)
-        .overrides(
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
-        ).build()
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[SessionRepository].toInstance(mockSessionRepository)
+          ).build()
 
       val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
         .withFormUrlEncodedBody(("searchBox", "fileName.xml"))
 
       val result = route(application, request).value
 
-      status(result) mustEqual OK
-
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-
-      templateCaptor.getValue mustEqual "submissionHistorySearchResults.njk"
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual onwardRoute.url
 
       application.stop()
     }
@@ -121,7 +118,14 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockCrossBorderArrangementsConnector.retrievePreviousSubmissions(any())(any()))
+        .thenReturn(Future.successful(submissionHistory))
+
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+        ).build()
+
       val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
         .withFormUrlEncodedBody(("searchBox", ""))
       val boundForm = form.bind(Map("searchBox" -> ""))

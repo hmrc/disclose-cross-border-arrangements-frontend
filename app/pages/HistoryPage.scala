@@ -14,32 +14,12 @@
  * limitations under the License.
  */
 
-package forms
+package pages
 
-import forms.behaviours.StringFieldBehaviours
-import play.api.data.FormError
+import play.api.libs.json.JsPath
 
-class SearchDisclosuresFormProviderSpec extends StringFieldBehaviours {
+case object HistoryPage extends QuestionPage[String] {
+  override def path: JsPath = JsPath \ toString
 
-  val requiredKey = "submissionHistory.error"
-
-  val form = new SearchDisclosuresFormProvider()()
-
-  ".searchBox" - {
-
-    val fieldName = "searchBox"
-
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      nonEmptyString
-    )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
-  }
-
+  override def toString: String = "history"
 }

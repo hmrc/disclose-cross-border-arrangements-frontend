@@ -72,6 +72,20 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
               .mustBe(routes.CheckYourAnswersController.onPageLoad())
         }
       }
+
+      "must go from history page to '/your-disclosures-results' page" in {
+
+        forAll(arbitrary[UserAnswers]) {
+          answers =>
+            val updatedAnswers =
+              answers
+                .set(HistoryPage, "fileName.xml")
+                .success
+                .value
+            navigator.nextPage(HistoryPage, NormalMode, updatedAnswers)
+              .mustBe(routes.SearchHistoryResultsController.onPageLoad())
+        }
+      }
     }
 
     "in Check mode" - {
