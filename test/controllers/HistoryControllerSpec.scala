@@ -20,19 +20,24 @@ import java.time.LocalDateTime
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
+import forms.SearchDisclosuresFormProvider
+import matchers.JsonMatchers
 import models.{SubmissionDetails, SubmissionHistory}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import play.api.Application
+import play.api.data.Form
 import play.api.inject.bind
+import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, route, status, _}
 import play.twirl.api.Html
+import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
 
-class HistoryControllerSpec extends SpecBase {
+class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatchers {
 
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
@@ -49,6 +54,9 @@ class HistoryControllerSpec extends SpecBase {
       )
     )
   )
+
+  val formProvider = new SearchDisclosuresFormProvider()
+  val form: Form[String] = formProvider()
 
   "History Controller" - {
     "must return OK and the correct view for a GET" in {
@@ -104,6 +112,34 @@ class HistoryControllerSpec extends SpecBase {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
 
       templateCaptor.getValue mustEqual "submissionHistorySearchResults.njk"
+
+      application.stop()
+    }
+
+    "must return a Bad Request and errors when invalid data is submitted" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
+        .withFormUrlEncodedBody(("searchBox", ""))
+      val boundForm = form.bind(Map("searchBox" -> ""))
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
+      val result = route(application, request).value
+
+      status(result) mustEqual BAD_REQUEST
+
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+
+      val expectedJson = Json.obj(
+        "form" -> boundForm
+      )
+
+      templateCaptor.getValue mustEqual "submissionHistory.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
     }

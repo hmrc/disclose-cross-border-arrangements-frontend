@@ -24,7 +24,7 @@ class SearchDisclosuresFormProvider @Inject() extends Mappings {
 
   def apply(): Form[String] = {
     Form(
-      "searchBox" -> text("submissionHistory.error")
+      "searchBox" -> textNonWhitespaceOnly("submissionHistory.error")
     )
   }
 

@@ -7,7 +7,7 @@
 {% from "govuk/components/button/macro.njk"        import govukButton %}
 
 {% block pageTitle %}
-  {{ title(messages("submissionHistory.title")) }}
+  {{ title(messages("submissionHistory.title"), form.errors) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -41,16 +41,38 @@
 
           {{ csrf() | safe }}
 
-          <div class="govuk-form-group">
-            <label class="govuk-label govuk-visually-hidden" for="search">
-              {{ messages("submissionHistory.button") }}
-            </label>
-            <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text">
+          {% if form.errors.length > 0 %}
 
-            <button class="govuk-button" data-module="govuk-button">
-              {{ messages("submissionHistory.button") }}
-            </button>
-          </div>
+            <div class="govuk-form-group govuk-form-group--error">
+              <label class="govuk-label govuk-visually-hidden" for="searchBox">
+                {{ messages("submissionHistory.button") }}
+              </label>
+
+              <span id="event-name-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>{{ form.searchBox.error.text }}
+              </span>
+
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text">
+
+              <button class="govuk-button" data-module="govuk-button">
+                {{ messages("submissionHistory.button") }}
+              </button>
+            </div>
+
+          {% else %}
+
+            <div class="govuk-form-group">
+              <label class="govuk-label govuk-visually-hidden" for="searchBox">
+                {{ messages("submissionHistory.button") }}
+              </label>
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text">
+
+              <button class="govuk-button" data-module="govuk-button">
+                {{ messages("submissionHistory.button") }}
+              </button>
+            </div>
+
+          {% endif %}
         </form>
 
         {{ govukTable(disclosuresTable) }}

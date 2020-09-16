@@ -21,12 +21,12 @@ import controllers.actions.IdentifierAction
 import forms.SearchDisclosuresFormProvider
 import helpers.ViewHelper
 import javax.inject.Inject
-import models.SubmissionHistory
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.ExecutionContext
 
@@ -37,7 +37,7 @@ class HistoryController @Inject()(
                                    renderer: Renderer,
                                    viewHelper: ViewHelper,
                                    formProvider: SearchDisclosuresFormProvider
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
 
   def onPageLoad: Action[AnyContent] = identify.async { implicit request =>
 
@@ -49,25 +49,33 @@ class HistoryController @Inject()(
     }}.flatten
   }
 
-  def onSearch: Action[AnyContent] = identify.async { implicit request =>
+  def onSearch: Action[AnyContent] = identify.async {
+    implicit request =>
 
-    val form = formProvider()
+      val form = formProvider()
 
-    form.bindFromRequest().fold(
-      _ => {
-        val context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(SubmissionHistory(Seq())))
+      form.bindFromRequest().fold(
+        formWithErrors => {
 
-        renderer.render("submissionHistorySearchResults.njk", context).map(BadRequest(_))
-      },
-      searchCriteria => {
-        for {
-          retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
-          context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
-        } yield {
-          renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
-        }
-      }.flatten
-    )
+          for {
+            retrievedDetails <- crossBorderArrangementsConnector.retrievePreviousSubmissions(request.enrolmentID)
+            context = Json.obj(
+              "form" -> formWithErrors,
+              "disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails)
+            )
+          } yield {
+            renderer.render("submissionHistory.njk", context).map(BadRequest(_))
+          }
+        }.flatten,
+        searchCriteria => {
+          for {
+            retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
+            context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
+          } yield {
+            renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
+          }
+        }.flatten
+      )
   }
 
 }
