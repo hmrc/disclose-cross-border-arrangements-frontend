@@ -32,7 +32,6 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
                                (implicit ec: ExecutionContext){
 
   private val headers = Map(
-    HeaderNames.USER_AGENT   -> appName,
     HeaderNames.CONTENT_TYPE -> "application/json"
   )
 
