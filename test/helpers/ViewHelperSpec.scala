@@ -152,6 +152,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
             Cell(msg"fileName2", attributes = Map("id" -> s"fileName_1"))
           )
         ),
+        caption = Some(msg"submissionHistory.caption"),
         attributes = Map("id" -> "disclosuresTable")
       )
     }

@@ -81,6 +81,7 @@ class ViewHelper @Inject()() {
         Cell(msg"submissionHistory.fileName.label", classes = Seq("govuk-!-width-one-quarter"))
       ),
       rows = rows,
+      caption = Some(msg"submissionHistory.caption"),
       attributes = Map("id" -> "disclosuresTable"))
   }
 }

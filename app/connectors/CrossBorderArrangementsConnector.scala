@@ -73,4 +73,10 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
     }
   }
 
+  def searchDisclosures(searchCriteria: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {
+    httpClient.GET[SubmissionHistory](s"$baseUrl/history/search-submissions/$searchCriteria").recover {
+      case _ => SubmissionHistory(Seq())
+    }
+  }
+
 }

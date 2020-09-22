@@ -3,9 +3,11 @@
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "govuk/components/table/macro.njk"         import govukTable %}
+{% from "govuk/components/input/macro.njk"         import govukInput %}
+{% from "govuk/components/button/macro.njk"        import govukButton %}
 
 {% block pageTitle %}
-  {{ title(messages("submissionHistory.title")) }}
+  {{ title(messages("submissionHistory.title"), form.errors) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -25,6 +27,53 @@
         <h1 class="govuk-heading-xl">
           {{ messages("submissionHistory.heading") }}
         </h1>
+
+        <p class="govuk-body">
+            {{ messages("submissionHistory.p1") }}
+        </p>
+        <ul class="govuk-list govuk-list--bullet">
+          <li> {{ messages("submissionHistory.li1") }} </li>
+          <li> {{ messages("submissionHistory.li2") }} </li>
+          <li> {{ messages("submissionHistory.li3") }} </li>
+        </ul>
+
+        <form action="{{ routes.controllers.HistoryController.onSearch().url }}" method="post">
+
+          {{ csrf() | safe }}
+
+          {% if form.errors.length > 0 %}
+
+            <div class="govuk-form-group govuk-form-group--error">
+              <label class="govuk-label govuk-visually-hidden" for="searchBox">
+                {{ messages("submissionHistory.button") }}
+              </label>
+
+              <span id="event-name-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>{{ form.searchBox.error.text }}
+              </span>
+
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text">
+
+              <button class="govuk-button" data-module="govuk-button" id="submit">
+                {{ messages("submissionHistory.button") }}
+              </button>
+            </div>
+
+          {% else %}
+
+            <div class="govuk-form-group">
+              <label class="govuk-label govuk-visually-hidden" for="searchBox">
+                {{ messages("submissionHistory.button") }}
+              </label>
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text">
+
+              <button class="govuk-button" data-module="govuk-button" id="submit">
+                {{ messages("submissionHistory.button") }}
+              </button>
+            </div>
+
+          {% endif %}
+        </form>
 
         {{ govukTable(disclosuresTable) }}
 
