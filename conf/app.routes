@@ -48,3 +48,5 @@ GET        /your-disclosures                            controllers.HistoryContr
 POST       /your-disclosures                            controllers.HistoryController.onSearch()
 
 GET        /your-disclosures-results                    controllers.SearchHistoryResultsController.onPageLoad()
+
+GET        /display-subscription                        controllers.DisplaySubscriptionForDACController.onPageLoad()

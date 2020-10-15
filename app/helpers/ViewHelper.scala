@@ -19,9 +19,10 @@ package helpers
 import java.time.format.DateTimeFormatter
 
 import com.google.inject.Inject
-import models.{GenericError, SubmissionHistory}
+import models.{GenericError, ResponseDetail, SubmissionHistory}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.viewmodels.SummaryList.{Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 
@@ -83,5 +84,36 @@ class ViewHelper @Inject()() {
       rows = rows,
       caption = Some(msg"submissionHistory.caption"),
       attributes = Map("id" -> "disclosuresTable"))
+  }
+
+  def buildDisplaySubscription(responseDetail: Option[ResponseDetail]): Seq[Row] = {
+    if (responseDetail.isDefined) {
+      Seq(
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${responseDetail.get.subscriptionID}")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${responseDetail.get.tradingName.getOrElse("None")}")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${responseDetail.get.isGBUser}")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${responseDetail.get.primaryContact}")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${responseDetail.get.secondaryContact.getOrElse("None")}")
+        ))
+    } else {
+      Seq(Row(
+        key = Key(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"displaySubscriptionForDAC.noDetails")
+      ))
+    }
   }
 }

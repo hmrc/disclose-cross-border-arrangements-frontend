@@ -62,23 +62,18 @@ object RequestDetail {
   implicit val format: OFormat[RequestDetail] = Json.format[RequestDetail]
 }
 
-case class DisplaySubscriptionDetails(requestCommonForSubscription: RequestCommon,
+case class DisplaySubscriptionDetails(requestCommon: RequestCommon,
                                       requestDetail: RequestDetail)
 object DisplaySubscriptionDetails {
   implicit val format: OFormat[DisplaySubscriptionDetails] = Json.format[DisplaySubscriptionDetails]
 
   def createRequest(userAnswers: UserAnswers): DisplaySubscriptionDetails = {
     DisplaySubscriptionDetails(
-      requestCommonForSubscription = RequestCommon.createRequestCommon,
+      requestCommon = RequestCommon.createRequestCommon,
       requestDetail = createRequestDetail(userAnswers))
   }
 
   private def createRequestDetail(userAnswers: UserAnswers): RequestDetail = {
-//    val safeID = userAnswers.get(SafeIDPage) match {
-//      case Some(id) => id
-//      case None => throw new Exception("Unable to display subscription details. Safe ID can't be retrieved")
-//    }
-
     RequestDetail(
       IDType = "SAFE",
       IDNumber = "XE0001234567890")

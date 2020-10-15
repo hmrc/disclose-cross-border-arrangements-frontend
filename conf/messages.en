@@ -267,3 +267,12 @@ createConfirmation.h2 = What happens next
 createConfirmation.p1 = We have sent you a confirmation email.
 createConfirmation.p2 = Share the arrangement reference number with anyone else involved in the arrangement.
 createConfirmation.p3 = Your disclosure ID is {0}. You will need this if you want to make any changes to the disclosure.
+
+displaySubscriptionForDAC.title = Display Subscription for DAC
+displaySubscriptionForDAC.heading = Display Subscription for DAC
+displaySubscriptionForDAC.subscriptionID = SubscriptionID
+displaySubscriptionForDAC.tradingName = TradingName
+displaySubscriptionForDAC.isGBUser = IsGBUser
+displaySubscriptionForDAC.primaryContact = PrimaryContact
+displaySubscriptionForDAC.secondaryContact = SecondaryContact
+displaySubscriptionForDAC.noDetails = No subscription details to display

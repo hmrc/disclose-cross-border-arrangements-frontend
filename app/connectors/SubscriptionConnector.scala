@@ -18,7 +18,9 @@ package connectors
 
 import config.FrontendAppConfig
 import javax.inject.Inject
-import models.{DisplaySubscriptionDetails, DisplaySubscriptionForDACRequest, UserAnswers}
+import models.{DisplaySubscriptionDetails, DisplaySubscriptionForDACRequest, DisplaySubscriptionForDACResponse, UserAnswers}
+import play.api.http.Status.OK
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,13 +28,23 @@ import scala.concurrent.{ExecutionContext, Future}
 class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: HttpClient) {
 
   def displaySubscriptionDetails(userAnswers: UserAnswers)
-                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[DisplaySubscriptionForDACResponse]] = {
 
-    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/displaySubscription"
+    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/display-subscription"
 
     http.POST[DisplaySubscriptionForDACRequest, HttpResponse](
       submissionUrl,
-      DisplaySubscriptionForDACRequest(DisplaySubscriptionDetails.createRequest(userAnswers)))
+      DisplaySubscriptionForDACRequest(DisplaySubscriptionDetails.createRequest(userAnswers))
+    ).map {
+      response =>
+        response.status match {
+          case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
+            case JsSuccess(response, _) => Some(response)
+            case JsError(_) => None
+          }
+          case _ => None
+        }
+    }
   }
 
 }

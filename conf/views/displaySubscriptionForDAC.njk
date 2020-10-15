@@ -1,0 +1,29 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
+
+{% block pageTitle %}
+  {{ title(messages("displaySubscriptionForDAC.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("displaySubscriptionForDAC.heading") }}
+        </h1>
+
+        {{ govukSummaryList({
+          classes: 'govuk-summary-list--no-border',
+          rows: displaySubscription
+        }) }}
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
