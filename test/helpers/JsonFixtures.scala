@@ -16,7 +16,7 @@
 
 package helpers
 
-import play.api.libs.json.JsString
+import play.api.libs.json.{JsObject, JsString, Json}
 
 object JsonFixtures {
 
@@ -60,5 +60,37 @@ object JsonFixtures {
       |  }
       |}""".stripMargin
   }
+
+  val jsonPayloadForDisplaySubscriptionRequest: String =
+    s"""
+       |{
+       |  "displaySubscriptionForDACRequest": {
+       |    "requestCommon": {
+       |      "regime": "DAC",
+       |      "receiptDate": "2020-09-23T16:12:11Z",
+       |      "acknowledgementReference": "Abc12345",
+       |      "originatingSystem": "MDTP"
+       |    },
+       |    "requestDetail": {
+       |      "IDType": "SAFE",
+       |      "IDNumber": "XE0001234567890"
+       |    }
+       |  }
+       |}""".stripMargin
+
+  val jsonForDisplaySubscriptionRequest: JsObject = Json.obj(
+    "displaySubscriptionForDACRequest" -> Json.obj(
+      "requestCommon" -> Json.obj(
+        "regime" -> "DAC",
+        "receiptDate" -> "2020-09-23T16:12:11Z",
+        "acknowledgementReference" -> "Abc12345",
+        "originatingSystem" -> "MDTP"
+      ),
+      "requestDetail" -> Json.obj(
+        "IDType" -> "SAFE",
+        "IDNumber" -> "XE0001234567890"
+      )
+    )
+  )
 
 }

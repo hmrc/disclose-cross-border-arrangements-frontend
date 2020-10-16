@@ -19,9 +19,10 @@ package helpers
 import java.time.LocalDateTime
 
 import base.SpecBase
-import models.{GenericError, SubmissionDetails, SubmissionHistory}
+import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, ResponseDetail, SecondaryContact, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
+import uk.gov.hmrc.viewmodels.SummaryList.{Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, Table, _}
 
@@ -155,6 +156,67 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         caption = Some(msg"submissionHistory.caption"),
         attributes = Map("id" -> "disclosuresTable")
       )
+    }
+  }
+
+  "buildDisplaySubscription" - {
+    "must return the rows containing the subscription details" in {
+
+      val primaryContact: PrimaryContact = PrimaryContact(Seq(
+        ContactInformationForIndividual(
+          individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
+          email = "email@email.com", phone = Some("07111222333"), mobile = Some("07111222333"))
+      ))
+
+      val secondaryContact: SecondaryContact = SecondaryContact(Seq(
+        ContactInformationForOrganisation(
+          organisation = OrganisationDetails(organisationName = "Organisation Name"),
+          email = "email2@email.com", phone = None, mobile = None)
+      ))
+
+      val responseDetail: ResponseDetail = ResponseDetail(
+        subscriptionID = "XE0001234567890",
+        tradingName = Some("Trading Name"),
+        isGBUser = true,
+        primaryContact = primaryContact,
+        secondaryContact = Some(secondaryContact))
+
+      val expectedRows = Seq(
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"XE0001234567890")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"Trading Name")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"true")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${primaryContact.toString}")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"${secondaryContact.toString}")
+        ))
+
+      val result = viewHelper.buildDisplaySubscription(Some(responseDetail))
+
+      result mustBe expectedRows
+    }
+
+    "must return an empty row if there's nothing to display" in {
+      val expectedRows = Seq(Row(
+        key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        value = Value(msg"displaySubscriptionForDAC.noDetails")
+      ))
+
+      val result = viewHelper.buildDisplaySubscription(None)
+
+      result mustBe expectedRows
     }
   }
 }

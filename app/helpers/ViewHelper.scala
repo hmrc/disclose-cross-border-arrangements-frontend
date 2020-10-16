@@ -111,7 +111,7 @@ class ViewHelper @Inject()() {
         ))
     } else {
       Seq(Row(
-        key = Key(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third disclosing-key")),
+        key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
         value = Value(msg"displaySubscriptionForDAC.noDetails")
       ))
     }
