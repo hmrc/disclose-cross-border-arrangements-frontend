@@ -42,7 +42,7 @@ class DisplaySubscriptionForDACController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      subscriptionConnector.displaySubscriptionDetails(request.userAnswers).flatMap {
+      subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
           val responseDetail = details match {
             case Some(details) => Some(details.displaySubscriptionForDACResponse.responseDetail)

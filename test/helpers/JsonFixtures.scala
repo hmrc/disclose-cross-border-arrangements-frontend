@@ -67,13 +67,14 @@ object JsonFixtures {
        |  "displaySubscriptionForDACRequest": {
        |    "requestCommon": {
        |      "regime": "DAC",
+       |      "conversationID": "bffaa447-b500-49e0-9c73-bfd81db9242f",
        |      "receiptDate": "2020-09-23T16:12:11Z",
        |      "acknowledgementReference": "Abc12345",
        |      "originatingSystem": "MDTP"
        |    },
        |    "requestDetail": {
-       |      "IDType": "SAFE",
-       |      "IDNumber": "XE0001234567890"
+       |      "IDType": "DAC",
+       |      "IDNumber": "1234567890"
        |    }
        |  }
        |}""".stripMargin
@@ -82,13 +83,14 @@ object JsonFixtures {
     "displaySubscriptionForDACRequest" -> Json.obj(
       "requestCommon" -> Json.obj(
         "regime" -> "DAC",
+        "conversationID" -> "bffaa447-b500-49e0-9c73-bfd81db9242f",
         "receiptDate" -> "2020-09-23T16:12:11Z",
         "acknowledgementReference" -> "Abc12345",
         "originatingSystem" -> "MDTP"
       ),
       "requestDetail" -> Json.obj(
-        "IDType" -> "SAFE",
-        "IDNumber" -> "XE0001234567890"
+        "IDType" -> "DAC",
+        "IDNumber" -> "1234567890"
       )
     )
   )

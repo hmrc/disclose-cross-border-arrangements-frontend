@@ -59,6 +59,8 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
     primaryContact = primaryContact,
     secondaryContact = Some(secondaryContact))
 
+  val enrolmentID: String = "1234567890"
+
   val mockHttpClient: HttpClient = mock[HttpClient]
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -83,7 +85,7 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
 
-        val result = connector.displaySubscriptionDetails(emptyUserAnswers)
+        val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe Some(displaySubscriptionForDACResponse)
       }
 
@@ -116,15 +118,15 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
-        val result = connector.displaySubscriptionDetails(emptyUserAnswers)
+        val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe None
       }
 
       "must return None if status is not OK" in {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, None)))
+          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
 
-        val result = connector.displaySubscriptionDetails(emptyUserAnswers)
+        val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe None
       }
     }

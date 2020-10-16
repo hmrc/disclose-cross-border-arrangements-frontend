@@ -18,6 +18,7 @@ package models
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 import play.api.libs.json.{Json, OFormat}
 
@@ -31,6 +32,7 @@ object RequestParameter {
 }
 
 case class RequestCommon(regime: String,
+                         conversationID: Option[String],
                          receiptDate: String,
                          acknowledgementReference: String,
                          originatingSystem: String,
@@ -46,9 +48,11 @@ object RequestCommon {
     val r = new Random()
     val idSize: Int = 1 + r.nextInt(33) //Generate a size between 1 and 32
     val generateAcknowledgementReference: String = r.alphanumeric.take(idSize).mkString
+    val conversationID = UUID.randomUUID().toString
 
     RequestCommon(
       regime = "DAC",
+      conversationID = Some(conversationID),
       receiptDate = ZonedDateTime.now().format(formatter),
       acknowledgementReference = generateAcknowledgementReference,
       originatingSystem = "MDTP",
@@ -67,16 +71,16 @@ case class DisplaySubscriptionDetails(requestCommon: RequestCommon,
 object DisplaySubscriptionDetails {
   implicit val format: OFormat[DisplaySubscriptionDetails] = Json.format[DisplaySubscriptionDetails]
 
-  def createRequest(userAnswers: UserAnswers): DisplaySubscriptionDetails = {
+  def createRequest(enrolmentID: String): DisplaySubscriptionDetails = {
     DisplaySubscriptionDetails(
       requestCommon = RequestCommon.createRequestCommon,
-      requestDetail = createRequestDetail(userAnswers))
+      requestDetail = createRequestDetail(enrolmentID))
   }
 
-  private def createRequestDetail(userAnswers: UserAnswers): RequestDetail = {
+  private def createRequestDetail(enrolmentID: String): RequestDetail = {
     RequestDetail(
-      IDType = "SAFE",
-      IDNumber = "XE0001234567890")
+      IDType = "DAC",
+      IDNumber = enrolmentID)
   }
 }
 
