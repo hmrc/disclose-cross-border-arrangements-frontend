@@ -1,5 +1,7 @@
 $govuk-assets-path: "/disclose-cross-border-arrangements/assets/lib/govuk-frontend/govuk/assets/";
+$hmrc-assets-path: "/disclose-cross-border-arrangements/assets/lib/hmrc-frontend/hmrc/assets";
 
 @import "lib/govuk-frontend/govuk/all";
+@import "lib/hmrc-frontend/hmrc/components/header/header";
 @import "partials/header";
 @import "language-toggles.scss";

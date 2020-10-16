@@ -30,14 +30,10 @@
 
           <p>{{ messages("fileError.p2") }}</p>
 
-          <ui class="govuk-list">
-            <li>
-              <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileError.li1") }}</a>
-            </li>
-            <li>
-              <a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileError.li2") }}</a>
-            </li>
-          </ui>
+          <p><a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileError.li1") }}</a></p>
+
+          <p><a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileError.li2") }}</a></p>
+
         </div>
       </div>
     </div>

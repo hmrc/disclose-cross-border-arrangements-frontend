@@ -25,17 +25,15 @@
           {{ messages("fileToLargeError.heading") }}
         </h1>
 
-        <p class="govuk-body"> {{ messages("fileToLargeError.instruction") }} </p>
+        <div class="govuk-body">
 
-        <ui class="govuk-list">
-            <li>
-                <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileToLargeError.uploadNewFileLink") }}</a>
-            </li>
-            <li>
-                <a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileToLargeError.guidanceLink") }}</a>
-            </li>
-        </ui>
+            <p>{{ messages("fileToLargeError.instruction") }}</p>
 
+            <p><a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileToLargeError.uploadNewFileLink") }}</a></p>
+
+            <p><a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileToLargeError.guidanceLink") }}</a></p>
+
+        </div>
       </div>
     </div>
   </div>
