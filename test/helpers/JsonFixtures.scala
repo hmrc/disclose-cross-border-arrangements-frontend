@@ -61,6 +61,42 @@ object JsonFixtures {
       |}""".stripMargin
   }
 
+  def jsonForDisplaySubscription(firstName: String,
+                                 lastName: String,
+                                 organisationName: String,
+                                 primaryEmail: String,
+                                 secondaryEmail: String,
+                                 phone: String): JsObject = {
+    Json.obj(
+      "displaySubscriptionForDACResponse" -> Json.obj(
+        "responseCommon" -> Json.obj(
+          "status" -> "OK",
+          "processingDate" -> "2020-08-09T11:23:45Z"
+        ),
+        "responseDetail" -> Json.obj(
+          "subscriptionID" -> "XE0001234567890",
+          "tradingName" -> "Trading Name",
+          "isGBUser" -> true,
+          "primaryContact" -> Json.obj(
+            "email" -> primaryEmail,
+            "phone" -> phone,
+            "mobile" -> phone,
+            "individual" -> Json.obj(
+              "lastName" -> lastName,
+              "firstName" -> firstName
+            )
+          ),
+          "secondaryContact" -> Json.obj(
+            "email" -> secondaryEmail,
+            "organisation" -> Json.obj(
+              "organisationName" -> organisationName
+            )
+          )
+        )
+      )
+    )
+  }
+
   val jsonPayloadForDisplaySubscriptionRequest: String =
     s"""
        |{

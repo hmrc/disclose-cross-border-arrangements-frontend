@@ -164,7 +164,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
 
       val primaryContact: PrimaryContact = PrimaryContact(Seq(
         ContactInformationForIndividual(
-          individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
+          individual = IndividualDetails(firstName = "John", lastName = "Business", middleName = None),
           email = "email@email.com", phone = Some("07111222333"), mobile = Some("07111222333"))
       ))
 
@@ -196,12 +196,37 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         ),
         Row(
           key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${primaryContact.toString}")
+          value = Value(msg"John Business")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.primaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"email@email.com")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.primaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"07111222333")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.primaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"07111222333")
         ),
         Row(
           key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${secondaryContact.toString}")
-        ))
+          value = Value(msg"Organisation Name")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.secondaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"email2@email.com")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.secondaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"None")
+        ),
+        Row(
+          key = Key(msg"displaySubscriptionForDAC.secondaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"None")
+        )
+      )
 
       val result = viewHelper.buildDisplaySubscription(Some(responseDetail))
 

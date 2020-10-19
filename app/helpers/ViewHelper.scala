@@ -19,7 +19,7 @@ package helpers
 import java.time.format.DateTimeFormatter
 
 import com.google.inject.Inject
-import models.{GenericError, ResponseDetail, SubmissionHistory}
+import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.SummaryList.{Key, Row, Value}
@@ -100,20 +100,59 @@ class ViewHelper @Inject()() {
         Row(
           key = Key(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third disclosing-key")),
           value = Value(msg"${responseDetail.get.isGBUser}")
-        ),
-        Row(
-          key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${responseDetail.get.primaryContact}")
-        ),
-        Row(
-          key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${responseDetail.get.secondaryContact.getOrElse("None")}")
-        ))
+        )
+      ) ++ buildContactDetails(responseDetail.get.primaryContact.contactInformation) ++ buildContactDetails(responseDetail.get.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation))
     } else {
       Seq(Row(
         key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
         value = Value(msg"displaySubscriptionForDAC.noDetails")
       ))
+    }
+  }
+
+  private def buildContactDetails(contactInformation: Seq[ContactInformation]): Seq[Row] = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(individual, email, phone, mobile) =>
+        Seq(
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.primaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"$email")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.primaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${phone.getOrElse("None")}")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.primaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${mobile.getOrElse("None")}"))
+        )
+      case ContactInformationForOrganisation(organisation, email, phone, mobile) =>
+        Seq(
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${organisation.organisationName}")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.secondaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"$email")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.secondaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${phone.getOrElse("None")}")
+          ),
+          Row(
+            key = Key(msg"displaySubscriptionForDAC.secondaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(msg"${mobile.getOrElse("None")}"))
+        )
+      case _ =>
+        Seq(Row(
+          key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"displaySubscriptionForDAC.noDetails")
+        ))
     }
   }
 }

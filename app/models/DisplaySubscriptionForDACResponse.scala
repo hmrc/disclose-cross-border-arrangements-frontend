@@ -69,12 +69,10 @@ object PrimaryContact {
     )
   }
 
-  implicit lazy val writes: OWrites[PrimaryContact] = {
-    case PrimaryContact(Seq(contactInformationForInd@ContactInformationForIndividual(individualDetails, email, phone, mobile))) =>
-      //TODO
-        Json.obj(
-          "contactInformation" -> Json.arr(contactInformationForInd)
-        )
+  //API accepts one item for contact information
+  implicit lazy val writes: OWrites[PrimaryContact] = OWrites[PrimaryContact] {
+    case PrimaryContact(Seq(contactInformationForInd@ContactInformationForIndividual(_, _, _, _))) =>
+      Json.toJsObject(contactInformationForInd)
     case PrimaryContact(Seq(contactInformationForOrg@ContactInformationForOrganisation(_, _, _, _))) =>
       Json.toJsObject(contactInformationForOrg)
   }
@@ -99,6 +97,7 @@ object SecondaryContact {
     )
   }
 
+  //API accepts one item for contact information
   implicit lazy val writes: OWrites[SecondaryContact] = {
     case SecondaryContact(Seq(contactInformationForInd@ContactInformationForIndividual(_, _, _, _))) =>
       Json.toJsObject(contactInformationForInd)
