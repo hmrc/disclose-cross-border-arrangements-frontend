@@ -21,14 +21,15 @@ import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import models.GeneratedIDs
+import models.requests.{DataRequest, DataRequestWithContacts}
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.{EmailService, AuditService, XMLValidationService}
-import uk.gov.hmrc.http.HttpResponse
+import services.{AuditService, EmailService, XMLValidationService}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
@@ -70,26 +71,27 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
+  private def sendMail(ids: GeneratedIDs, fileName: String)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] =
+    if(frontendAppConfig.sendEmailToggle) {
+      emailService.sendEmail(request.contacts, fileName, ids)
+    }
+    else {
+      Future.successful(None)
+    }
+
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
 
-          def sendMail(ids: GeneratedIDs) = if(frontendAppConfig.sendEmailToggle) {
-            emailService.sendEmail(request.contacts, fileName, ids)
-          }
-          else {
-            Future.successful(None)
-          }
-
           for {
             ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _              <- sessionRepository.set(userAnswersWithIDs)
- _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.disclosureID, ids.disclosureID, xml)
+            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.arrangementID, ids.disclosureID, xml)
             //TODO: send confirmation emails when contact details retrieval is corrected
-            emailResult <- sendMail(ids)
+            emailResult <- sendMail(ids, fileName)
           } yield {
             val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
             val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
