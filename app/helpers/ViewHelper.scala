@@ -86,73 +86,101 @@ class ViewHelper @Inject()() {
       attributes = Map("id" -> "disclosuresTable"))
   }
 
-  def buildDisplaySubscription(responseDetail: Option[ResponseDetail]): Seq[Row] = {
-    if (responseDetail.isDefined) {
+  def buildDisplaySubscription(responseDetail: Option[ResponseDetail]): Table = {
+    val rows = if (responseDetail.isDefined) {
       Seq(
-        Row(
-          key = Key(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${responseDetail.get.subscriptionID}")
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.subscriptionID}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "subscriptionID"))
         ),
-        Row(
-          key = Key(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${responseDetail.get.tradingName.getOrElse("None")}")
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.tradingName.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "tradingName"))
         ),
-        Row(
-          key = Key(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"${responseDetail.get.isGBUser}")
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.isGBUser}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "isGBUser"))
         )
       ) ++ buildContactDetails(responseDetail.get.primaryContact.contactInformation) ++ buildContactDetails(responseDetail.get.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation))
     } else {
-      Seq(Row(
-        key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"displaySubscriptionForDAC.noDetails")
-      ))
+      Seq(
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "noDetails"))
+        )
+      )
     }
+
+    Table(
+      head = Seq(
+        Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
+        Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
+      ),
+      rows = rows)
   }
 
-  private def buildContactDetails(contactInformation: Seq[ContactInformation]): Seq[Row] = {
+  private def buildContactDetails(contactInformation: Seq[ContactInformation]): Seq[Seq[Cell]] = {
     contactInformation.head match {
       case ContactInformationForIndividual(individual, email, phone, mobile) =>
         Seq(
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.primaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualContact", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}",
+              classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualContact"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.primaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"$email")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualEmail", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"$email", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualEmail"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.primaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${phone.getOrElse("None")}")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualPhone", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${phone.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualPhone"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.primaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${mobile.getOrElse("None")}"))
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualMobile", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${mobile.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualMobile"))
+          )
         )
       case ContactInformationForOrganisation(organisation, email, phone, mobile) =>
         Seq(
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.secondaryContact", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${organisation.organisationName}")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationContact", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${organisation.organisationName}",
+              classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationContact"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.secondaryEmail", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"$email")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationEmail", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"$email", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationEmail"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.secondaryPhone", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${phone.getOrElse("None")}")
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationPhone", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${phone.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationPhone"))
           ),
-          Row(
-            key = Key(msg"displaySubscriptionForDAC.secondaryMobile", classes = Seq("govuk-!-width-one-third disclosing-key")),
-            value = Value(msg"${mobile.getOrElse("None")}"))
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationMobile", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${mobile.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationMobile"))
+          )
         )
       case _ =>
-        Seq(Row(
-          key = Key(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third disclosing-key")),
-          value = Value(msg"displaySubscriptionForDAC.noDetails")
-        ))
+        Seq(
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "noDetails"))
+          )
+        )
     }
   }
 }

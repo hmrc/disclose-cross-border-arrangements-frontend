@@ -19,6 +19,7 @@ package connectors
 import config.FrontendAppConfig
 import javax.inject.Inject
 import models.{DisplaySubscriptionDetails, DisplaySubscriptionForDACRequest, DisplaySubscriptionForDACResponse}
+import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
@@ -26,6 +27,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: HttpClient) {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def displaySubscriptionDetails(enrolmentID: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[DisplaySubscriptionForDACResponse]] = {
@@ -40,9 +43,13 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
         response.status match {
           case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
             case JsSuccess(response, _) => Some(response)
-            case JsError(_) => None
+            case JsError(errors) =>
+              logger.warn("Validation of display subscription payload failed", errors)
+              None
           }
-          case _ => None
+          case errorStatus: Int =>
+            logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
+            None
         }
     }
   }

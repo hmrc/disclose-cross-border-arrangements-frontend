@@ -34,12 +34,11 @@ class DisplaySubscriptionForDACController @Inject()(
     viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
