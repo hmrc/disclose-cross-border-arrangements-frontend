@@ -19,9 +19,10 @@ package helpers
 import java.time.format.DateTimeFormatter
 
 import com.google.inject.Inject
-import models.{GenericError, SubmissionHistory}
+import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.viewmodels.SummaryList.{Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 
@@ -83,5 +84,103 @@ class ViewHelper @Inject()() {
       rows = rows,
       caption = Some(msg"submissionHistory.caption"),
       attributes = Map("id" -> "disclosuresTable"))
+  }
+
+  def buildDisplaySubscription(responseDetail: Option[ResponseDetail]): Table = {
+    val rows = if (responseDetail.isDefined) {
+      Seq(
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.subscriptionID}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "subscriptionID"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.tradingName.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "tradingName"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"${responseDetail.get.isGBUser}", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "isGBUser"))
+        )
+      ) ++ buildContactDetails(responseDetail.get.primaryContact.contactInformation) ++ buildContactDetails(responseDetail.get.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation))
+    } else {
+      Seq(
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "noDetails"))
+        )
+      )
+    }
+
+    Table(
+      head = Seq(
+        Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
+        Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
+      ),
+      rows = rows)
+  }
+
+  private def buildContactDetails(contactInformation: Seq[ContactInformation]): Seq[Seq[Cell]] = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(individual, email, phone, mobile) =>
+        Seq(
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualContact", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}",
+              classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualContact"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualEmail", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"$email", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualEmail"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualPhone", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${phone.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualPhone"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.individualMobile", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${mobile.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "individualMobile"))
+          )
+        )
+      case ContactInformationForOrganisation(organisation, email, phone, mobile) =>
+        Seq(
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationContact", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${organisation.organisationName}",
+              classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationContact"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationEmail", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"$email", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationEmail"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationPhone", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${phone.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationPhone"))
+          ),
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.organisationMobile", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"${mobile.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "organisationMobile"))
+          )
+        )
+      case _ =>
+        Seq(
+          Seq(
+            Cell(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third")),
+            Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
+              attributes = Map("id" -> "noDetails"))
+          )
+        )
+    }
   }
 }

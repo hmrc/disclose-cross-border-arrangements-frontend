@@ -19,7 +19,7 @@ package helpers
 import java.time.LocalDateTime
 
 import base.SpecBase
-import models.{GenericError, SubmissionDetails, SubmissionHistory}
+import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, ResponseDetail, SecondaryContact, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.viewmodels.Table.Cell
@@ -155,6 +155,116 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         caption = Some(msg"submissionHistory.caption"),
         attributes = Map("id" -> "disclosuresTable")
       )
+    }
+  }
+
+  "buildDisplaySubscription" - {
+    "must return the rows containing the subscription details" in {
+
+      val primaryContact: PrimaryContact = PrimaryContact(Seq(
+        ContactInformationForIndividual(
+          individual = IndividualDetails(firstName = "John", lastName = "Business", middleName = None),
+          email = "email@email.com", phone = Some("07111222333"), mobile = Some("07111222333"))
+      ))
+
+      val secondaryContact: SecondaryContact = SecondaryContact(Seq(
+        ContactInformationForOrganisation(
+          organisation = OrganisationDetails(organisationName = "Organisation Name"),
+          email = "email2@email.com", phone = None, mobile = None)
+      ))
+
+      val responseDetail: ResponseDetail = ResponseDetail(
+        subscriptionID = "XE0001234567890",
+        tradingName = Some("Trading Name"),
+        isGBUser = true,
+        primaryContact = primaryContact,
+        secondaryContact = Some(secondaryContact))
+
+      val expectedRows = Seq(
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"XE0001234567890", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "subscriptionID"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"Trading Name", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "tradingName"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"true", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "isGBUser"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.individualContact", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"John Business", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "individualContact"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.individualEmail", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"email@email.com", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "individualEmail"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.individualPhone", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "individualPhone"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.individualMobile", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "individualMobile"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.organisationContact", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"Organisation Name", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "organisationContact"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.organisationEmail", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"email2@email.com", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "organisationEmail"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.organisationPhone", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"None", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "organisationPhone"))
+        ),
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.organisationMobile", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"None", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "organisationMobile"))
+        )
+      )
+
+      val result = viewHelper.buildDisplaySubscription(Some(responseDetail))
+
+      result mustBe Table(
+        head = Seq(
+          Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
+        ),
+        rows = expectedRows)
+    }
+
+    "must return an empty row if there's nothing to display" in {
+      val expectedRows = Seq(
+        Seq(
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
+            attributes = Map("id" -> "noDetails"))
+        )
+      )
+
+      val result = viewHelper.buildDisplaySubscription(None)
+
+      result mustBe Table(
+        head = Seq(
+          Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
+          Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
+        ),
+        rows = expectedRows)
     }
   }
 }
