@@ -17,15 +17,15 @@
 package controllers.actions
 
 import config.FrontendAppConfig
+import connectors.EnrolmentStoreConnector
 import javax.inject.Inject
+import models.ContactDetails
 import models.requests.{DataRequest, DataRequestWithContacts}
 import play.api.mvc.ActionTransformer
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
-import connectors.EnrolmentStoreConnector
-import models.ContactDetails
-import uk.gov.hmrc.http.HeaderCarrier
 
 class ContactRetrievalActionImpl @Inject()(enrolmentStoreConnecter: EnrolmentStoreConnector, frontendAppConfig: FrontendAppConfig)
                                           (implicit val executionContext: ExecutionContext) extends ContactRetrievalAction {

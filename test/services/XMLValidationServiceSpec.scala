@@ -16,7 +16,6 @@
 
 package services
 
-import java.io.File
 import java.net.URL
 
 import base.SpecBase
@@ -24,8 +23,7 @@ import javax.xml.parsers.SAXParserFactory
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
-import models.{SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import models.SaxParseError
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
