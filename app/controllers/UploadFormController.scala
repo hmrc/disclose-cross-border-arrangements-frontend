@@ -71,10 +71,11 @@ class UploadFormController @Inject()(
         } yield {
           renderer.render(
             "upload-form.njk",
-            Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse))
+            Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
+              "status" -> Json.toJson(0))
           ).map(Ok(_))
         }
-      }.flatMap(identity)
+      }.flatten
   }
 
   def showResult: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -87,7 +88,7 @@ class UploadFormController @Inject()(
                case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
                case Some(result) =>
                  renderer.render(
-                   "upload-result.njk",
+                   "upload-form.njk",
                    Json.obj("uploadId" -> Json.toJson(uploadId),
                      "status" -> Json.toJson(result))
                  ).map(Ok(_))
