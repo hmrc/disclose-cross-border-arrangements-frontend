@@ -24,8 +24,10 @@
              {{ messages("upload_form.heading") }}
          </h1>
 
+<input type="hidden" id="dac6UploadStatus"         value="0" />
+<input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.showResult().url}}" />
 
-<form action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
+<form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 
     {% for key, value in upscanInitiateResponse.formFields %}
     <input type="hidden" name="{{key}}" value="{{value}}"/>
