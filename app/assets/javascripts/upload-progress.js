@@ -44,13 +44,12 @@ function fileUpload(form){
 function disableUI() {
     const fileElement = document.getElementById("file-upload");
     const submitButtonElement = document.getElementById("submit");
-    fileElement.before(
-        "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
+    const spinnerHtml = "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
         "<h2 class=\"govuk-heading-m\">We are checking your file, please wait</h2>" +
-        "<div><div class=\"ccms-loader\">TEST TEST</div></div></div>"
-    );
-    fileElement.attr('disabled', 'disabled');
-    submitButtonElement.addClass('govuk-button--disabled')
+        "<div><div class=\"ccms-loader\"></div></div></div>";
+    fileElement.insertAdjacentHTML('beforebegin', spinnerHtml);
+    fileElement.setAttribute('disabled', 'disabled');
+    submitButtonElement.classList.add('govuk-button--disabled')
 }
 
 // =====================================================
