@@ -1,120 +1,115 @@
 // =====================================================
-// Ready function (without jquery)
+// Ready function
 // =====================================================
+
 function ready(fn) {
-    if (document.readyState !== 'loading'){
+
+    if (document.readyState !== 'loading') {
+
         fn();
     } else if (document.addEventListener) {
+
         document.addEventListener('DOMContentLoaded', fn);
     } else {
+
         document.attachEvent('onreadystatechange', function() {
-            if (document.readyState !== 'loading')
-                fn();
+
+            if (document.readyState !== 'loading') fn();
         });
     }
 }
 
-function submitError(error, data){
-    const payload = {
-        code: error,
-        values: [],
-        errorDetail: data
-    };
-    const xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        window.location = dac6UploadFormRedirect.val();
-    };
-    xhr.open('POST', dac6UploadReportError.val());
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(payload));
-}
+function startSpinner() {
 
-function fileUpload(form){
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-            refreshPage();
-        }
-    };
-    xhr.open('POST', form.action);
-    xhr.withCredentials = true;
-    xhr.send(new FormData(form));
-}
-
-function disableUI() {
     const fileElement = document.getElementById("file-upload");
     const submitButtonElement = document.getElementById("submit");
-    fileElement.before(
-        "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
+    const spinnerHtml = "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
         "<h2 class=\"govuk-heading-m\">We are checking your file, please wait</h2>" +
-        "<div><div class=\"ccms-loader\">TEST TEST</div></div></div>"
-    );
-    fileElement.attr('disabled', 'disabled');
-    submitButtonElement.addClass('govuk-button--disabled')
+        "<div><div class=\"ccms-loader\"></div></div></div>";
+    fileElement.insertAdjacentHTML('beforebegin', spinnerHtml);
+    fileElement.setAttribute('disabled', 'disabled');
+    submitButtonElement.classList.add('govuk-button--disabled')
 }
 
-// =====================================================
-// Dac6Upload Refresh status page
-// =====================================================
-// reportStatus element preserves the status
-function refreshPage() {
+
+function refreshStatusPage(url) {
+
+    // Possible scenarios:
+    // 4 - Upscan time out TODO
+    // 6 - file too big    TODO
+    // 5 - virus
+    // 3 - invalid xml     TODO
+    // 2 - invalid data    TODO
+
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
+
         if (this.readyState === XMLHttpRequest.DONE) {
-            const dac6UploadStatusElement            = document.getElementById("dac6UploadStatus");
+
+            const dac6UploadSuccessUrl     = document.getElementById("dac6UploadSuccessUrl");
+            const dac6UploadStatusElement  = document.getElementById("dac6UploadStatus");
+            const dac6UploadErrorUrl       = document.getElementById("dac6UploadErrorUrl");
+            const dac6VirusErrorUrl        = document.getElementById("dac6VirusErrorUrl");
+
             if (this.status === 200) {
-                var data = JSON.parse(this.response);
-                if (dac6UploadStatusElement.val() !== data.status) {
-                    console.debug("status changed, updating page", data.status);
 
-                    //Modify DOM
-                    // dac6UploadStatusElement.html($(data.statusPanel));  TODO is it necessary?
-                    dac6UploadStatusElement.val(data.status);
+                const data = JSON.parse(this.response);
+                if (dac6UploadStatusElement.value !== data._type) {
 
-                    console.debug("page updated");
-                    if (data.status === "Failed" || data.status === "Submitted" || data.status === "Done") {
-                        console.debug("Reached final status, removing refresh", status);
-                        clearInterval(window.refreshIntervalId);
-                        console.debug("interval cleared");
+                    dac6UploadStatusElement.value = data._type;
+
+                    if (data._type === "UploadedSuccessfully") {
+
+                        window.location.assign(dac6UploadSuccessUrl.value);
                     }
-                } else {
-                    console.debug("status didn't change, we not updating anything");
+                    else if (data._type === "Quarantined") {
+
+                        window.location.assign(dac6VirusErrorUrl.value);
+                    }
+                    else if (data._type === "Failed") {
+
+                        window.location.assign(dac6VirusErrorUrl.value);
+                    }
                 }
             } else {
-                submitError("5000", data)
+
+                window.location.assign(dac6UploadErrorUrl.value);
             }
         }
     };
-    xhr.open('GET', refreshUrl);
+    xhr.open('GET', url);
+    xhr.withCredentials = true;
     xhr.send();
 
 }
 
-ready(function(){
+ready(function() {
 
     const dac6UploadFormRef        = document.getElementById("dac6UploadForm");
     const dac6UploadRefreshUrl     = document.getElementById("dac6UploadRefreshUrl");
 
     // =====================================================
-    // Upscan upload
+    // Bind submit function to the upload form
     // =====================================================
-    dac6UploadFormRef.addEventListener("submit", function(e){
-        e.preventDefault();
-        fileUpload(dac6UploadFormRef);
-        disableUI();
-    });
+    dac6UploadFormRef.addEventListener("submit", function(e) {
 
-    // =====================================================
-    // WebForm Confirmation Refresh status page
-    // var data = JSON.parse(this.response);
-    // =====================================================
-    const refreshUrl = dac6UploadRefreshUrl.val(); // show results
-    if (refreshUrl) {
-        window.refreshIntervalId = setInterval(function () {
-            console.debug("scheduling ajax call, refreshUrl", refreshUrl);
-            refreshPage();
-        }, 3000);
-        console.log("intervalRefreshScheduled, id: ", window.refreshIntervalId);
-    }
+        e.preventDefault();
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+
+            if (url) {
+
+                window.refreshIntervalId = setInterval(function () {
+
+                    refreshStatusPage(dac6UploadRefreshUrl.value);
+                }, 3000);
+            }
+        };
+        xhr.open('POST', dac6UploadFormRef.action);
+        xhr.withCredentials = true;
+        xhr.send(new FormData(dac6UploadFormRef));
+        startSpinner();
+
+    });
 
 });
