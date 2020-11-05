@@ -2,6 +2,7 @@
 // Ready function (without jquery)
 // =====================================================
 function ready(fn) {
+    console.log("Loading");
     if (document.readyState !== 'loading'){
         fn();
     } else if (document.addEventListener) {
@@ -15,6 +16,7 @@ function ready(fn) {
 }
 
 function submitError(error, data){
+    window.alert("ERROR")
     const payload = {
         code: error,
         values: [],
@@ -29,11 +31,12 @@ function submitError(error, data){
     xhr.send(JSON.stringify(payload));
 }
 
-function fileUpload(form){
+function fileUpload(form, url){
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
+        console.log("File uploaded", this.readyState);
         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-            refreshPage();
+            refreshPage(url);
         }
     };
     xhr.open('POST', form.action);
@@ -55,24 +58,23 @@ function disableUI() {
 // =====================================================
 // Dac6Upload Refresh status page
 // =====================================================
-// reportStatus element preserves the status
-function refreshPage() {
+function refreshPage(url) {
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState === XMLHttpRequest.DONE) {
-            const dac6UploadStatusElement            = document.getElementById("dac6UploadStatus");
+            const dac6UploadStatusElement = document.getElementById("dac6UploadStatus");
             if (this.status === 200) {
-                var data = JSON.parse(this.response);
-                if (dac6UploadStatusElement.val() !== data.status) {
-                    console.debug("status changed, updating page", data.status);
+                const data = JSON.parse(this.response);
+                console.log(data._type)
+                console.log(dac6UploadStatusElement.value)
+                if (dac6UploadStatusElement.value !== data._type) {
+                    console.info("status changed, updating page", data._type);
 
-                    //Modify DOM
-                    // dac6UploadStatusElement.html($(data.statusPanel));  TODO is it necessary?
-                    dac6UploadStatusElement.val(data.status);
+                    dac6UploadStatusElement.value = data._type;
 
-                    console.debug("page updated");
-                    if (data.status === "Failed" || data.status === "Submitted" || data.status === "Done") {
-                        console.debug("Reached final status, removing refresh", status);
+                    console.info("page updated");
+                    if (data._type === "Failed" || data._type === "Submitted" || data._type === "UploadedSuccessfully") {
+                        console.debug("Reached final status, removing refresh", data._type);
                         clearInterval(window.refreshIntervalId);
                         console.debug("interval cleared");
                     }
@@ -84,7 +86,8 @@ function refreshPage() {
             }
         }
     };
-    xhr.open('GET', refreshUrl);
+    xhr.open('GET', url);
+    xhr.withCredentials = true;
     xhr.send();
 
 }
@@ -93,25 +96,24 @@ ready(function(){
 
     const dac6UploadFormRef        = document.getElementById("dac6UploadForm");
     const dac6UploadRefreshUrl     = document.getElementById("dac6UploadRefreshUrl");
+    const refreshUrl               = dac6UploadRefreshUrl.value;
 
     // =====================================================
     // Upscan upload
     // =====================================================
     dac6UploadFormRef.addEventListener("submit", function(e){
         e.preventDefault();
-        fileUpload(dac6UploadFormRef);
+        fileUpload(dac6UploadFormRef, refreshUrl);
         disableUI();
     });
 
     // =====================================================
     // WebForm Confirmation Refresh status page
-    // var data = JSON.parse(this.response);
     // =====================================================
-    const refreshUrl = dac6UploadRefreshUrl.val(); // show results
     if (refreshUrl) {
         window.refreshIntervalId = setInterval(function () {
-            console.debug("scheduling ajax call, refreshUrl", refreshUrl);
-            refreshPage();
+            console.log("scheduling ajax call, refreshUrl", refreshUrl);
+            refreshPage(refreshUrl);
         }, 3000);
         console.log("intervalRefreshScheduled, id: ", window.refreshIntervalId);
     }

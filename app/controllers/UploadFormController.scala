@@ -59,8 +59,9 @@ class UploadFormController @Inject()(
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
-      val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
-      val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
+      val upscanBase         = appConfig.upscanBucketHost
+      val callbackUrl        = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
+      val initiateBody       = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
         for {
@@ -72,6 +73,7 @@ class UploadFormController @Inject()(
           renderer.render(
             "upload-form.njk",
             Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
+              "upscanBase" -> upscanBase,
               "status" -> Json.toJson(0))
           ).map(Ok(_))
         }
@@ -85,14 +87,10 @@ class UploadFormController @Inject()(
       request.userAnswers.get(UploadIDPage) match {
         case Some(uploadId) =>
              uploadProgressTracker.getUploadResult(uploadId) flatMap {
-               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-               case Some(result) =>
-                 renderer.render(
-                   "upload-form.njk",
-                   Json.obj("uploadId" -> Json.toJson(uploadId),
-                     "status" -> Json.toJson(result))
-                 ).map(Ok(_))
-               case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
+               case Some(result) if result == Quarantined =>
+                                    Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
+               case Some(result) => Future.successful(Ok(Json.toJson(result)))
+               case None         => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
              }
         case None => Future.successful(BadRequest (s"UploadId not found") )
       }

@@ -5,6 +5,10 @@
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/file-upload/macro.njk"   import govukFileUpload %}
 
+{% block additionalHeaders %}
+<script src="{{ routes.controllers.Assets.versioned("javascripts/upload-progress.js").url }}"></script>
+{% endblock %}
+
 {% block pageTitle %}
   {{ title(messages("upload_form.title")) }}
 {% endblock %}
@@ -26,6 +30,7 @@
 
 <input type="hidden" id="dac6UploadStatus"         value="0" />
 <input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.showResult().url}}" />
+<input type="hidden" id="dac6UpscanBase"           value="{{upscanBase}}" />
 
 <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 
