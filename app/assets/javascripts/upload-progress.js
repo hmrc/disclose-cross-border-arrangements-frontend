@@ -1,22 +1,26 @@
 // =====================================================
-// Ready function (without jquery)
+// Ready function
 // =====================================================
+
 function ready(fn) {
-    console.log("Loading");
-    if (document.readyState !== 'loading'){
+
+    if (document.readyState !== 'loading') {
+
         fn();
     } else if (document.addEventListener) {
+
         document.addEventListener('DOMContentLoaded', fn);
     } else {
+
         document.attachEvent('onreadystatechange', function() {
-            if (document.readyState !== 'loading')
-                fn();
+
+            if (document.readyState !== 'loading') fn();
         });
     }
 }
 
-function submitError(error, data){
-    window.alert("ERROR")
+function submitError(error, data) {
+
     const payload = {
         code: error,
         values: [],
@@ -24,6 +28,7 @@ function submitError(error, data){
     };
     const xhr = new XMLHttpRequest();
     xhr.onload = function() {
+
         window.location = dac6UploadFormRedirect.val();
     };
     xhr.open('POST', dac6UploadReportError.val());
@@ -31,12 +36,14 @@ function submitError(error, data){
     xhr.send(JSON.stringify(payload));
 }
 
-function fileUpload(form, url){
+function fileUpload(form, url) {
+
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
-        console.log("File uploaded", this.readyState);
+
         if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-            refreshPage(url);
+
+            refreshStatusPage(url);
         }
     };
     xhr.open('POST', form.action);
@@ -44,44 +51,61 @@ function fileUpload(form, url){
     xhr.send(new FormData(form));
 }
 
-function disableUI() {
+function startSpinner(message) {
+
     const fileElement = document.getElementById("file-upload");
     const submitButtonElement = document.getElementById("submit");
     const spinnerHtml = "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
-        "<h2 class=\"govuk-heading-m\">We are checking your file, please wait</h2>" +
+        "<h2 class=\"govuk-heading-m\">"+ message+ "</h2>" + // TODO i18n
         "<div><div class=\"ccms-loader\"></div></div></div>";
     fileElement.insertAdjacentHTML('beforebegin', spinnerHtml);
     fileElement.setAttribute('disabled', 'disabled');
     submitButtonElement.classList.add('govuk-button--disabled')
 }
 
-// =====================================================
-// Dac6Upload Refresh status page
-// =====================================================
-function refreshPage(url) {
+function stopSpinner(message) {
+
+    console.debug("Reached final status, removing refresh");
+    clearInterval(window.refreshIntervalId);
+    const spinnerElement = document.getElementById("processing");
+    spinnerElement.innerHTML = message;
+    console.debug("interval cleared");
+}
+
+function refreshStatusPage(url) {
+
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState === XMLHttpRequest.DONE) {
+
             const dac6UploadStatusElement = document.getElementById("dac6UploadStatus");
             if (this.status === 200) {
-                const data = JSON.parse(this.response);
-                console.log(data._type)
-                console.log(dac6UploadStatusElement.value)
-                if (dac6UploadStatusElement.value !== data._type) {
-                    console.info("status changed, updating page", data._type);
 
+                const data = JSON.parse(this.response);
+                if (dac6UploadStatusElement.value !== data._type) {
+
+                    console.info("status changed, updating page", data._type);
                     dac6UploadStatusElement.value = data._type;
 
                     console.info("page updated");
-                    if (data._type === "Failed" || data._type === "Submitted" || data._type === "UploadedSuccessfully") {
-                        console.debug("Reached final status, removing refresh", data._type);
-                        clearInterval(window.refreshIntervalId);
-                        console.debug("interval cleared");
+                    if (data._type === "UploadedSuccessfully") {
+
+                        stopSpinner("<p>"+ data.name+ msg2.value+ "</p>");
+                    }
+                    else if (data._type === "Quarantined") {
+
+                        stopSpinner("<p>"+ data.name+ msg3.value+ "</p>"); // TODO improve message
+                    }
+                    else if (data._type === "Failed") {
+
+                        stopSpinner("<p>"+ data.name+ msg4.value+ "</p>");
                     }
                 } else {
+
                     console.debug("status didn't change, we not updating anything");
                 }
             } else {
+
                 submitError("5000", data)
             }
         }
@@ -92,28 +116,34 @@ function refreshPage(url) {
 
 }
 
-ready(function(){
+ready(function() {
 
     const dac6UploadFormRef        = document.getElementById("dac6UploadForm");
     const dac6UploadRefreshUrl     = document.getElementById("dac6UploadRefreshUrl");
+    const msg1                     = document.getElementById("msg1"); // TODO i18n messages
+    const msg2                     = document.getElementById("msg2");
+    const msg3                     = document.getElementById("msg3");
+    const msg4                     = document.getElementById("msg4");
     const refreshUrl               = dac6UploadRefreshUrl.value;
 
     // =====================================================
-    // Upscan upload
+    // Bind submit function to the upload form
     // =====================================================
-    dac6UploadFormRef.addEventListener("submit", function(e){
+    dac6UploadFormRef.addEventListener("submit", function(e) {
+
         e.preventDefault();
         fileUpload(dac6UploadFormRef, refreshUrl);
-        disableUI();
+        startSpinner(msg1.value);
     });
 
     // =====================================================
-    // WebForm Confirmation Refresh status page
+    // Start page refresh
     // =====================================================
     if (refreshUrl) {
+
         window.refreshIntervalId = setInterval(function () {
-            console.log("scheduling ajax call, refreshUrl", refreshUrl);
-            refreshPage(refreshUrl);
+
+            refreshStatusPage(refreshUrl);
         }, 3000);
         console.log("intervalRefreshScheduled, id: ", window.refreshIntervalId);
     }

@@ -30,7 +30,10 @@
 
 <input type="hidden" id="dac6UploadStatus"         value="0" />
 <input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.showResult().url}}" />
-<input type="hidden" id="dac6UpscanBase"           value="{{upscanBase}}" />
+<input type="hidden" id="msg1"           value="We are checking your file, please wait" />
+<input type="hidden" id="msg2"           value=" uploaded successfully!" />
+<input type="hidden" id="msg3"           value=" has virus" />
+<input type="hidden" id="msg4"           value=" has been rejected." />
 
 <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 
