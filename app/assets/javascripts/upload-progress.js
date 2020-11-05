@@ -65,11 +65,12 @@ function startSpinner(message) {
 
 function stopSpinner(message) {
 
-    console.debug("Reached final status, removing refresh");
     clearInterval(window.refreshIntervalId);
     const spinnerElement = document.getElementById("processing");
+    const actionMessage  = "<div class=\"section\">" +
+        "<a href=\"{{routes.controllers.FileValidationController.onPageLoad(uploadId.value).url}}\">" +
+        "<button class=\"button\">{{messages(\"site.verify\")}}</button></a></div>";
     spinnerElement.innerHTML = message;
-    console.debug("interval cleared");
 }
 
 function refreshStatusPage(url) {
@@ -84,10 +85,8 @@ function refreshStatusPage(url) {
                 const data = JSON.parse(this.response);
                 if (dac6UploadStatusElement.value !== data._type) {
 
-                    console.info("status changed, updating page", data._type);
                     dac6UploadStatusElement.value = data._type;
 
-                    console.info("page updated");
                     if (data._type === "UploadedSuccessfully") {
 
                         stopSpinner("<p>"+ data.name+ msg2.value+ "</p>");
@@ -100,9 +99,6 @@ function refreshStatusPage(url) {
 
                         stopSpinner("<p>"+ data.name+ msg4.value+ "</p>");
                     }
-                } else {
-
-                    console.debug("status didn't change, we not updating anything");
                 }
             } else {
 
@@ -145,7 +141,6 @@ ready(function() {
 
             refreshStatusPage(refreshUrl);
         }, 3000);
-        console.log("intervalRefreshScheduled, id: ", window.refreshIntervalId);
     }
 
 });
