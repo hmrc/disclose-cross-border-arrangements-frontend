@@ -29,6 +29,7 @@ class Navigator @Inject()() {
     case InvalidXMLPage => _ => routes.InvalidXMLController.onPageLoad()
     case ValidXMLPage => _ => routes.CheckYourAnswersController.onPageLoad()
     case HistoryPage => _ => routes.SearchHistoryResultsController.onPageLoad()
+    case ContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
     case _ => _ => routes.IndexController.onPageLoad()
   }
 

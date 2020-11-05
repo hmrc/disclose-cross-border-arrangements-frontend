@@ -19,9 +19,12 @@ package helpers
 import java.time.format.DateTimeFormatter
 
 import com.google.inject.Inject
-import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory}
+import controllers.routes
+import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory, UserAnswers}
+import pages.ContactNamePage
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 
@@ -180,6 +183,110 @@ class ViewHelper @Inject()() {
               attributes = Map("id" -> "noDetails"))
           )
         )
+    }
+  }
+
+
+  def primaryContactName(responseDetail: Option[ResponseDetail], userAnswers: UserAnswers): Option[Row] = {
+    //TODO Double check API that contact info is always going to be 1
+    if (responseDetail.isDefined) {
+      val contactName = userAnswers.get(ContactNamePage) match {
+        case Some(contactName) => contactName
+        case None =>
+          responseDetail.get.primaryContact.contactInformation.head match {
+            case ContactInformationForIndividual(individual, _, _, _) =>
+              s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
+            case ContactInformationForOrganisation(organisation, _, _, _) =>
+              s"${organisation.organisationName}"
+          }
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        value = Value(lit"$contactName"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.ContactNameController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-primary-contact-name")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def primaryContactEmail(responseDetail: Option[ResponseDetail]): Option[Row] = {
+    if (responseDetail.isDefined) {
+      val contactEmail = responseDetail.get.primaryContact.contactInformation.head match {
+        case ContactInformationForIndividual(_, email, _, _) => email
+        case ContactInformationForOrganisation(_, email, _, _) => email
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        value = Value(lit"$contactEmail"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.IndexController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-primary-contact-email")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def primaryPhoneNumber(responseDetail: Option[ResponseDetail]): Option[Row] = {
+    if (responseDetail.isDefined) {
+      val phoneNumber = responseDetail.get.primaryContact.contactInformation.head match {
+        case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
+        case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        value = Value(lit"$phoneNumber"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.IndexController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-primary-phone-number")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def primaryMobileNumber(responseDetail: Option[ResponseDetail]): Option[Row] = {
+    if (responseDetail.isDefined) {
+      val mobileNumber = responseDetail.get.primaryContact.contactInformation.head match {
+        case ContactInformationForIndividual(_, _, _, mobile) => s"${mobile.getOrElse("None")}"
+        case ContactInformationForOrganisation(_, _, _, mobile) => s"${mobile.getOrElse("None")}"
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.primaryMobileNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        value = Value(lit"$mobileNumber"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.IndexController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryMobileNumber.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-primary-mobile-number")
+          )
+        )
+      ))
+    } else {
+      None
     }
   }
 }

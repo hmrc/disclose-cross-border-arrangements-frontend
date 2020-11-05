@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package generators
+package forms
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
-import pages.ContactNamePage
-import play.api.libs.json.{JsValue, Json}
+import forms.mappings.Mappings
+import javax.inject.Inject
+import play.api.data.Form
 
-trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
+class ContactNameFormProvider @Inject() extends Mappings {
 
-  implicit lazy val arbitraryContactNameUserAnswersEntry: Arbitrary[(ContactNamePage.type, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[ContactNamePage.type]
-        value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
-      } yield (page, value)
-    }
+  lazy val maxLength: Int = 35
+
+  def apply(): Form[String] =
+    Form(
+      "contactName" -> text("contactName.error.required")
+        .verifying(maxLength(maxLength, "contactName.error.length"))
+    )
 }

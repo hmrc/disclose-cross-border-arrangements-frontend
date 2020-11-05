@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary.arbitrary
-import pages.ContactNamePage
-import play.api.libs.json.{JsValue, Json}
+import pages.behaviours.PageBehaviours
 
-trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
 
-  implicit lazy val arbitraryContactNameUserAnswersEntry: Arbitrary[(ContactNamePage.type, JsValue)] =
-    Arbitrary {
-      for {
-        page  <- arbitrary[ContactNamePage.type]
-        value <- arbitrary[String].suchThat(_.nonEmpty).map(Json.toJson(_))
-      } yield (page, value)
-    }
+class ContactNamePageSpec extends PageBehaviours {
+
+  "ContactNamePage" - {
+
+    beRetrievable[String](ContactNamePage)
+
+    beSettable[String](ContactNamePage)
+
+    beRemovable[String](ContactNamePage)
+  }
 }

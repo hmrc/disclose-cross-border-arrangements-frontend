@@ -28,6 +28,21 @@ import uk.gov.hmrc.viewmodels._
 
 class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messages) {
 
+//  def contactName: Option[Row] = userAnswers.get(ContactNamePage) map {
+//    answer =>
+//      Row(
+//        key     = Key(msg"contactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+//        value   = Value(lit"$answer"),
+//        actions = List(
+//          Action(
+//            content            = msg"site.edit",
+//            href               = routes.ContactNameController.onPageLoad(CheckMode).url,
+//            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactName.checkYourAnswersLabel"))
+//          )
+//        )
+//      )
+//  }
+
   private def yesOrNo(answer: Boolean)(implicit messages: Messages): Html = {
     if (answer) {
       HtmlFormat.escape(messages("site.yes"))

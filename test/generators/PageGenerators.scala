@@ -16,5 +16,11 @@
 
 package generators
 
+import org.scalacheck.Arbitrary
+import pages.ContactNamePage
+
 trait PageGenerators {
+
+  implicit lazy val arbitraryContactNamePage: Arbitrary[ContactNamePage.type] =
+    Arbitrary(ContactNamePage)
 }

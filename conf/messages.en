@@ -283,3 +283,16 @@ displaySubscriptionForDAC.individualMobile = Individual Mobile
 displaySubscriptionForDAC.organisationEmail = Organisation Email
 displaySubscriptionForDAC.organisationPhone = Organisation Phone
 displaySubscriptionForDAC.organisationMobile = Organisation Mobile
+
+contactDetails.title = Check your contact details
+contactDetails.heading = Check your contact details
+contactDetails.h2 = Contact Details
+contactDetails.primaryContactName.checkYourAnswersLabel = Primary Contact
+contactDetails.primaryContactEmail.checkYourAnswersLabel = Primary Email
+contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Primary Phone
+contactDetails.primaryMobileNumber.checkYourAnswersLabel = Primary Mobile
+
+contactName.title = What is the name of the individual or team we should contact?
+contactName.heading = What is the name of the individual or team we should contact?
+contactName.error.required = Enter the name of the individual or team we should contact
+contactName.error.length = Individual or team must be 35 characters or less
