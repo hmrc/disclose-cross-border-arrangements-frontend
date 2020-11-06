@@ -20,17 +20,21 @@ import base.SpecBase
 import connectors.UpscanConnector
 import generators.Generators
 import matchers.JsonMatchers
-import models.upscan.{Reference, UpscanInitiateRequest, UpscanInitiateResponse}
+import models.UserAnswers
+import org.scalacheck.Arbitrary.arbitrary
+import models.upscan.{Failed, InProgress, Reference, UploadId, UploadStatus, UpscanInitiateRequest, UpscanInitiateResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.UploadIDPage
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import play.twirl.api.Html
+import services.UploadProgressTracker
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 
@@ -44,6 +48,7 @@ class UploadFormControllerSpec extends SpecBase
   with Generators {
 
   val mockUpscanInitiateConnector = mock[UpscanConnector]
+  val mockUploadProgressTracker = mock[UploadProgressTracker]
 
   val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
     .overrides(
@@ -68,22 +73,34 @@ class UploadFormControllerSpec extends SpecBase
       templateCaptor.getValue mustEqual "upload-form.njk"
     }
 
-    /*"must show progress of the upload" in {
-      val controller = application.injector.instanceOf[UploadFormController]
+    "must show progress of the upload" in {
+
+      val uploadId = UploadId("uploadId")
+      val showResultRoute = routes.UploadFormController.showResult().url
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(UploadIDPage, uploadId)
+        .success.value
+      val request = FakeRequest(GET, showResultRoute)
 
       forAll(arbitrary[UploadStatus]) {
         uploadStatus =>
 
-          when(mockUploadProgressTracker.getUploadResult(any[UploadId]()))
+          when(mockUploadProgressTracker.getUploadResult(uploadId))
             .thenReturn(Future.successful(Some(uploadStatus)))
-          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-          val result = controller.showResult(UploadId(""))(FakeRequest())
 
+          val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+          val result = route(application, request).value
           status(result) mustBe OK
-          verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-          templateCaptor.getValue mustEqual "upload-result.njk"
+
+          uploadStatus match {
+            case InProgress => status(result) mustBe OK
+            case Failed => status(result)     mustBe BAD_REQUEST
+            case _ => status(result)          mustBe OK
+          }
+
+          application.stop()
       }
-    }*/
+    }
 
     "must show any returned error" in {
       val controller = application.injector.instanceOf[UploadFormController]

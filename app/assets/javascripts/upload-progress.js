@@ -19,67 +19,38 @@ function ready(fn) {
     }
 }
 
-function submitError(error, data) {
-
-    const payload = {
-        code: error,
-        values: [],
-        errorDetail: data
-    };
-    const xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-
-        window.location = dac6UploadFormRedirect.val();
-    };
-    xhr.open('POST', dac6UploadReportError.val());
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send(JSON.stringify(payload));
-}
-
-function fileUpload(form, url) {
-
-    const xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-
-        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-
-            refreshStatusPage(url);
-        }
-    };
-    xhr.open('POST', form.action);
-    xhr.withCredentials = true;
-    xhr.send(new FormData(form));
-}
-
-function startSpinner(message) {
+function startSpinner() {
 
     const fileElement = document.getElementById("file-upload");
     const submitButtonElement = document.getElementById("submit");
     const spinnerHtml = "<div id=\"processing\" aria-live=\"polite\" class=\"govuk-!-margin-bottom-5\">" +
-        "<h2 class=\"govuk-heading-m\">"+ message+ "</h2>" + // TODO i18n
+        "<h2 class=\"govuk-heading-m\">We are checking your file, please wait</h2>" +
         "<div><div class=\"ccms-loader\"></div></div></div>";
     fileElement.insertAdjacentHTML('beforebegin', spinnerHtml);
     fileElement.setAttribute('disabled', 'disabled');
     submitButtonElement.classList.add('govuk-button--disabled')
 }
 
-function stopSpinner(message) {
-
-    clearInterval(window.refreshIntervalId);
-    const spinnerElement = document.getElementById("processing");
-    const actionMessage  = "<div class=\"section\">" +
-        "<a href=\"{{routes.controllers.FileValidationController.onPageLoad(uploadId.value).url}}\">" +
-        "<button class=\"button\">{{messages(\"site.verify\")}}</button></a></div>";
-    spinnerElement.innerHTML = message;
-}
 
 function refreshStatusPage(url) {
 
+    // Possible scenarios:
+    // 4 - Upscan time out TODO
+    // 6 - file too big    TODO
+    // 5 - virus
+    // 3 - invalid xml     TODO
+    // 2 - invalid data    TODO
+
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
+
         if (this.readyState === XMLHttpRequest.DONE) {
 
-            const dac6UploadStatusElement = document.getElementById("dac6UploadStatus");
+            const dac6UploadSuccessUrl     = document.getElementById("dac6UploadSuccessUrl");
+            const dac6UploadStatusElement  = document.getElementById("dac6UploadStatus");
+            const dac6UploadErrorUrl       = document.getElementById("dac6UploadErrorUrl");
+            const dac6VirusErrorUrl        = document.getElementById("dac6VirusErrorUrl");
+
             if (this.status === 200) {
 
                 const data = JSON.parse(this.response);
@@ -89,20 +60,20 @@ function refreshStatusPage(url) {
 
                     if (data._type === "UploadedSuccessfully") {
 
-                        stopSpinner("<p>"+ data.name+ msg2.value+ "</p>");
+                        window.location.assign(dac6UploadSuccessUrl.value);
                     }
                     else if (data._type === "Quarantined") {
 
-                        stopSpinner("<p>"+ data.name+ msg3.value+ "</p>"); // TODO improve message
+                        window.location.assign(dac6VirusErrorUrl.value);
                     }
                     else if (data._type === "Failed") {
 
-                        stopSpinner("<p>"+ data.name+ msg4.value+ "</p>");
+                        window.location.assign(dac6VirusErrorUrl.value);
                     }
                 }
             } else {
 
-                submitError("5000", data)
+                window.location.assign(dac6UploadErrorUrl.value);
             }
         }
     };
@@ -116,11 +87,6 @@ ready(function() {
 
     const dac6UploadFormRef        = document.getElementById("dac6UploadForm");
     const dac6UploadRefreshUrl     = document.getElementById("dac6UploadRefreshUrl");
-    const msg1                     = document.getElementById("msg1"); // TODO i18n messages
-    const msg2                     = document.getElementById("msg2");
-    const msg3                     = document.getElementById("msg3");
-    const msg4                     = document.getElementById("msg4");
-    const refreshUrl               = dac6UploadRefreshUrl.value;
 
     // =====================================================
     // Bind submit function to the upload form
@@ -128,19 +94,22 @@ ready(function() {
     dac6UploadFormRef.addEventListener("submit", function(e) {
 
         e.preventDefault();
-        fileUpload(dac6UploadFormRef, refreshUrl);
-        startSpinner(msg1.value);
+        const xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+
+            if (url) {
+
+                window.refreshIntervalId = setInterval(function () {
+
+                    refreshStatusPage(dac6UploadRefreshUrl.value);
+                }, 3000);
+            }
+        };
+        xhr.open('POST', dac6UploadFormRef.action);
+        xhr.withCredentials = true;
+        xhr.send(new FormData(dac6UploadFormRef));
+        startSpinner();
+
     });
-
-    // =====================================================
-    // Start page refresh
-    // =====================================================
-    if (refreshUrl) {
-
-        window.refreshIntervalId = setInterval(function () {
-
-            refreshStatusPage(refreshUrl);
-        }, 3000);
-    }
 
 });

@@ -22,6 +22,8 @@ GET        /accessibility-statement                     controllers.Accessibilit
 
 GET        /success                                     controllers.UploadFormController.showResult
 
+GET        /status                                      controllers.UploadFormController.getStatus
+
 GET        /upload                                      controllers.UploadFormController.onPageLoad
 
 POST       /callback                                    controllers.UploadCallbackController.callback
