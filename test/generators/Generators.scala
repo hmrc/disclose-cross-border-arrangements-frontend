@@ -132,4 +132,6 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
 
   def validPhoneNumber: Gen[String] = RegexpGen.from("""^\+?[\d\s]{1,24}$""")
 
+  def validEmailAdressToLong(maxLength: Int): Gen[String] = validEmailAddress suchThat (_.length > maxLength)
+
 }

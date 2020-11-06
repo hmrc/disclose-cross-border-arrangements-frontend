@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
-import org.scalacheck.Arbitrary
-import pages._
+import play.api.libs.json.JsPath
 
-trait PageGenerators {
+case object ContactEmailAddressPage extends QuestionPage[String] {
 
-  implicit lazy val arbitraryContactEmailAddressPage: Arbitrary[ContactEmailAddressPage.type] =
-    Arbitrary(ContactEmailAddressPage)
+  override def path: JsPath = JsPath \ toString
 
-  implicit lazy val arbitraryContactNamePage: Arbitrary[ContactNamePage.type] =
-    Arbitrary(ContactNamePage)
+  override def toString: String = "contactEmailAddress"
 }

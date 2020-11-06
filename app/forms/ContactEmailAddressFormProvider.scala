@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package generators
+package forms
 
-import org.scalacheck.Arbitrary
-import pages._
+import javax.inject.Inject
+import forms.mappings.Mappings
+import play.api.data.Form
+import utils.RegexConstants
 
-trait PageGenerators {
+class ContactEmailAddressFormProvider @Inject() extends Mappings with RegexConstants {
 
-  implicit lazy val arbitraryContactEmailAddressPage: Arbitrary[ContactEmailAddressPage.type] =
-    Arbitrary(ContactEmailAddressPage)
+  lazy val maxLength: Int = 132
 
-  implicit lazy val arbitraryContactNamePage: Arbitrary[ContactNamePage.type] =
-    Arbitrary(ContactNamePage)
+  def apply(): Form[String] =
+    Form(
+      "email" -> validatedText(
+        "contactEmailAddress.error.required",
+        "contactEmailAddress.error.invalid",
+        "contactEmailAddress.error.length",
+        emailRegex,
+        maxLength
+      )
+    )
 }

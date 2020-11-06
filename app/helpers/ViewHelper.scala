@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import com.google.inject.Inject
 import controllers.routes
 import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory, UserAnswers}
-import pages.ContactNamePage
+import pages.{ContactEmailAddressPage, ContactNamePage}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
@@ -218,11 +218,15 @@ class ViewHelper @Inject()() {
     }
   }
 
-  def primaryContactEmail(responseDetail: Option[ResponseDetail]): Option[Row] = {
+  def primaryContactEmail(responseDetail: Option[ResponseDetail], userAnswers: UserAnswers): Option[Row] = {
     if (responseDetail.isDefined) {
-      val contactEmail = responseDetail.get.primaryContact.contactInformation.head match {
-        case ContactInformationForIndividual(_, email, _, _) => email
-        case ContactInformationForOrganisation(_, email, _, _) => email
+      val contactEmail = userAnswers.get(ContactEmailAddressPage) match {
+        case Some(email) => email
+        case None =>
+          responseDetail.get.primaryContact.contactInformation.head match {
+            case ContactInformationForIndividual(_, email, _, _) => email
+            case ContactInformationForOrganisation(_, email, _, _) => email
+          }
       }
 
       Some(Row(
@@ -231,7 +235,7 @@ class ViewHelper @Inject()() {
         actions = List(
           Action(
             content = msg"site.edit",
-            href = routes.IndexController.onPageLoad().url,
+            href = routes.ContactEmailAddressController.onPageLoad().url,
             visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
             attributes = Map("id" -> "change-primary-contact-email")
           )

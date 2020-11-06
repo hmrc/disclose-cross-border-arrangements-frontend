@@ -296,3 +296,11 @@ contactName.title = What is the name of the individual or team we should contact
 contactName.heading = What is the name of the individual or team we should contact?
 contactName.error.required = Enter the name of the individual or team we should contact
 contactName.error.length = Individual or team must be 35 characters or less
+
+contactEmailAddress.title = What is your email address?
+contactEmailAddress.heading = What is your email address?
+contactEmailAddress.checkYourAnswersLabel = contactEmailAddress
+contactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
+contactEmailAddress.error.required = Enter an email address
+contactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
+contactEmailAddress.error.length = Enter an email address that is 132 characters or less

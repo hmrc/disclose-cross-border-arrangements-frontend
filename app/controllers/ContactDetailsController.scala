@@ -48,10 +48,10 @@ class ContactDetailsController @Inject()(
             case Some(details) => Some(details.displaySubscriptionForDACResponse.responseDetail)
             case None => None
           }
-//TODO Create contact name page then update viewhelper
+
           val contactDetailsList = Seq(
             viewHelper.primaryContactName(responseDetail, request.userAnswers),
-            viewHelper.primaryContactEmail(responseDetail),
+            viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
             viewHelper.primaryPhoneNumber(responseDetail),
             viewHelper.primaryMobileNumber(responseDetail)
           ).flatten

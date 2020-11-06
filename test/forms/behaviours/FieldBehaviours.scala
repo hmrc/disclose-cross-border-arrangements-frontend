@@ -54,4 +54,15 @@ trait FieldBehaviours extends FormSpec with ScalaCheckPropertyChecks with Genera
       result.errors shouldEqual Seq(requiredError)
     }
   }
+
+  def fieldWithInvalidData(form: Form[_],
+                           fieldName: String,
+                           invalidString: String,
+                           error: FormError): Unit = {
+
+    "not bind invalid data" in {
+      val result = form.bind(Map(fieldName -> invalidString)).apply(fieldName)
+      result.errors shouldEqual Seq(error)
+    }
+  }
 }

@@ -53,7 +53,10 @@ GET        /your-disclosures-results                    controllers.SearchHistor
 
 GET        /display-subscription                        controllers.DisplaySubscriptionForDACController.onPageLoad()
 
-GET        /contact-details                              controllers.ContactDetailsController.onPageLoad()
+GET        /contact-details                             controllers.ContactDetailsController.onPageLoad()
 
 GET        /change-contact-name                         controllers.ContactNameController.onPageLoad()
 POST       /change-contact-name                         controllers.ContactNameController.onSubmit()
+
+GET        /change-contact-email                        controllers.ContactEmailAddressController.onPageLoad()
+POST       /change-contact-email                        controllers.ContactEmailAddressController.onSubmit()
