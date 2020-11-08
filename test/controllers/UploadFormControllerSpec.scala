@@ -21,11 +21,10 @@ import connectors.UpscanConnector
 import generators.Generators
 import matchers.JsonMatchers
 import models.UserAnswers
-import org.scalacheck.Arbitrary.arbitrary
-import models.upscan.{Failed, InProgress, Reference, UploadId, UploadStatus, UpscanInitiateRequest, UpscanInitiateResponse}
+import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UploadIDPage
@@ -73,36 +72,42 @@ class UploadFormControllerSpec extends SpecBase
       templateCaptor.getValue mustEqual "upload-form.njk"
     }
 
-    "must show progress of the upload" in {
+    "must read the progress of the upload from the database" in {
 
       val uploadId = UploadId("uploadId")
-      val showResultRoute = routes.UploadFormController.showResult().url
       val userAnswers = UserAnswers(userAnswersId)
         .set(UploadIDPage, uploadId)
         .success.value
-      val request = FakeRequest(GET, showResultRoute)
 
-      forAll(arbitrary[UploadStatus]) {
-        uploadStatus =>
+      val request = FakeRequest(GET, routes.UploadFormController.getStatus().url)
 
-          when(mockUploadProgressTracker.getUploadResult(uploadId))
-            .thenReturn(Future.successful(Some(uploadStatus)))
+      def verifyResult(uploadStatus: UploadStatus): Unit = {
 
-          val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-          val result = route(application, request).value
-          status(result) mustBe OK
+        when(mockUploadProgressTracker.getUploadResult(uploadId))
+          .thenReturn(Future.successful(Some(uploadStatus)))
 
-          uploadStatus match {
-            case InProgress => status(result) mustBe OK
-            case Failed => status(result)     mustBe BAD_REQUEST
-            case _ => status(result)          mustBe OK
-          }
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[UploadProgressTracker].toInstance(mockUploadProgressTracker)
+          ).build()
+        val result = route(application, request).value
 
-          application.stop()
+        status(result) mustBe OK
+        contentAsJson(result) mustBe Json.toJson(uploadStatus)
+
+        application.stop()
+        reset(mockUploadProgressTracker)
       }
+
+      verifyResult(InProgress)
+      verifyResult(Quarantined)
+      verifyResult(Failed)
+      verifyResult(UploadedSuccessfully("name", "downloadUrl"))
+
     }
 
     "must show any returned error" in {
+
       val controller = application.injector.instanceOf[UploadFormController]
 
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
@@ -123,11 +128,12 @@ class UploadFormControllerSpec extends SpecBase
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
-      templateCaptor.getValue mustEqual "upload-error.njk"
+      templateCaptor.getValue mustEqual "error.njk"
       argumentCaptor.getValue mustEqual expectedArgument
     }
 
     "must show File to large error when the errorCode is EntityTooLarge" in {
+
       val controller = application.injector.instanceOf[UploadFormController]
 
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
@@ -150,6 +156,20 @@ class UploadFormControllerSpec extends SpecBase
       templateCaptor.getValue mustEqual "fileTooLargeError.njk"
       argumentCaptor.getValue mustEqual expectedArgument
 
+    }
+
+    "must redirect to file validator when file is successfully updated " in {
+
+      val uploadId = UploadId("uploadId")
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(UploadIDPage, uploadId)
+        .success.value
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request = FakeRequest(GET, routes.UploadFormController.showResult().url)
+
+      val result = route(application, request).value
+      status(result) mustBe SEE_OTHER
+      redirectLocation(result) mustBe Some(routes.FileValidationController.onPageLoad().url)
     }
 
     }
