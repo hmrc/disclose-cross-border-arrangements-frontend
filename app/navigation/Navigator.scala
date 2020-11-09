@@ -33,6 +33,8 @@ class Navigator @Inject()() {
     case ContactEmailAddressPage => _ => routes.ContactDetailsController.onPageLoad()
     case ContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
     case SecondaryContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
+    case SecondaryContactEmailAddressPage => _ => routes.ContactDetailsController.onPageLoad()
+    case SecondaryContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
     case _ => _ => routes.IndexController.onPageLoad()
   }
 

@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 import com.google.inject.Inject
 import controllers.routes
 import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory, UserAnswers}
-import pages.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, SecondaryContactNamePage}
+import pages._
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
@@ -202,7 +202,7 @@ class ViewHelper @Inject()() {
       }
 
       Some(Row(
-        key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
         value = Value(lit"$contactName"),
         actions = List(
           Action(
@@ -230,7 +230,7 @@ class ViewHelper @Inject()() {
       }
 
       Some(Row(
-        key = Key(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        key = Key(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
         value = Value(lit"$contactEmail"),
         actions = List(
           Action(
@@ -258,7 +258,7 @@ class ViewHelper @Inject()() {
       }
 
       Some(Row(
-        key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
         value = Value(lit"$phoneNumber"),
         actions = List(
           Action(
@@ -282,7 +282,7 @@ class ViewHelper @Inject()() {
       }
 
       Some(Row(
-        key = Key(msg"contactDetails.primaryMobileNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        key = Key(msg"contactDetails.primaryMobileNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
         value = Value(lit"$mobileNumber"),
         actions = List(
           Action(
@@ -314,7 +314,7 @@ class ViewHelper @Inject()() {
       }
 
       Some(Row(
-        key = Key(msg"contactDetails.secondaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+        key = Key(msg"contactDetails.secondaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
         value = Value(lit"$contactName"),
         actions = List(
           Action(
@@ -322,6 +322,90 @@ class ViewHelper @Inject()() {
             href = routes.SecondaryContactNameController.onPageLoad().url,
             visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
             attributes = Map("id" -> "change-secondary-contact-name")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def secondaryContactEmail(responseDetail: Option[ResponseDetail], userAnswers: UserAnswers): Option[Row] = {
+    val contactInformationList = responseDetail.get.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation)
+
+    if (responseDetail.isDefined) {
+      val contactEmail = userAnswers.get(SecondaryContactEmailAddressPage) match {
+        case Some(email) => email
+        case None =>
+          contactInformationList.head match {
+            case ContactInformationForIndividual(_, email, _, _) => email
+            case ContactInformationForOrganisation(_, email, _, _) => email
+          }
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+        value = Value(lit"$contactEmail"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.SecondaryContactEmailAddressController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-secondary-contact-email")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def secondaryPhoneNumber(responseDetail: Option[ResponseDetail], userAnswers: UserAnswers): Option[Row] = {
+    val contactInformationList = responseDetail.get.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation)
+
+    if (responseDetail.isDefined) {
+      val phoneNumber = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
+        case Some(telephone) => telephone
+        case None =>
+          contactInformationList.head match {
+            case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
+            case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
+          }
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+        value = Value(lit"$phoneNumber"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-secondary-phone-number")
+          )
+        )
+      ))
+    } else {
+      None
+    }
+  }
+
+  def secondaryMobileNumber(responseDetail: Option[ResponseDetail]): Option[Row] = {
+    if (responseDetail.isDefined) {
+      val mobileNumber = responseDetail.get.primaryContact.contactInformation.head match {
+        case ContactInformationForIndividual(_, _, _, mobile) => s"${mobile.getOrElse("None")}"
+        case ContactInformationForOrganisation(_, _, _, mobile) => s"${mobile.getOrElse("None")}"
+      }
+
+      Some(Row(
+        key = Key(msg"contactDetails.secondaryContactMobileNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+        value = Value(lit"$mobileNumber"),
+        actions = List(
+          Action(
+            content = msg"site.edit",
+            href = routes.IndexController.onPageLoad().url,
+            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactMobileNumber.checkYourAnswersLabel")),
+            attributes = Map("id" -> "change-secondary-mobile-number")
           )
         )
       ))

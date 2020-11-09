@@ -17,11 +17,11 @@
 package controllers
 
 import controllers.actions._
-import forms.SecondaryContactNameFormProvider
+import forms.SecondaryContactTelephoneNumberFormProvider
 import javax.inject.Inject
 import models.NormalMode
 import navigation.Navigator
-import pages.SecondaryContactNamePage
+import pages.SecondaryContactTelephoneNumberPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -32,14 +32,14 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SecondaryContactNameController @Inject()(
+class SecondaryContactTelephoneNumberController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: SecondaryContactNameFormProvider,
+    formProvider: SecondaryContactTelephoneNumberFormProvider,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
@@ -49,7 +49,7 @@ class SecondaryContactNameController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SecondaryContactNamePage) match {
+      val preparedForm = request.userAnswers.get(SecondaryContactTelephoneNumberPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -58,7 +58,7 @@ class SecondaryContactNameController @Inject()(
         "form" -> preparedForm
       )
 
-      renderer.render("secondaryContactName.njk", json).map(Ok(_))
+      renderer.render("secondaryContactTelephoneNumber.njk", json).map(Ok(_))
   }
 
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -71,13 +71,13 @@ class SecondaryContactNameController @Inject()(
             "form" -> formWithErrors
           )
 
-          renderer.render("secondaryContactName.njk", json).map(BadRequest(_))
+          renderer.render("secondaryContactTelephoneNumber.njk", json).map(BadRequest(_))
         },
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactNamePage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactTelephoneNumberPage, value))
             _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers))
+          } yield Redirect(navigator.nextPage(SecondaryContactTelephoneNumberPage, NormalMode, updatedAnswers))
       )
   }
 }

@@ -54,7 +54,10 @@ class ContactDetailsController @Inject()(
             viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
             viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers),
             viewHelper.primaryMobileNumber(responseDetail),
-            viewHelper.secondaryContactName(responseDetail, request.userAnswers)
+            viewHelper.secondaryContactName(responseDetail, request.userAnswers),
+            viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
+            viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers),
+            viewHelper.secondaryMobileNumber(responseDetail)
           ).flatten
 
           val contactDetails = Json.obj(

@@ -292,6 +292,9 @@ contactDetails.primaryContactEmail.checkYourAnswersLabel = Primary Email
 contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Primary Phone
 contactDetails.primaryMobileNumber.checkYourAnswersLabel = Primary Mobile
 contactDetails.secondaryContactName.checkYourAnswersLabel = Secondary Contact
+contactDetails.secondaryContactEmail.checkYourAnswersLabel = Secondary Email
+contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Secondary Phone
+contactDetails.secondaryContactMobileNumber.checkYourAnswersLabel = Secondary Mobile
 
 contactName.title = What is the name of the individual or team we should contact?
 contactName.heading = What is the name of the individual or team we should contact?
@@ -318,3 +321,16 @@ secondaryContactName.hint = For example, ‘DAC6 team’ or ‘Ashley Smith’.
 secondaryContactName.error.required = Enter the name of the individual or team we should contact
 secondaryContactName.error.invalid = Name of the individual or team must only include letters a to z, numbers 0 to 9, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
 secondaryContactName.error.length = Individual or team must be 35 characters or less
+
+secondaryContactEmailAddress.title = What is the email address for your second contact?
+secondaryContactEmailAddress.heading = What is the email address for your second contact?
+secondaryContactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
+secondaryContactEmailAddress.error.required = Enter an email address
+secondaryContactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
+secondaryContactEmailAddress.error.length = Enter an email address that is 132 characters or less
+
+secondaryContactTelephoneNumber.title = What is the telephone number for your second contact?
+secondaryContactTelephoneNumber.heading = What is the telephone number for your second contact?
+secondaryContactTelephoneNumber.hint = For international numbers include the country code.
+secondaryContactTelephoneNumber.error.required = Enter a telephone number
+secondaryContactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
