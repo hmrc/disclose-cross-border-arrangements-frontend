@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package forms
+package pages
 
-import forms.mappings.Mappings
-import javax.inject.Inject
-import play.api.data.Form
-import utils.RegexConstants
+import pages.behaviours.PageBehaviours
 
-class ContactNameFormProvider @Inject() extends Mappings with RegexConstants {
 
-  lazy val maxLength: Int = 35
+class SecondaryContactNamePageSpec extends PageBehaviours {
 
-  def apply(): Form[String] =
-    Form(
-      "contactName" -> validatedText(
-        "contactName.error.required",
-        "contactName.error.invalid",
-        "contactName.error.length",
-        apiNameRegex,
-        maxLength
-      )
-    )
+  "SecondaryContactNamePage" - {
+
+    beRetrievable[String](SecondaryContactNamePage)
+
+    beSettable[String](SecondaryContactNamePage)
+
+    beRemovable[String](SecondaryContactNamePage)
+  }
 }

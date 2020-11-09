@@ -35,6 +35,32 @@ trait StringFieldBehaviours extends FieldBehaviours {
     }
   }
 
+  def fieldWithNonEmptyWhitespace(form: Form[_],
+                                  fieldName: String,
+                                  requiredError: FormError): Unit = {
+
+    s"must not bind strings of only whitespace" in {
+
+      val result = form.bind(Map(fieldName -> " ")).apply(fieldName)
+      result.errors shouldEqual Seq(requiredError)
+    }
+  }
+
+  def fieldWithMaxLengthAlpha(form: Form[_],
+                              fieldName: String,
+                              maxLength: Int,
+                              lengthError: FormError): Unit = {
+
+    s"must not bind strings longer than $maxLength characters" in {
+
+      forAll(stringsLongerThanAlpha(maxLength) -> "longString") {
+        string =>
+          val result = form.bind(Map(fieldName -> string)).apply(fieldName)
+          result.errors shouldEqual Seq(lengthError)
+      }
+    }
+  }
+
   def fieldWithMaxLengthEmail(form: Form[_],
                               fieldName: String,
                               maxLength: Int,

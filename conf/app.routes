@@ -60,3 +60,9 @@ POST       /change-contact-name                         controllers.ContactNameC
 
 GET        /change-contact-email                        controllers.ContactEmailAddressController.onPageLoad()
 POST       /change-contact-email                        controllers.ContactEmailAddressController.onSubmit()
+
+GET        /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onPageLoad()
+POST       /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onSubmit()
+
+GET        /change-secondary-contact-name               controllers.SecondaryContactNameController.onPageLoad()
+POST       /change-secondary-contact-name               controllers.SecondaryContactNameController.onSubmit()

@@ -31,6 +31,8 @@ class Navigator @Inject()() {
     case HistoryPage => _ => routes.SearchHistoryResultsController.onPageLoad()
     case ContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
     case ContactEmailAddressPage => _ => routes.ContactDetailsController.onPageLoad()
+    case ContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
+    case SecondaryContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
     case _ => _ => routes.IndexController.onPageLoad()
   }
 
