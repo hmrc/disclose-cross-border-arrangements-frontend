@@ -97,7 +97,7 @@ ready(function() {
         const xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function() {
 
-            if (url) {
+            if (dac6UploadRefreshUrl) {
 
                 window.refreshIntervalId = setInterval(function () {
 
