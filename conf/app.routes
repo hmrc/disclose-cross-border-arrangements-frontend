@@ -54,6 +54,7 @@ GET        /your-disclosures-results                    controllers.SearchHistor
 GET        /display-subscription                        controllers.DisplaySubscriptionForDACController.onPageLoad()
 
 GET        /contact-details                             controllers.ContactDetailsController.onPageLoad()
+POST       /contact-details                             controllers.ContactDetailsController.onSubmit()
 
 GET        /change-contact-name                         controllers.ContactNameController.onPageLoad()
 POST       /change-contact-name                         controllers.ContactNameController.onSubmit()

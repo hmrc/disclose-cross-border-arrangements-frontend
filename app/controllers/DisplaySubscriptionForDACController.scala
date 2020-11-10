@@ -43,16 +43,15 @@ class DisplaySubscriptionForDACController @Inject()(
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          val responseDetail = details match {
-            case Some(details) => Some(details.displaySubscriptionForDACResponse.responseDetail)
-            case None => None
-          }
+          val responseDetail = details.displaySubscriptionForDACResponse.responseDetail
 
           val displaySubscription = Json.obj(
             "displaySubscription" -> viewHelper.buildDisplaySubscription(responseDetail)
           )
 
           renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))
+      }.recover {
+        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
       }
 
   }

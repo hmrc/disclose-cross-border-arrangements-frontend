@@ -19,7 +19,8 @@ package connectors
 import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
 import helpers.JsonFixtures._
-import models.{ContactInformationForIndividual, ContactInformationForOrganisation, DisplaySubscriptionForDACResponse, IndividualDetails, OrganisationDetails, PrimaryContact, ResponseCommon, ResponseDetail, SecondaryContact, SubscriptionForDACResponse}
+import models.subscription.{DisplaySubscriptionForDACResponse, ResponseCommon, ResponseDetail, SubscriptionForDACResponse}
+import models.{ContactInformationForIndividual, ContactInformationForOrganisation, IndividualDetails, OrganisationDetails, PrimaryContact, SecondaryContact}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks

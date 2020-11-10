@@ -19,7 +19,8 @@ package helpers
 import java.time.LocalDateTime
 
 import base.SpecBase
-import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, ResponseDetail, SecondaryContact, SubmissionDetails, SubmissionHistory}
+import models.subscription.ResponseDetail
+import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, SecondaryContact, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.viewmodels.Table.Cell

@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import connectors.SubscriptionConnector
 import helpers.JsonFixtures._
-import models.DisplaySubscriptionForDACResponse
+import models.subscription.DisplaySubscriptionForDACResponse
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}

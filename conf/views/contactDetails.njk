@@ -2,6 +2,7 @@
 
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
+{% from "govuk/components/button/macro.njk"        import govukButton %}
 
 {% block pageTitle %}
   {{ title(messages("contactDetails.title")) }}
@@ -24,6 +25,16 @@
         {{ govukSummaryList({
           rows: contactDetails
         }) }}
+
+        <form action="{{ routes.controllers.ContactDetailsController.onSubmit().url }}" method="post">
+          {{ csrf() | safe }}
+
+          {{ govukButton({
+             text: messages("contactDetails.button"),
+             preventDoubleClick: true,
+             attributes: {id:"submit"}
+          }) }}
+        </form>
 
       </div>
     </div>

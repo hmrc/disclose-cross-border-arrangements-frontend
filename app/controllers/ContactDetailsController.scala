@@ -20,13 +20,14 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import helpers.ViewHelper
 import javax.inject.Inject
+import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class ContactDetailsController @Inject()(
     override val messagesApi: MessagesApi,
@@ -44,27 +45,42 @@ class ContactDetailsController @Inject()(
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          val responseDetail = details match {
-            case Some(details) => Some(details.displaySubscriptionForDACResponse.responseDetail)
-            case None => None
-          }
+            val responseDetail = details.displaySubscriptionForDACResponse.responseDetail
+            val isOrganisation = responseDetail.primaryContact.contactInformation.head match {
+              case ContactInformationForIndividual(_, _, _, _) =>
+                false //includes Sole Proprietor
+              case ContactInformationForOrganisation(_, _, _, _) =>
+                true
+            }
 
-          val contactDetailsList = Seq(
-            viewHelper.primaryContactName(responseDetail, request.userAnswers),
-            viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
-            viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers),
-            viewHelper.primaryMobileNumber(responseDetail),
-            viewHelper.secondaryContactName(responseDetail, request.userAnswers),
-            viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
-            viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers),
-            viewHelper.secondaryMobileNumber(responseDetail)
-          ).flatten
+            val contactDetailsList = if (isOrganisation) {
+              Seq(
+                viewHelper.primaryContactName(responseDetail, request.userAnswers),
+                viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
+                viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers),
+                viewHelper.secondaryContactName(responseDetail, request.userAnswers),
+                viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
+                viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers)
+              )
+            } else {
+              Seq(
+                viewHelper.primaryContactName(responseDetail, request.userAnswers),
+                viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
+                viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers)
+              )
+            }
 
-          val contactDetails = Json.obj(
-            "contactDetails" -> contactDetailsList
-          )
+            val contactDetails = Json.obj(
+              "contactDetails" -> contactDetailsList
+            )
 
-          renderer.render("contactDetails.njk", contactDetails).map(Ok(_))
+            renderer.render("contactDetails.njk", contactDetails).map(Ok(_))
+      }.recover {
+        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
       }
+  }
+
+  def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    Future.successful(Redirect(routes.IndexController.onPageLoad()))
   }
 }

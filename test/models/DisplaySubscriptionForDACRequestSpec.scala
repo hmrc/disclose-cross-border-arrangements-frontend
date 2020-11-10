@@ -18,6 +18,7 @@ package models
 
 import base.SpecBase
 import helpers.JsonFixtures.{jsonForDisplaySubscriptionRequest, jsonPayloadForDisplaySubscriptionRequest}
+import models.subscription.{DisplaySubscriptionDetails, DisplaySubscriptionForDACRequest, RequestCommon, RequestDetail}
 import play.api.libs.json.Json
 
 import scala.util.matching.Regex
