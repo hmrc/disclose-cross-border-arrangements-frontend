@@ -23,7 +23,7 @@ import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierA
 import handlers.ErrorHandler
 import javax.inject.Singleton
 import models.UserAnswers
-import models.upscan.{Quarantined, UploadId, UpscanInitiateRequest}
+import models.upscan.{UploadId, UpscanInitiateRequest}
 import org.slf4j.LoggerFactory
 import pages.UploadIDPage
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -59,8 +59,8 @@ class UploadFormController @Inject()(
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
-      val callbackUrl = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
-      val initiateBody = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
+      val callbackUrl        = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
+      val initiateBody       = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
         for {
@@ -71,28 +71,18 @@ class UploadFormController @Inject()(
         } yield {
           renderer.render(
             "upload-form.njk",
-            Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse))
+            Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
+              "status" -> Json.toJson(0))
           ).map(Ok(_))
         }
-      }.flatMap(identity)
+      }.flatten
   }
 
   def showResult: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request => {
-      logger.debug("Show result called")
 
       request.userAnswers.get(UploadIDPage) match {
-        case Some(uploadId) =>
-             uploadProgressTracker.getUploadResult(uploadId) flatMap {
-               case Some(result) if result == Quarantined => Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-               case Some(result) =>
-                 renderer.render(
-                   "upload-result.njk",
-                   Json.obj("uploadId" -> Json.toJson(uploadId),
-                     "status" -> Json.toJson(result))
-                 ).map(Ok(_))
-               case None => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
-             }
+        case Some(_) => Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
         case None => Future.successful(BadRequest (s"UploadId not found") )
       }
     }
@@ -107,11 +97,26 @@ class UploadFormController @Inject()(
         ).map (Ok (_))
       case _ =>
           renderer.render (
-          "upload-error.njk",
+          "error.njk",
           Json.obj ("pageTitle" -> "Upload Error",
           "heading" -> errorMessage,
           "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
           ).map (Ok (_) )
+    }
+  }
+
+  def getStatus: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+    implicit request => {
+      logger.debug("Show status called")
+
+      request.userAnswers.get(UploadIDPage) match {
+        case Some(uploadId) =>
+          uploadProgressTracker.getUploadResult(uploadId) flatMap {
+            case Some(result) => Future.successful(Ok(Json.toJson(result)))
+            case None         => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
+          }
+        case None => Future.successful(BadRequest (s"UploadId not found") )
+      }
     }
   }
 
