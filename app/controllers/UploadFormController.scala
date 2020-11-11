@@ -23,7 +23,7 @@ import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierA
 import handlers.ErrorHandler
 import javax.inject.Singleton
 import models.UserAnswers
-import models.upscan.{Quarantined, UploadId, UploadedSuccessfully, UpscanInitiateRequest}
+import models.upscan.{Failed, Quarantined, UploadId, UploadedSuccessfully, UpscanInitiateRequest}
 import org.slf4j.LoggerFactory
 import pages.UploadIDPage
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -113,6 +113,8 @@ class UploadFormController @Inject()(
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
+            case Some(Failed) =>
+              Future.successful(BadRequest (s"Upload failed") )
             case Some(result) =>
               Future.successful(Ok(Json.toJson(result)))
             case None         => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
