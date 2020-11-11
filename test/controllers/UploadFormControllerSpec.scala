@@ -81,7 +81,7 @@ class UploadFormControllerSpec extends SpecBase
 
       val request = FakeRequest(GET, routes.UploadFormController.getStatus().url)
 
-      def verifyResult(uploadStatus: UploadStatus): Unit = {
+      def verifyResult(uploadStatus: UploadStatus, expectedResult: Int = SEE_OTHER): Unit = {
 
         when(mockUploadProgressTracker.getUploadResult(uploadId))
           .thenReturn(Future.successful(Some(uploadStatus)))
@@ -92,16 +92,16 @@ class UploadFormControllerSpec extends SpecBase
           ).build()
         val result = route(application, request).value
 
-        status(result) mustBe OK
-        contentAsJson(result) mustBe Json.toJson(uploadStatus)
+        status(result) mustBe expectedResult
+        if (expectedResult == OK) contentAsJson(result) mustBe Json.toJson(uploadStatus)
 
         application.stop()
         reset(mockUploadProgressTracker)
       }
 
-      verifyResult(InProgress)
+      verifyResult(InProgress, OK)
       verifyResult(Quarantined)
-      verifyResult(Failed)
+      verifyResult(Failed, BAD_REQUEST)
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
     }
@@ -114,7 +114,6 @@ class UploadFormControllerSpec extends SpecBase
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
-
 
       val expectedArgument = Json.obj("pageTitle" -> "Upload Error",
         "heading"-> "errorMessage",
@@ -158,18 +157,19 @@ class UploadFormControllerSpec extends SpecBase
 
     }
 
-    "must redirect to file validator when file is successfully updated " in {
+    "must display result page while file is successfully updated " in {
 
-      val uploadId = UploadId("uploadId")
-      val userAnswers = UserAnswers(userAnswersId)
-        .set(UploadIDPage, uploadId)
-        .success.value
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, routes.UploadFormController.showResult().url)
+      val controller = application.injector.instanceOf[UploadFormController]
 
-      val result = route(application, request).value
-      status(result) mustBe SEE_OTHER
-      redirectLocation(result) mustBe Some(routes.FileValidationController.onPageLoad().url)
+      when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val result = controller.showResult()(FakeRequest("", ""))
+
+      status(result) mustBe OK
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+      templateCaptor.getValue mustEqual "upload-result.njk"
+
     }
 
     }

@@ -29,11 +29,6 @@
              {{ messages("upload_form.heading") }}
          </h1>
 
-<input type="hidden" id="dac6UploadStatus"         value="0" />
-<input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.getStatus().url}}" />
-<input type="hidden" id="dac6VirusErrorUrl"        value="{{routes.controllers.VirusErrorController.onPageLoad().url}}" />
-<input type="hidden" id="dac6UploadSuccessUrl"     value="{{routes.controllers.UploadFormController.showResult().url}}" />
-
 <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 
     {% for key, value in upscanInitiateResponse.formFields %}
