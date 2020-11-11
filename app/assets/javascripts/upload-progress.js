@@ -91,25 +91,25 @@ ready(function() {
     // =====================================================
     // Bind submit function to the upload form
     // =====================================================
-    dac6UploadFormRef.addEventListener("submit", function(e) {
-
-        e.preventDefault();
-        const xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-
-            if (dac6UploadRefreshUrl) {
-
-                window.refreshIntervalId = setInterval(function () {
-
-                    refreshStatusPage(dac6UploadRefreshUrl.value);
-                }, 3000);
-            }
-        };
-        xhr.open('POST', dac6UploadFormRef.action);
-        xhr.withCredentials = true;
-        xhr.send(new FormData(dac6UploadFormRef));
-        startSpinner();
-
-    });
+    // dac6UploadFormRef.addEventListener("submit", function(e) {
+    //
+    //     e.preventDefault();
+    //     const xhr = new XMLHttpRequest();
+    //     xhr.onreadystatechange = function() {
+    //
+    //         if (dac6UploadRefreshUrl) {
+    //
+    //             window.refreshIntervalId = setInterval(function () {
+    //
+    //                 refreshStatusPage(dac6UploadRefreshUrl.value);
+    //             }, 3000);
+    //         }
+    //     };
+    //     xhr.open('POST', dac6UploadFormRef.action);
+    //     xhr.withCredentials = true;
+    //     xhr.send(new FormData(dac6UploadFormRef));
+    //     startSpinner();
+    //
+    // });
 
 });
