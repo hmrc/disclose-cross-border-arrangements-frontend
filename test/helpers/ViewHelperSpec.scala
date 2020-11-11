@@ -19,8 +19,8 @@ package helpers
 import java.time.LocalDateTime
 
 import base.SpecBase
-import models.subscription.ResponseDetail
-import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, SecondaryContact, SubmissionDetails, SubmissionHistory}
+import models.subscription._
+import models.{GenericError, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.viewmodels.Table.Cell
@@ -239,26 +239,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      val result = viewHelper.buildDisplaySubscription(Some(responseDetail))
-
-      result mustBe Table(
-        head = Seq(
-          Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
-        ),
-        rows = expectedRows)
-    }
-
-    "must return an empty row if there's nothing to display" in {
-      val expectedRows = Seq(
-        Seq(
-          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "noDetails"))
-        )
-      )
-
-      val result = viewHelper.buildDisplaySubscription(None)
+      val result = viewHelper.buildDisplaySubscription(responseDetail)
 
       result mustBe Table(
         head = Seq(

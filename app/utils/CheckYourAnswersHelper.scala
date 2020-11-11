@@ -28,6 +28,21 @@ import uk.gov.hmrc.viewmodels._
 
 class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messages) {
 
+//  def individualContactName: Option[Row] = userAnswers.get(IndividualContactNamePage) map {
+//    answer =>
+//      Row(
+//        key     = Key(msg"individualContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-half")),
+//        value   = Value(lit"${answer.firstName} ${answer.lastName}"),
+//        actions = List(
+//          Action(
+//            content            = msg"site.edit",
+//            href               = routes.IndividualContactNameController.onPageLoad(CheckMode).url,
+//            visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"individualContactName.checkYourAnswersLabel"))
+//          )
+//        )
+//      )
+//  }
+
 //  def secondaryContactTelephoneNumber: Option[Row] = userAnswers.get(SecondaryContactTelephoneNumberPage) map {
 //    answer =>
 //      Row(

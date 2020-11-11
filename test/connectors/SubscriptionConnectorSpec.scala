@@ -19,8 +19,7 @@ package connectors
 import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
 import helpers.JsonFixtures._
-import models.subscription.{DisplaySubscriptionForDACResponse, ResponseCommon, ResponseDetail, SubscriptionForDACResponse}
-import models.{ContactInformationForIndividual, ContactInformationForOrganisation, IndividualDetails, OrganisationDetails, PrimaryContact, SecondaryContact}
+import models.subscription._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -87,10 +86,10 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe Some(displaySubscriptionForDACResponse)
+        result.futureValue mustBe displaySubscriptionForDACResponse
       }
 
-      "must return None if unable to validate json" in {
+      "must throw an exception if unable to validate json" in {
         val invalidBody =
           s"""
              |{
@@ -120,15 +119,15 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe None
+        an[Exception] mustBe thrownBy (result.futureValue)
       }
 
-      "must return None if status is not OK" in {
+      "must return throw an exception if status is not OK" in {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe None
+        an[Exception] mustBe thrownBy (result.futureValue)
       }
     }
   }

@@ -333,3 +333,14 @@ secondaryContactTelephoneNumber.heading = What is the telephone number for your 
 secondaryContactTelephoneNumber.hint = For international numbers include the country code.
 secondaryContactTelephoneNumber.error.required = Enter a telephone number
 secondaryContactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
+
+individualContactName.title = Who should we contact if we have any questions about your disclosures?
+individualContactName.heading = Who should we contact if we have any questions about your disclosures?
+individualContactName.firstName = First name
+individualContactName.lastName = Last name
+individualContactName.error.firstName.required = Enter the first name of the person we should contact if we have any questions about your disclosures
+individualContactName.error.lastName.required = Enter the last name of the person we should contact if we have any questions about your disclosures
+individualContactName.error.firstName.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+individualContactName.error.lastName.invalid = Last name  must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+individualContactName.error.firstName.length = First name must be 35 characters or less
+individualContactName.error.lastName.length = Last name must be 35 characters or less

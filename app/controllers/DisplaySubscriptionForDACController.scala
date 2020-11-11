@@ -51,7 +51,7 @@ class DisplaySubscriptionForDACController @Inject()(
 
           renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))
       }.recover {
-        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
+        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page when ready
       }
 
   }

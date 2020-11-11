@@ -95,8 +95,8 @@ object UpdateSubscriptionDetails {
           case None => phone
         }
 
-        val individualDetails = userAnswers.get(ContactNamePage) match {
-          case Some(name) => IndividualDetails(name, "", None)
+        val individualDetails = userAnswers.get(IndividualContactNamePage) match {
+          case Some(name) => IndividualDetails(name.firstName, name.lastName, None)
           case None => details
         }
 
@@ -137,8 +137,8 @@ object UpdateSubscriptionDetails {
           case None => phone
         }
 
-        val individualDetails = userAnswers.get(ContactNamePage) match {
-          case Some(name) => IndividualDetails(name, "", None)
+        val individualDetails = userAnswers.get(IndividualContactNamePage) match {
+          case Some(name) => IndividualDetails(name.firstName, name.lastName, None)
           case None => details
         }
 

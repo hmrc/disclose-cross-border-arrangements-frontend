@@ -73,3 +73,6 @@ POST       /change-secondary-contact-email              controllers.SecondaryCon
 
 GET        /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onPageLoad()
 POST       /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onSubmit()
+
+GET        /change-name                                 controllers.IndividualContactNameController.onPageLoad()
+POST       /change-name                                 controllers.IndividualContactNameController.onSubmit()

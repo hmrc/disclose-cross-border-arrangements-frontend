@@ -30,6 +30,7 @@ class Navigator @Inject()() {
     case ValidXMLPage => _ => routes.CheckYourAnswersController.onPageLoad()
     case HistoryPage => _ => routes.SearchHistoryResultsController.onPageLoad()
     case ContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
+    case IndividualContactNamePage => _ => routes.ContactDetailsController.onPageLoad()
     case ContactEmailAddressPage => _ => routes.ContactDetailsController.onPageLoad()
     case ContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
     case SecondaryContactNamePage => _ => routes.ContactDetailsController.onPageLoad()

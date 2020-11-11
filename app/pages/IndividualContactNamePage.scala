@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-package generators
+package pages
 
 import models.IndividualContactName
-import models.upscan.{Failed, InProgress, NotStarted, UploadStatus}
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json.JsPath
 
-trait ModelGenerators {
+case object IndividualContactNamePage extends QuestionPage[IndividualContactName] {
 
-  implicit lazy val arbitraryIndividualContactName: Arbitrary[IndividualContactName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName <- arbitrary[String]
-      } yield IndividualContactName(firstName, lastName)
-    }
-  implicit lazy val arbitraryUploadStatus: Arbitrary[UploadStatus] =
-    Arbitrary(Gen.oneOf(NotStarted, InProgress, Failed))
+  override def path: JsPath = JsPath \ toString
+
+  override def toString: String = "individualContactName"
 }

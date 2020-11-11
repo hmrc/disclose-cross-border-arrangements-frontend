@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package generators
+package models
 
-import models.IndividualContactName
-import models.upscan.{Failed, InProgress, NotStarted, UploadStatus}
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json._
 
-trait ModelGenerators {
+case class IndividualContactName (firstName: String, lastName: String)
 
-  implicit lazy val arbitraryIndividualContactName: Arbitrary[IndividualContactName] =
-    Arbitrary {
-      for {
-        firstName <- arbitrary[String]
-        lastName <- arbitrary[String]
-      } yield IndividualContactName(firstName, lastName)
-    }
-  implicit lazy val arbitraryUploadStatus: Arbitrary[UploadStatus] =
-    Arbitrary(Gen.oneOf(NotStarted, InProgress, Failed))
+object IndividualContactName {
+  implicit val format: OFormat[IndividualContactName] = Json.format[IndividualContactName]
 }

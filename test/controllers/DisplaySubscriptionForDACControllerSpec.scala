@@ -49,7 +49,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+        .thenReturn(Future.successful(displaySubscriptionDetails))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -70,13 +70,13 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
       application.stop()
     }
 
-    "return OK and the correct view for a GET and there are no subscription details" in {
+    "redirect to problem page if display subscription threw an exception" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.failed(new Exception("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -84,15 +84,11 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
         ).build()
 
       val request = FakeRequest(GET, routes.DisplaySubscriptionForDACController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual OK
-
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-
-      templateCaptor.getValue mustEqual "displaySubscriptionForDAC.njk"
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
 
       application.stop()
     }

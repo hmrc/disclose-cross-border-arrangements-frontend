@@ -185,9 +185,10 @@ class ViewHelper @Inject()() {
 
   def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     //TODO Double check API that contact info is always going to be 1
-    val contactName = userAnswers.get(ContactNamePage) match {
-      case Some(contactName) => contactName
-      case None =>
+    val contactName = (userAnswers.get(ContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
+      case (Some(contactName), _) => contactName
+      case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
+      case _ =>
         responseDetail.primaryContact.contactInformation.head match {
           case ContactInformationForIndividual(individual, _, _, _) =>
             s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
@@ -198,7 +199,7 @@ class ViewHelper @Inject()() {
 
     val changeLink = responseDetail.primaryContact.contactInformation.head match {
       case ContactInformationForIndividual(_, _, _, _) =>
-        routes.ContactNameController.onPageLoad().url
+        routes.IndividualContactNameController.onPageLoad().url
       case ContactInformationForOrganisation(_, _, _, _) =>
         routes.ContactNameController.onPageLoad().url
     }
@@ -268,22 +269,25 @@ class ViewHelper @Inject()() {
   def secondaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
 
-    val contactName: String = userAnswers.get(SecondaryContactNamePage) match {
-      case Some(contactName) => contactName
-      case None =>
+    val contactName: String = (userAnswers.get(SecondaryContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
+      case (Some(contactName), _) => contactName
+      case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
+      case _ =>
         contactInformationList.head match {
           case ContactInformationForIndividual(individual, _, _, _) =>
             s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
           case ContactInformationForOrganisation(organisation, _, _, _) =>
             s"${organisation.organisationName}"
+          case _ => "None"
         }
     }
 
-    val changeLink = responseDetail.primaryContact.contactInformation.head match {
+    val changeLink = contactInformationList.head match {
       case ContactInformationForIndividual(_, _, _, _) =>
-        routes.ContactNameController.onPageLoad().url
+        routes.IndividualContactNameController.onPageLoad().url
       case ContactInformationForOrganisation(_, _, _, _) =>
-        routes.ContactNameController.onPageLoad().url
+        routes.SecondaryContactNameController.onPageLoad().url
+      case _ => routes.IndexController.onPageLoad().url //TODO Which page to redirect to as default? Individual or Secondary?
     }
 
     Row(
@@ -309,6 +313,7 @@ class ViewHelper @Inject()() {
         contactInformationList.head match {
           case ContactInformationForIndividual(_, email, _, _) => email
           case ContactInformationForOrganisation(_, email, _, _) => email
+          case _ => "None"
         }
     }
 
@@ -335,6 +340,7 @@ class ViewHelper @Inject()() {
         contactInformationList.head match {
           case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
           case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
+          case _ => "None"
         }
     }
 

@@ -19,7 +19,7 @@ package models
 import base.SpecBase
 import generators.Generators
 import helpers.JsonFixtures._
-import models.subscription.{DisplaySubscriptionForDACResponse, ResponseCommon, ResponseDetail, SubscriptionForDACResponse}
+import models.subscription._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsString, Json}
 
