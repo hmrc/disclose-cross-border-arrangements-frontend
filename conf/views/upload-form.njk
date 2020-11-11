@@ -6,7 +6,6 @@
 {% from "govuk/components/file-upload/macro.njk"   import govukFileUpload %}
 
 {% block additionalHeaders %}
-<script src="{{ routes.controllers.Assets.versioned("javascripts/upload-progress.js").url }}"></script>
 <link href="/disclose-cross-border-arrangements/assets/stylesheets/spinner.css" media="not speech" rel="stylesheet" type="text/css">
 {% endblock %}
 
@@ -28,11 +27,6 @@
          <h1 class="govuk-heading-xl" id="heading">
              {{ messages("upload_form.heading") }}
          </h1>
-
-<input type="hidden" id="dac6UploadStatus"         value="0" />
-<input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.getStatus().url}}" />
-<input type="hidden" id="dac6VirusErrorUrl"        value="{{routes.controllers.VirusErrorController.onPageLoad().url}}" />
-<input type="hidden" id="dac6UploadSuccessUrl"     value="{{routes.controllers.UploadFormController.showResult().url}}" />
 
 <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 

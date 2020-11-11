@@ -1,0 +1,10 @@
+{% macro hmrcReportTechnicalIssue(params) %}
+
+<a class="govuk-link {{ params.classList }}"
+    id="{{ params.id }}"
+    target="_blank"
+    href="{{ params.link }}">
+    {{ params.messageKey }}
+</a>
+
+{% endmacro %}

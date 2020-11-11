@@ -1,5 +1,6 @@
 {% extends "govuk/template.njk" %}
 {% from "hmrc/components/header/macro.njk"     import hmrcHeader %}
+{% from "includes/get-help-link.njk" import hmrcReportTechnicalIssue %}
 
 {%- set assetPath = "/assets/lib/govuk-frontend/govuk/assets" -%}
 {%- set htmlLang = request.language -%}
@@ -25,6 +26,11 @@
 
 {% block content %}
   {% block mainContent %}{% endblock %}
+    {{ hmrcReportTechnicalIssue({
+      id: "getHelpWithThisPage",
+      link: config.reportAProblemNonJSUrl,
+      messageKey: messages("site.getHelpWithThisPage")
+    }) }}
 {% endblock %}
 
 {% block bodyEnd %}

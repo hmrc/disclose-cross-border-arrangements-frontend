@@ -3,11 +3,6 @@
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
 
-{% block additionalHeaders %}
-{% if status._type == "InProgress" %}
-<meta http-equiv="refresh" content="1"/>
-{% endif %}
-{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -15,33 +10,27 @@
       }) }}
 {% endblock %}
 
+{% block additionalHeaders %}
+<script src="{{ routes.controllers.Assets.versioned("javascripts/upload-spinner.js").url }}"></script>
+<link href="/disclose-cross-border-arrangements/assets/stylesheets/spinner.css" media="not speech" rel="stylesheet" type="text/css">
+{% endblock %}
 
 {% block mainContent %}
 <div class="govuk-main-wrapper">
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
-    <h1>Verifying uploaded file</h1>
 
-    {% if status._type == "InProgress" %}
-        <p>Waiting for the file to be scanned</p>
-    {% elif status._type == "UploadedSuccessfully" %}
-        <p>Upload of <b>{{status.name}}</b> successful!</p>
-    {% elif status._type == "Failed" %}
-        <p>File has been rejected.</p>
+      <input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.getStatus().url}}" />
 
-    {% endif %}
+      <div id="processing" aria-live="polite" class="govuk-!-margin-bottom-5">
+        <h1 class="govuk-heading-xl" id="heading">
+          {{ messages("upload_result_form.heading") }}
+        </h1>
+        <div>
+          <div class="ccms-loader"></div>
+        </div>
+      </div>
 
-    {% if status._type == "UploadedSuccessfully" %}
-            <div class="section">
-                <a href="{{routes.controllers.FileValidationController.onPageLoad(uploadId.value).url}}">
-                    <button class="button">{{messages("site.verify")}}</button>
-                </a>
-            </div>
-    {% else %}
-            <div class="section">
-                <button class="button" disabled="disabled">{{messages("site.verify")}}</button>
-            </div>
-    {% endif %}
       </div>
     </div>
   </div>

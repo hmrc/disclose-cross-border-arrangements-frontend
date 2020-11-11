@@ -10,6 +10,7 @@ site.edit.hidden = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.getHelpWithThisPage = Get help with this page (opens in a new tab)
 site.confirmAndSend= Confirm and send
 site.service_name = Disclose cross-border arrangements for DAC6
 site.textarea.char_limit = (Limit is {0} characters)
@@ -181,7 +182,7 @@ upload_error.title = Upload Error
 upload_error.heading = Upload Error
 
 upload_result_form.title = Verifying uploaded file
-upload_result_form.heading = Verifying uploaded file
+upload_result_form.heading = We are checking your file
 
 validation.title = Validator placeholder
 validation.heading = Validator placeholder
