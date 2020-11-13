@@ -1,5 +1,6 @@
 {% extends "includes/layout.njk" %}
 
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
 {% from "govuk/components/button/macro.njk"        import govukButton %}
@@ -9,6 +10,10 @@
 {% endblock %}
 
 {% block mainContent %}
+
+  {{ govukBackLink({
+    text: messages("site.back")
+  }) }}
 
   <div class="govuk-main-wrapper">
     <div class="govuk-grid-row">

@@ -269,10 +269,10 @@ class ViewHelper @Inject()() {
   def secondaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
 
-    val contactName: String = (userAnswers.get(SecondaryContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
-      case (Some(contactName), _) => contactName
-      case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
-      case _ =>
+    //Note: Secondary contact name is only one field in the registration journey. It's always ContactInformationForOrganisation
+    val contactName = userAnswers.get(SecondaryContactNamePage) match {
+      case Some(contactName) => contactName
+      case None =>
         contactInformationList.head match {
           case ContactInformationForIndividual(individual, _, _, _) =>
             s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
@@ -282,21 +282,13 @@ class ViewHelper @Inject()() {
         }
     }
 
-    val changeLink = contactInformationList.head match {
-      case ContactInformationForIndividual(_, _, _, _) =>
-        routes.IndividualContactNameController.onPageLoad().url
-      case ContactInformationForOrganisation(_, _, _, _) =>
-        routes.SecondaryContactNameController.onPageLoad().url
-      case _ => routes.IndexController.onPageLoad().url //TODO Which page to redirect to as default? Individual or Secondary?
-    }
-
     Row(
       key = Key(msg"contactDetails.secondaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
       value = Value(lit"$contactName"),
       actions = List(
         Action(
           content = msg"site.edit",
-          href = changeLink,
+          href = routes.SecondaryContactNameController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-contact-name")
         )

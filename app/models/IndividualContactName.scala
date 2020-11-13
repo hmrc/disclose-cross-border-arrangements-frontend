@@ -18,7 +18,7 @@ package models
 
 import play.api.libs.json._
 
-case class IndividualContactName (firstName: String, lastName: String)
+case class IndividualContactName(firstName: String, lastName: String)
 
 object IndividualContactName {
   implicit val format: OFormat[IndividualContactName] = Json.format[IndividualContactName]

@@ -22,7 +22,7 @@ import models.UserAnswers
 import models.subscription._
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -44,7 +44,7 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
       response =>
         response.status match {
           case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
-            case JsSuccess(response, _) => (response)
+            case JsSuccess(response, _) => response
             case JsError(errors) =>
               logger.warn("Validation of display subscription payload failed", errors)
               throw new Exception("Validation of display subscription payload failed")
@@ -56,19 +56,26 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
     }
   }
 
-  def createSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateSubscriptionForDACRequest]] = {
+  def updateSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[UpdateSubscriptionForDACResponse] = {
 
-    val submissionUrl = s"${config.crossBorderArrangementsUrl}/subscription/create-dac-subscription"
+    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/update-subscription"
+
     http.POST[UpdateSubscriptionForDACRequest, HttpResponse](
       submissionUrl,
       UpdateSubscriptionForDACRequest(UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, userAnswers))
     ).map {
       response =>
         response.status match {
-          case OK => Some(response.json.as[UpdateSubscriptionForDACRequest])
-          case _ => None
+          case OK => response.json.as[UpdateSubscriptionForDACResponse]
+          case errorStatus: Int =>
+            logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
+            throw new Exception(s"Status $errorStatus has been thrown when update subscription was called")
         }
+    }.recover {
+      case _: Exception =>
+        logger.warn("Validation of update subscription payload failed")
+        throw new Exception("Validation of update subscription payload failed")
     }
   }
 

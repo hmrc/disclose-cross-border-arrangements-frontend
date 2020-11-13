@@ -26,7 +26,7 @@ import play.api.libs.json.{Json, OFormat}
 import scala.util.Random
 
 
-
+//TODO Refactor to use the other model. As long as conversation id is None, play will not include it in json
 case class RequestCommonForUpdate(regime: String,
                                   receiptDate: String,
                                   acknowledgementReference: String,
@@ -69,15 +69,6 @@ case class UpdateSubscriptionDetails(requestCommon: RequestCommonForUpdate,
 object UpdateSubscriptionDetails {
 
   implicit val format: OFormat[UpdateSubscriptionDetails] = Json.format[UpdateSubscriptionDetails]
-
-  private def isOrganisation(responseDetail: ResponseDetail) = {
-    responseDetail.primaryContact.contactInformation.head match {
-      case ContactInformationForIndividual(_, _, _, _) =>
-        false //includes Sole Proprietor
-      case ContactInformationForOrganisation(_, _, _, _) =>
-        true
-    }
-  }
 
   private def buildContactInformation(contactInformation: Seq[ContactInformation],
                                       userAnswers: UserAnswers): Either[ContactInformationForIndividual, ContactInformationForOrganisation] = {
@@ -122,27 +113,10 @@ object UpdateSubscriptionDetails {
   }
 
   private def buildSecondaryContactInformation(contactInformation: Seq[ContactInformation],
-                                               userAnswers: UserAnswers): Either[ContactInformationForIndividual, ContactInformationForOrganisation] = {
+                                               userAnswers: UserAnswers): ContactInformationForOrganisation = {
 
-    //Note: There should only be one item in contact information
+    //Note: Secondary contact name is only one field in the registration journey. It's always ContactInformationForOrganisation
     contactInformation.head match {
-      case ContactInformationForIndividual(details, email, phone, mobile) =>
-        val emailAddress = userAnswers.get(SecondaryContactEmailAddressPage) match {
-          case Some(email) => email
-          case None => email
-        }
-
-        val telephone = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
-          case Some(phone) => Some(phone)
-          case None => phone
-        }
-
-        val individualDetails = userAnswers.get(IndividualContactNamePage) match {
-          case Some(name) => IndividualDetails(name.firstName, name.lastName, None)
-          case None => details
-        }
-
-        Left(ContactInformationForIndividual(individualDetails, emailAddress, telephone, mobile))
       case ContactInformationForOrganisation(details, email, phone, mobile) =>
         val emailAddress = userAnswers.get(SecondaryContactEmailAddressPage) match {
           case Some(email) => email
@@ -159,7 +133,8 @@ object UpdateSubscriptionDetails {
           case None => details
         }
 
-        Right(ContactInformationForOrganisation(organisationDetails, emailAddress, telephone, mobile))
+        ContactInformationForOrganisation(organisationDetails, emailAddress, telephone, mobile)
+      case _ => throw new Exception("Unable to build secondary contact")
     }
   }
 
@@ -171,14 +146,13 @@ object UpdateSubscriptionDetails {
         case Right(contactInformationForOrganisation) => PrimaryContact(Seq(contactInformationForOrganisation))
       }
 
-    val secondaryContact = if (isOrganisation(responseDetail) && responseDetail.secondaryContact.isDefined) {
-      buildSecondaryContactInformation(responseDetail.secondaryContact.get.contactInformation, userAnswers) match {
-        case Left(contactInformationForIndividual) => Some(SecondaryContact(Seq(contactInformationForIndividual)))
-        case Right(contactInformationForOrganisation) => Some(SecondaryContact(Seq(contactInformationForOrganisation)))
+    val secondaryContact: Option[SecondaryContact] =
+      if (responseDetail.secondaryContact.isDefined) {
+        val contactInformation = buildSecondaryContactInformation(responseDetail.secondaryContact.get.contactInformation, userAnswers)
+        Some(SecondaryContact(Seq(contactInformation)))
+      } else {
+        None
       }
-    } else {
-      None
-    }
 
     RequestDetailForUpdate(
       IDType = "SAFE",
@@ -191,7 +165,7 @@ object UpdateSubscriptionDetails {
   }
 
   def updateSubscription(subscriptionDetails: SubscriptionForDACResponse,
-                               userAnswers: UserAnswers): UpdateSubscriptionDetails = {
+                         userAnswers: UserAnswers): UpdateSubscriptionDetails = {
     UpdateSubscriptionDetails(
       requestCommon = RequestCommonForUpdate.createRequestCommon,
       requestDetail = createRequestDetail(subscriptionDetails.responseDetail, userAnswers)

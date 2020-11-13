@@ -131,4 +131,19 @@ object JsonFixtures {
     )
   )
 
+  val updateSubscriptionJsonResponse: String =
+    """
+      |{
+      |  "updateSubscriptionForDACResponse": {
+      |    "responseCommon": {
+      |      "status": "OK",
+      |      "processingDate": "2020-09-01T01:00:00Z"
+      |    },
+      |    "responseDetail": {
+      |      "subscriptionID": "XADAC0000123456"
+      |    }
+      |  }
+      |}
+      |""".stripMargin
+
 }

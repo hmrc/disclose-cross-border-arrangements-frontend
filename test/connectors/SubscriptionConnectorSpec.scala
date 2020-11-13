@@ -20,9 +20,11 @@ import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
 import helpers.JsonFixtures._
 import models.subscription._
+import models.{IndividualContactName, UserAnswers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.IndividualContactNamePage
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.bind
@@ -61,6 +63,11 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
   val enrolmentID: String = "1234567890"
 
+  val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+    DisplaySubscriptionForDACResponse(
+      SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail)
+    )
+
   val mockHttpClient: HttpClient = mock[HttpClient]
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -73,11 +80,6 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
     "displaySubscriptionDetails" - {
       "must return the correct DisplaySubscriptionForDACResponse" in {
-        val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
-          DisplaySubscriptionForDACResponse(
-            SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail)
-          )
-
         val expectedBody = jsonPayloadForDisplaySubscription(
           JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
           JsString("email@email.com"), JsString("07111222333"))
@@ -127,6 +129,56 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
+        an[Exception] mustBe thrownBy (result.futureValue)
+      }
+    }
+
+    "updateSubscription" - {
+
+      "must return UpdateSubscriptionForDACResponse if status is OK and users updated their contact info" in {
+        val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
+          UpdateSubscriptionForDACResponse(
+            UpdateSubscription(
+              responseCommon = ResponseCommon("OK", None, "2020-09-01T01:00:00Z", None),
+              responseDetail = ResponseDetailForUpdate("XADAC0000123456")))
+
+        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionJsonResponse)))
+
+        val userAnswers = UserAnswers(userAnswersId).
+          set(IndividualContactNamePage, IndividualContactName("Kit", "Kat")).success.value
+
+        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
+        result.futureValue mustBe updateSubscriptionForDACResponse
+      }
+
+      "must throw an exception if unable to validate json" in {
+        val invalidBody =
+          """
+            |{
+            |  "updateSubscriptionForDACResponse": {
+            |    "responseCommon": {
+            |      "status": "OK"
+            |    },
+            |    "responseDetail": {
+            |      "subscriptionID": "XADAC0000123456"
+            |    }
+            |  }
+            |}
+            |""".stripMargin
+
+        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
+
+        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
+        an[Exception] mustBe thrownBy (result.futureValue)
+      }
+
+      "must throw an exception if status is not OK" in {
+        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
+
+        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
         an[Exception] mustBe thrownBy (result.futureValue)
       }
     }
