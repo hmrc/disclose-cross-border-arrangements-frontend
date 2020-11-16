@@ -20,6 +20,7 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import helpers.ViewHelper
 import javax.inject.Inject
+import org.slf4j.LoggerFactory
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -38,6 +39,8 @@ class ContactDetailsController @Inject()(
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
@@ -70,7 +73,9 @@ class ContactDetailsController @Inject()(
 
             renderer.render("contactDetails.njk", contactDetails).map(Ok(_))
       }.recover {
-        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
+        case e: Exception =>
+          logger.warn("Conversion of display subscription payload failed", e)
+          Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
       }
   }
 
@@ -83,7 +88,9 @@ class ContactDetailsController @Inject()(
               Redirect(routes.IndexController.onPageLoad())
           }
       }.recover {
-        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
+        case e: Exception =>
+          logger.warn("Conversion of display/update subscription payload failed", e)
+          Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
       }
   }
 }

@@ -58,7 +58,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
           val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse = DisplaySubscriptionForDACResponse(
             SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
-          val jsonPayload = jsonPayloadForDisplaySubscription(JsString(firstName), JsString(lastName), JsString(organisationName),
+          val jsonPayload = displaySubscriptionPayload(JsString(firstName), JsString(lastName), JsString(organisationName),
             JsString(primaryEmail), JsString(secondaryEmail), JsString(phoneNumber))
 
           Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get mustBe displaySubscriptionForDACResponse

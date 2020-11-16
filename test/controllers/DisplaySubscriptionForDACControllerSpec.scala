@@ -40,7 +40,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
 
     "return OK and the correct view for a GET and there are subscription details available" in {
 
-      val jsonPayload = jsonPayloadForDisplaySubscription(
+      val jsonPayload = displaySubscriptionPayload(
         JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
         JsString("email@email.com"), JsString("07111222333"))
       val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get

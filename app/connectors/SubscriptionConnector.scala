@@ -22,7 +22,6 @@ import models.UserAnswers
 import models.subscription._
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
-import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -43,12 +42,7 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
     ).map {
       response =>
         response.status match {
-          case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
-            case JsSuccess(response, _) => response
-            case JsError(errors) =>
-              logger.warn("Validation of display subscription payload failed", errors)
-              throw new Exception("Validation of display subscription payload failed")
-          }
+          case OK => response.json.as[DisplaySubscriptionForDACResponse]
           case errorStatus: Int =>
             logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
             throw new Exception(s"Status $errorStatus has been thrown when display subscription was called")
@@ -72,10 +66,6 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
             logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
             throw new Exception(s"Status $errorStatus has been thrown when update subscription was called")
         }
-    }.recover {
-      case _: Exception =>
-        logger.warn("Validation of update subscription payload failed")
-        throw new Exception("Validation of update subscription payload failed")
     }
   }
 

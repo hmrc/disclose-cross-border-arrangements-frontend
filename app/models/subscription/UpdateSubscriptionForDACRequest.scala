@@ -26,7 +26,6 @@ import play.api.libs.json.{Json, OFormat}
 import scala.util.Random
 
 
-//TODO Refactor to use the other model. As long as conversation id is None, play will not include it in json
 case class RequestCommonForUpdate(regime: String,
                                   receiptDate: String,
                                   acknowledgementReference: String,

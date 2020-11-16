@@ -80,7 +80,7 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
     "displaySubscriptionDetails" - {
       "must return the correct DisplaySubscriptionForDACResponse" in {
-        val expectedBody = jsonPayloadForDisplaySubscription(
+        val expectedBody = displaySubscriptionPayload(
           JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
           JsString("email@email.com"), JsString("07111222333"))
 
@@ -136,14 +136,15 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
     "updateSubscription" - {
 
       "must return UpdateSubscriptionForDACResponse if status is OK and users updated their contact info" in {
+        val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
         val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
           UpdateSubscriptionForDACResponse(
             UpdateSubscription(
-              responseCommon = ResponseCommon("OK", None, "2020-09-01T01:00:00Z", None),
+              responseCommon = ResponseCommon("OK", None, "2020-09-23T16:12:11Z", Some(Seq(returnParameters))),
               responseDetail = ResponseDetailForUpdate("XADAC0000123456")))
 
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionJsonResponse)))
+          .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload)))
 
         val userAnswers = UserAnswers(userAnswersId).
           set(IndividualContactNamePage, IndividualContactName("Kit", "Kat")).success.value
