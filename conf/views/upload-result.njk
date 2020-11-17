@@ -23,10 +23,12 @@
       <input type="hidden" id="dac6UploadRefreshUrl"     value="{{routes.controllers.UploadFormController.getStatus().url}}" />
 
       <div id="processing" aria-live="polite" class="govuk-!-margin-bottom-5">
-          <h2 class="govuk-heading-m">We are checking your file, please wait</h2>
-          <div>
-            <div class="ccms-loader"></div>
-          </div>
+        <h1 class="govuk-heading-xl" id="heading">
+          {{ messages("upload_result_form.heading") }}
+        </h1>
+        <div>
+          <div class="ccms-loader"></div>
+        </div>
       </div>
 
       </div>
