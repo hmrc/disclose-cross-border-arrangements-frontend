@@ -26,7 +26,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class DisplaySubscriptionForDACController @Inject()(
     override val messagesApi: MessagesApi,
@@ -43,16 +43,17 @@ class DisplaySubscriptionForDACController @Inject()(
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          val responseDetail = details.displaySubscriptionForDACResponse.responseDetail
+          if (details.isDefined) {
+            val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
 
-          val displaySubscription = Json.obj(
-            "displaySubscription" -> viewHelper.buildDisplaySubscription(responseDetail)
-          )
+            val displaySubscription = Json.obj(
+              "displaySubscription" -> viewHelper.buildDisplaySubscription(responseDetail)
+            )
 
-          renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))
-      }.recover {
-        case _: Exception => Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page when ready
+            renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))
+          } else {
+            Future.successful(Redirect(routes.IndexController.onPageLoad()))
+          }
       }
-
   }
 }

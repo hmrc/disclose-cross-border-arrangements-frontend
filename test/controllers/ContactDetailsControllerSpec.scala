@@ -48,7 +48,7 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(displaySubscriptionDetails))
+        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -90,7 +90,7 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(displaySubscriptionDetails))
+        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -120,16 +120,27 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
       application.stop()
     }
 
-    "must redirect to Problem page if display subscription details isn't available" in {
+    "must display the InternalServerError page if display subscription details isn't available" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(None))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      ).build()
       val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
+      status(result) mustEqual INTERNAL_SERVER_ERROR
 
-      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+      templateCaptor.getValue mustEqual "internalServerError.njk"
 
       application.stop()
     }
@@ -143,10 +154,10 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
       val updateSubscriptionForDACResponse = Json.parse(updateSubscriptionResponsePayload).as[UpdateSubscriptionForDACResponse]
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(displaySubscriptionDetails))
+        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
       when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
-        .thenReturn(Future.successful(updateSubscriptionForDACResponse))
+        .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -162,16 +173,27 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
       application.stop()
     }
 
-    "must redirect to the Problem page if users click submit and display subscription details isn't available" in {
+    "must display the InternalServerError page if users click submit and display or update subscription details failed" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
 
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(None))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      ).build()
       val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+      status(result) mustEqual INTERNAL_SERVER_ERROR
+
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+      templateCaptor.getValue mustEqual "internalServerError.njk"
 
       application.stop()
     }

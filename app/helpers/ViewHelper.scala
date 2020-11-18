@@ -184,7 +184,6 @@ class ViewHelper @Inject()() {
 
 
   def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    //TODO Double check API that contact info is always going to be 1
     val contactName = (userAnswers.get(ContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
       case (Some(contactName), _) => contactName
       case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
@@ -278,7 +277,6 @@ class ViewHelper @Inject()() {
             s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
           case ContactInformationForOrganisation(organisation, _, _, _) =>
             s"${organisation.organisationName}"
-          case _ => "None"
         }
     }
 
@@ -305,7 +303,6 @@ class ViewHelper @Inject()() {
         contactInformationList.head match {
           case ContactInformationForIndividual(_, email, _, _) => email
           case ContactInformationForOrganisation(_, email, _, _) => email
-          case _ => "None"
         }
     }
 
@@ -332,7 +329,6 @@ class ViewHelper @Inject()() {
         contactInformationList.head match {
           case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
           case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
-          case _ => "None"
         }
     }
 

@@ -22,6 +22,7 @@ import models.UserAnswers
 import models.subscription._
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -32,7 +33,7 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
   private val logger = LoggerFactory.getLogger(getClass)
 
   def displaySubscriptionDetails(enrolmentID: String)
-                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[DisplaySubscriptionForDACResponse] = {
+                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[DisplaySubscriptionForDACResponse]] = {
 
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/display-subscription"
 
@@ -42,16 +43,21 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
     ).map {
       response =>
         response.status match {
-          case OK => response.json.as[DisplaySubscriptionForDACResponse]
+          case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
+            case JsSuccess(response, _) => Some(response)
+            case JsError(errors) =>
+              logger.warn("Validation of display subscription payload failed", errors)
+              None
+          }
           case errorStatus: Int =>
             logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
-            throw new Exception(s"Status $errorStatus has been thrown when display subscription was called")
+            None
         }
     }
   }
 
   def updateSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[UpdateSubscriptionForDACResponse] = {
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateSubscriptionForDACResponse]] = {
 
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/update-subscription"
 
@@ -61,10 +67,15 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
     ).map {
       response =>
         response.status match {
-          case OK => response.json.as[UpdateSubscriptionForDACResponse]
+          case OK => response.json.validate[UpdateSubscriptionForDACResponse] match {
+            case JsSuccess(response, _) => Some(response)
+            case JsError(errors) =>
+              logger.warn("Validation of update subscription response failed", errors)
+              None
+          }
           case errorStatus: Int =>
             logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
-            throw new Exception(s"Status $errorStatus has been thrown when update subscription was called")
+            None
         }
     }
   }

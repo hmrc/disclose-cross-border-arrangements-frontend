@@ -49,7 +49,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(displaySubscriptionDetails))
+        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(
@@ -70,13 +70,13 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
       application.stop()
     }
 
-    "redirect to problem page if display subscription threw an exception" in {
+    "redirect to index page if display subscription isn't available" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.failed(new Exception("")))
+        .thenReturn(Future.successful(None))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(

@@ -88,10 +88,10 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe displaySubscriptionForDACResponse
+        result.futureValue mustBe Some(displaySubscriptionForDACResponse)
       }
 
-      "must throw an exception if unable to validate json" in {
+      "must return None if unable to validate json" in {
         val invalidBody =
           s"""
              |{
@@ -121,15 +121,15 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        an[Exception] mustBe thrownBy (result.futureValue)
+        result.futureValue mustBe None
       }
 
-      "must return throw an exception if status is not OK" in {
+      "must return None if status is not OK" in {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        an[Exception] mustBe thrownBy (result.futureValue)
+        result.futureValue mustBe None
       }
     }
 
@@ -150,10 +150,10 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           set(IndividualContactNamePage, IndividualContactName("Kit", "Kat")).success.value
 
         val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
-        result.futureValue mustBe updateSubscriptionForDACResponse
+        result.futureValue mustBe Some(updateSubscriptionForDACResponse)
       }
 
-      "must throw an exception if unable to validate json" in {
+      "must return None if unable to validate json" in {
         val invalidBody =
           """
             |{
@@ -172,15 +172,15 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
         val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
-        an[Exception] mustBe thrownBy (result.futureValue)
+        result.futureValue mustBe None
       }
 
-      "must throw an exception if status is not OK" in {
+      "must return None if status is not OK" in {
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
           .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
 
         val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
-        an[Exception] mustBe thrownBy (result.futureValue)
+        result.futureValue mustBe None
       }
     }
   }

@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
@@ -33,6 +34,7 @@ class IndexController @Inject()(
                                  sessionRepository: SessionRepository,
                                  identify: IdentifierAction,
                                  getData: DataRetrievalAction,
+                                 frontendAppConfig: FrontendAppConfig,
                                  crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
                                  val controllerComponents: MessagesControllerComponents,
                                  renderer: Renderer
@@ -47,7 +49,10 @@ class IndexController @Inject()(
         noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
         _                       <- sessionRepository.set(userAnswers)
       } yield {
-        val context = Json.obj("hasSubmissions" -> (noOfPreviousSubmissions > 0))
+        val context = Json.obj(
+          "hasSubmissions" -> (noOfPreviousSubmissions > 0),
+          "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle
+        )
         renderer.render("index.njk", context).map(Ok(_))
       }
     }.flatten

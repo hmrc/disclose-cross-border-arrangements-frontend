@@ -18,9 +18,9 @@ package controllers
 
 import connectors.SubscriptionConnector
 import controllers.actions._
+import handlers.ErrorHandler
 import helpers.ViewHelper
 import javax.inject.Inject
-import org.slf4j.LoggerFactory
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -32,6 +32,7 @@ import scala.concurrent.ExecutionContext
 class ContactDetailsController @Inject()(
     override val messagesApi: MessagesApi,
     subscriptionConnector: SubscriptionConnector,
+    errorHandler: ErrorHandler,
     viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
@@ -40,14 +41,14 @@ class ContactDetailsController @Inject()(
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-            val responseDetail = details.displaySubscriptionForDACResponse.responseDetail
+
+          if (details.isDefined) {
+            val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
 
             val contactDetailsList =
               if (responseDetail.secondaryContact.isDefined) {
@@ -72,10 +73,9 @@ class ContactDetailsController @Inject()(
             )
 
             renderer.render("contactDetails.njk", contactDetails).map(Ok(_))
-      }.recover {
-        case e: Exception =>
-          logger.warn("Conversion of display subscription payload failed", e)
-          Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
+          } else {
+            errorHandler.onServerError(request, new Exception("Conversion of display subscription payload failed"))
+          }
       }
   }
 
@@ -83,14 +83,14 @@ class ContactDetailsController @Inject()(
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          subscriptionConnector.updateSubscription(details.displaySubscriptionForDACResponse, request.userAnswers).map {
-            _ =>
-              Redirect(routes.IndexController.onPageLoad())
+          if (details.isDefined) {
+            subscriptionConnector.updateSubscription(details.get.displaySubscriptionForDACResponse, request.userAnswers).map {
+              _ =>
+                Redirect(routes.IndexController.onPageLoad())
+              }
+          } else {
+            errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
           }
-      }.recover {
-        case e: Exception =>
-          logger.warn("Conversion of display/update subscription payload failed", e)
-          Redirect(routes.IndexController.onPageLoad()) //TODO Redirect to a problem page
       }
   }
 }
