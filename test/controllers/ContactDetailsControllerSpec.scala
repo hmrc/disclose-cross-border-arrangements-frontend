@@ -113,9 +113,9 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
       contactDetails.contains("Contact name") mustBe true
       contactDetails.contains("Email address") mustBe true
       contactDetails.contains("Telephone") mustBe true
-      contactDetails.contains("Secondary contact name") mustBe true
-      contactDetails.contains("Secondary email address") mustBe true
-      contactDetails.contains("Secondary telephone") mustBe true
+      contactDetails.contains("Additional contact name") mustBe true
+      contactDetails.contains("Additional contact email address") mustBe true
+      contactDetails.contains("Additional contact telephone number") mustBe true
 
       application.stop()
     }
