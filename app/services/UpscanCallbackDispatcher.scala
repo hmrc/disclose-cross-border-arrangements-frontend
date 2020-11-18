@@ -32,7 +32,7 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
         UploadedSuccessfully(s.uploadDetails.fileName, s.downloadUrl)
       case s: FailedCallbackBody if s.failureDetails.failureReason == "QUARANTINE" =>
         Quarantined
-      case s: FailedCallbackBody =>
+      case _: FailedCallbackBody =>
         Failed
     }
     sessionStorage.registerUploadResult(callback.reference, uploadStatus)
