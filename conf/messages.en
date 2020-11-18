@@ -287,13 +287,13 @@ displaySubscriptionForDAC.organisationMobile = Organisation Mobile
 
 contactDetails.title = Check your contact details
 contactDetails.heading = Check your contact details
-contactDetails.h2 = Contact Details
+contactDetails.h2 = Contact details
 contactDetails.primaryContactName.checkYourAnswersLabel = Contact name
 contactDetails.primaryContactEmail.checkYourAnswersLabel = Email address
 contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Telephone
-contactDetails.secondaryContactName.checkYourAnswersLabel = Secondary contact name
-contactDetails.secondaryContactEmail.checkYourAnswersLabel = Secondary email address
-contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Secondary telephone
+contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact name
+contactDetails.secondaryContactEmail.checkYourAnswersLabel = Additional contact email address
+contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Additional contact telephone number
 contactDetails.button = Confirm and send
 
 contactName.title = What is the name of the individual or team we should contact?
