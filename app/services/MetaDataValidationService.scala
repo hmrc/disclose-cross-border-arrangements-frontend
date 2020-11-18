@@ -57,8 +57,8 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   def verifyIds(source: String, elem: Elem, dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
     dac6MetaData match {
-      case Dac6MetaData("DAC6ADD", Some(arrangementId), None) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
-      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId)) if replaceOrDelete.contains(instruction)  => Future(verifyReplaceOrDelete(source, elem, dac6MetaData, arrangementId, disclosureId, history))
+      case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
+      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _) if replaceOrDelete.contains(instruction)  => Future(verifyReplaceOrDelete(source, elem, dac6MetaData, arrangementId, disclosureId, history))
       case _ => Future(ValidationSuccess(source, Some(dac6MetaData)))
 
     }

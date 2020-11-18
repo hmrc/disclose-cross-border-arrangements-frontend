@@ -1659,7 +1659,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
-  "must return correct metadata for import instruction DAC6NEW" in {
+  "must return correct metadata for import instruction DAC6NEW when disclosure info is present" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
         <Header>
@@ -1682,7 +1682,22 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = true))
+  }
+
+  "must return correct metadata for import instruction DAC6NEW  when disclosure info is not present" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+        <DAC6Disclosures>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = false))
   }
 
   "must return correct metadata for import instruction DAC6ADD" in {
@@ -1705,7 +1720,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None, disclosureInformationPresent = true))
   }
 
   "must return correct metadata for import instruction DAC6ADD with RelevantTaxpayers who all have implementing dates" in {
@@ -1736,7 +1751,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None, disclosureInformationPresent = true))
   }
 
 
@@ -1767,7 +1782,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None, disclosureInformationPresent = true))
   }
 
   "must return correct metadata for import instruction DAC6REP" in {
@@ -1791,7 +1806,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000")))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000"), disclosureInformationPresent = true))
   }
 
   "must return correct metadata for import instruction DAC6DEL" in {
@@ -1815,7 +1830,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000")))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000"), disclosureInformationPresent = true))
   }
   "must throw exception if disclosureImportInstruction is invalid or missing" in {
     val xml =
