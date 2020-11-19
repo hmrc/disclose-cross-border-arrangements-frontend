@@ -32,6 +32,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   implicit val localDateOrdering: Ordering[LocalDateTime] = Ordering.by(_.toLocalTime)
 
   val replaceOrDelete = List("DAC6REP", "DAC6DEL")
+
   def verifyMetaData(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
@@ -104,6 +105,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   private def verifyReplaceOrDelete(source: String, elem: Elem, dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
                             history: SubmissionHistory)
                            (implicit hc: HeaderCarrier, ec: ExecutionContext): XMLValidationStatus = {
+
     val submissionContainingDisclosureId = history.details.find(submission => submission.disclosureID.contains(disclosureId))
 
 
@@ -116,6 +118,12 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
           case "DAC6REP" if !isMarketableArrangement(dac6MetaData,history) && !dac6MetaData.disclosureInformationPresent =>
             ValidationFailure(List(GenericError(getLineNumber(elem, "DisclosureImportInstruction"), "Provide DisclosureInformation in this DAC6REP file. This is a mandatory field for arrangements that are not marketable")))
+
+          case "DAC6REP" if !isMarketableArrangement(dac6MetaData,history) && dac6MetaData.initialDisclosureMA =>
+            ValidationFailure(List(GenericError(getLineNumber(elem, "InitialDisclosureMA"), "Change the InitialDisclosureMA to match the original declaration. If the arrangement has since become marketable, you will need to make a new report")))
+
+          case "DAC6REP" if isMarketableArrangement(dac6MetaData,history) && !dac6MetaData.initialDisclosureMA =>
+            ValidationFailure(List(GenericError(getLineNumber(elem, "InitialDisclosureMA"), "Change the InitialDisclosureMA to match the original declaration. If the arrangement is no longer marketable, you will need to make a new report")))
 
           case _ => ValidationSuccess(source, Some(dac6MetaData))
 

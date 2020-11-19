@@ -85,6 +85,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
         <DisclosureInformation>
           <ImplementingDate>2018-06-25</ImplementingDate>
         </DisclosureInformation>
+        <InitialDisclosureMA>true</InitialDisclosureMA>
       </DAC6Disclosures>
     </DAC6_Arrangement>
 
@@ -429,7 +430,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationSucces for a DAC6REP which is replacing a DAC6NEW and disclosure info is present" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = false))
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = true))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
@@ -523,7 +524,47 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
         result mustBe ValidationFailure(List(GenericError(9, "Provide DisclosureInformation in this DAC6REP file. This is a mandatory field for arrangements that are not marketable")))
       }
 
-      "should return a ValidationSucces for a DAC6REP which is replacing a DAC6NEW and marketable arrangment flag matches" in {
+      "should return a ValidationSuccess for a DAC6REP which is replacing a DAC6NEW and marketable arrangment flag matches" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = true))
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "New",
+          initialDisclosureMA = true)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+      }
+
+      "should return a ValidationFailure for a DAC6REP which is replacing a DAC6NEW and marketable arrangement flag does not match 1" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = true))
+
+        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "New",
+          initialDisclosureMA = false)
+
+        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(23, "Change the InitialDisclosureMA to match the original declaration. If the arrangement has since become marketable, you will need to make a new report")))
+      }
+
+      "should return a ValidationFailure for a DAC6REP which is replacing a DAC6NEW and marketable arrangement flag does not match 2" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = false))
@@ -540,7 +581,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
         val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe ValidationSuccess(downloadSource, dac6MetaData)
+        result mustBe ValidationFailure(List(GenericError(23, "Change the InitialDisclosureMA to match the original declaration. If the arrangement is no longer marketable, you will need to make a new report")))
       }
 
     }
