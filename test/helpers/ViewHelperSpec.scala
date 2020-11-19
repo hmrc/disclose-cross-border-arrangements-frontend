@@ -252,7 +252,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      val result = viewHelper.buildDisplaySubscription(responseDetail)
+      val result = viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = true)
 
       result mustBe Table(
         head = Seq(

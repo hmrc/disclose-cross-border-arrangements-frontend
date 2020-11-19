@@ -46,8 +46,14 @@ class DisplaySubscriptionForDACController @Inject()(
           if (details.isDefined) {
             val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
 
+            val buildDisplaySubscription = if (responseDetail.secondaryContact.isDefined) {
+              viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = true)
+            } else {
+              viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = false)
+            }
+
             val displaySubscription = Json.obj(
-              "displaySubscription" -> viewHelper.buildDisplaySubscription(responseDetail)
+              "displaySubscription" -> buildDisplaySubscription
             )
 
             renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))

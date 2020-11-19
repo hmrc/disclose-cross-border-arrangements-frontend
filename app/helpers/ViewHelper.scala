@@ -89,7 +89,7 @@ class ViewHelper @Inject()() {
       attributes = Map("id" -> "disclosuresTable"))
   }
 
-  def buildDisplaySubscription(responseDetail: ResponseDetail): Table = {
+  def buildDisplaySubscription(responseDetail: ResponseDetail, hasSecondContact: Boolean): Table = {
     val rows =
       Seq(
         Seq(
@@ -107,18 +107,22 @@ class ViewHelper @Inject()() {
           Cell(msg"${responseDetail.isGBUser}", classes = Seq("govuk-!-width-one-third"),
             attributes = Map("id" -> "isGBUser"))
         )
-      ) ++ buildContactDetails(
-        responseDetail.primaryContact.contactInformation
-      ) ++ buildContactDetails(
+      ) ++ buildContactDetails(responseDetail.primaryContact.contactInformation)
+
+    val updateRows = if (hasSecondContact) {
+      rows ++ buildContactDetails(
         responseDetail.secondaryContact.fold(Seq[ContactInformation]())(p => p.contactInformation)
       )
+    } else {
+      rows
+    }
 
     Table(
       head = Seq(
         Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
         Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
       ),
-      rows = rows)
+      rows = updateRows)
   }
 
   private def buildContactDetails(contactInformation: Seq[ContactInformation]): Seq[Seq[Cell]] = {
@@ -169,14 +173,6 @@ class ViewHelper @Inject()() {
             Cell(msg"displaySubscriptionForDAC.organisationMobile", classes = Seq("govuk-!-width-one-third")),
             Cell(msg"${mobile.getOrElse("None")}", classes = Seq("govuk-!-width-one-third"),
               attributes = Map("id" -> "organisationMobile"))
-          )
-        )
-      case _ =>
-        Seq(
-          Seq(
-            Cell(msg"displaySubscriptionForDAC.heading", classes = Seq("govuk-!-width-one-third")),
-            Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
-              attributes = Map("id" -> "noDetails"))
           )
         )
     }
