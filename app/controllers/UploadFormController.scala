@@ -65,7 +65,7 @@ class UploadFormController @Inject()(
       {
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
-          _                      <- uploadProgressTracker.requestUpload(uploadId,   upscanInitiateResponse.fileReference)
+          _                      <- uploadProgressTracker.requestUpload(uploadId, upscanInitiateResponse.fileReference)
           updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
           _                      <- sessionRepository.set(updatedAnswers)
         } yield {
@@ -114,12 +114,14 @@ class UploadFormController @Inject()(
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(Failed) =>
-              Future.successful(BadRequest (s"Upload failed") )
-            case Some(result) =>
-              Future.successful(Ok(Json.toJson(result)))
-            case None         => Future.successful(BadRequest(s"Upload with id $uploadId not found"))
+              errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
+            case Some(_) =>
+              renderer.render("upload-result.njk").map(Ok(_))
+            case None =>
+              errorHandler.onServerError(request, new Throwable(s"Upload with id $uploadId not found"))
           }
-        case None => Future.successful(BadRequest (s"UploadId not found") )
+        case None =>
+          errorHandler.onServerError(request, new Throwable("UploadId not found"))
       }
     }
   }

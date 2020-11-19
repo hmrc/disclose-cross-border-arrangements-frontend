@@ -85,6 +85,9 @@ class UploadFormControllerSpec extends SpecBase
 
         when(mockUploadProgressTracker.getUploadResult(uploadId))
           .thenReturn(Future.successful(Some(uploadStatus)))
+        when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
+
+        val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
@@ -93,15 +96,18 @@ class UploadFormControllerSpec extends SpecBase
         val result = route(application, request).value
 
         status(result) mustBe expectedResult
-        if (expectedResult == OK) contentAsJson(result) mustBe Json.toJson(uploadStatus)
+        if (expectedResult == OK) {
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+          templateCaptor.getValue mustEqual "upload-result.njk"
+        }
 
         application.stop()
-        reset(mockUploadProgressTracker)
+        reset(mockUploadProgressTracker, mockRenderer)
       }
 
       verifyResult(InProgress, OK)
       verifyResult(Quarantined)
-      verifyResult(Failed, BAD_REQUEST)
+      verifyResult(Failed, INTERNAL_SERVER_ERROR)
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
     }
