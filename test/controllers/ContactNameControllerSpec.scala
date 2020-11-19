@@ -19,7 +19,7 @@ package controllers
 import base.SpecBase
 import forms.ContactNameFormProvider
 import matchers.JsonMatchers
-import models.UserAnswers
+import models.{Name, UserAnswers}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -79,7 +79,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val userAnswers = UserAnswers(userAnswersId).set(ContactNamePage, "answer").success.value
+      val userAnswers = UserAnswers(userAnswersId).set(ContactNamePage, Name("Kit", "Kat")).success.value
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
       val request = FakeRequest(GET, contactNameRoute)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
@@ -91,7 +91,12 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      val filledForm = form.bind(Map("contactName" -> "answer"))
+      val filledForm = form.bind(
+        Map(
+          "firstName" -> "Kit",
+          "lastName" -> "Kat"
+        )
+      )
 
       val expectedJson = Json.obj(
         "form" -> filledForm
@@ -119,7 +124,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       val request =
         FakeRequest(POST, contactNameRoute)
-          .withFormUrlEncodedBody(("contactName", "answer"))
+          .withFormUrlEncodedBody(("firstName", "Kit"), ("lastName", "Kat"))
 
       val result = route(application, request).value
 
@@ -135,8 +140,8 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
         .thenReturn(Future.successful(Html("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(POST, contactNameRoute).withFormUrlEncodedBody(("contactName", ""))
-      val boundForm = form.bind(Map("contactName" -> ""))
+      val request = FakeRequest(POST, contactNameRoute).withFormUrlEncodedBody(("value", ""))
+      val boundForm = form.bind(Map("value" -> ""))
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
@@ -177,7 +182,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       val request =
         FakeRequest(POST, contactNameRoute)
-          .withFormUrlEncodedBody(("contactName", "answer"))
+          .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
 
       val result = route(application, request).value
 

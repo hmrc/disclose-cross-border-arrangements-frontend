@@ -93,7 +93,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
           answers =>
             val updatedAnswers =
               answers
-                .set(ContactNamePage, "Contact Name")
+                .set(ContactNamePage, Name("First", "Last"))
                 .success
                 .value
             navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)
@@ -107,7 +107,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
           answers =>
             val updatedAnswers =
               answers
-                .set(IndividualContactNamePage, IndividualContactName("First", "Last"))
+                .set(IndividualContactNamePage, Name("First", "Last"))
                 .success
                 .value
             navigator.nextPage(IndividualContactNamePage, NormalMode, updatedAnswers)

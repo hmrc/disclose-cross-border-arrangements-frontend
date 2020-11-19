@@ -185,7 +185,7 @@ class ViewHelper @Inject()() {
 
   def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactName = (userAnswers.get(ContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
-      case (Some(contactName), _) => contactName
+      case (Some(contactName), _) => s"${contactName.firstName} ${contactName.lastName}"
       case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
       case _ =>
         responseDetail.primaryContact.contactInformation.head match {

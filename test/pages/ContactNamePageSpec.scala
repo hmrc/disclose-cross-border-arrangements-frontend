@@ -16,6 +16,7 @@
 
 package pages
 
+import models.Name
 import pages.behaviours.PageBehaviours
 
 
@@ -23,10 +24,10 @@ class ContactNamePageSpec extends PageBehaviours {
 
   "ContactNamePage" - {
 
-    beRetrievable[String](ContactNamePage)
+    beRetrievable[Name](ContactNamePage)
 
-    beSettable[String](ContactNamePage)
+    beSettable[Name](ContactNamePage)
 
-    beRemovable[String](ContactNamePage)
+    beRemovable[Name](ContactNamePage)
   }
 }

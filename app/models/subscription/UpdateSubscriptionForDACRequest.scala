@@ -103,7 +103,7 @@ object UpdateSubscriptionDetails {
         }
 
         val organisationDetails = userAnswers.get(ContactNamePage) match {
-          case Some(name) => OrganisationDetails(name)
+          case Some(name) => OrganisationDetails(s"${name.firstName} ${name.lastName}")
           case None => details
         }
 

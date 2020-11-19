@@ -20,7 +20,7 @@ import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
 import helpers.JsonFixtures._
 import models.subscription._
-import models.{IndividualContactName, UserAnswers}
+import models.{Name, UserAnswers}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -147,7 +147,7 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
           .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload)))
 
         val userAnswers = UserAnswers(userAnswersId).
-          set(IndividualContactNamePage, IndividualContactName("Kit", "Kat")).success.value
+          set(IndividualContactNamePage, Name("Kit", "Kat")).success.value
 
         val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
         result.futureValue mustBe Some(updateSubscriptionForDACResponse)

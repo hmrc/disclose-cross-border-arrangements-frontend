@@ -16,17 +16,17 @@
 
 package pages
 
-import models.IndividualContactName
+import models.Name
 import pages.behaviours.PageBehaviours
 
 class IndividualContactNamePageSpec extends PageBehaviours {
 
   "IndividualContactNamePage" - {
 
-    beRetrievable[IndividualContactName](IndividualContactNamePage)
+    beRetrievable[Name](IndividualContactNamePage)
 
-    beSettable[IndividualContactName](IndividualContactNamePage)
+    beSettable[Name](IndividualContactNamePage)
 
-    beRemovable[IndividualContactName](IndividualContactNamePage)
+    beRemovable[Name](IndividualContactNamePage)
   }
 }

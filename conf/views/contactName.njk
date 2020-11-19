@@ -31,16 +31,30 @@
 
           {{ csrf() | safe }}
 
+          <h1 class="govuk-heading-xl">
+            {{ messages("contactName.heading") }}
+          </h1>
+
           {{ govukInput({
             label: {
-              text: messages('contactName.heading'),
-              isPageHeading: true,
-              classes: "govuk-label--xl"
+              text: messages('contactName.firstName')
             },
-            id: "contactName",
-            name: "contactName",
-            value: form.contactName.value,
-            errorMessage: form.contactName.error
+            classes: "govuk-!-width-two-thirds",
+            id: "firstName",
+            name: "firstName",
+            value: form.firstName.value,
+            errorMessage: form.firstName.error
+          }) }}
+
+          {{ govukInput({
+            label: {
+              text: messages('contactName.lastName')
+            },
+            classes: "govuk-!-width-two-thirds",
+            id: "lastName",
+            name: "lastName",
+            value: form.lastName.value,
+            errorMessage: form.lastName.error
           }) }}
 
           {{ govukButton({

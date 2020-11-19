@@ -16,7 +16,7 @@
 
 package generators
 
-import models.IndividualContactName
+import models.Name
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import pages._
@@ -28,7 +28,7 @@ trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
     Arbitrary {
       for {
         page  <- arbitrary[IndividualContactNamePage.type]
-        value <- arbitrary[IndividualContactName].map(Json.toJson(_))
+        value <- arbitrary[Name].map(Json.toJson(_))
       } yield (page, value)
     }
 
