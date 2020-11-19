@@ -36,9 +36,9 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
     dac6MetaData match {
-      case Some(Dac6MetaData("DAC6NEW", _,_, _)) =>  Future(verifyDisclosureInformation(source, elem, dac6MetaData.get))
+      case Some(Dac6MetaData("DAC6NEW", _,_, _, _)) =>  Future(verifyDisclosureInformation(source, elem, dac6MetaData.get))
 
-      case Some(Dac6MetaData(_, _,_, _)) =>
+      case Some(Dac6MetaData(_, _,_, _, _)) =>
 
         for {
           history <- connector.getSubmissionHistory(enrolmentId)
@@ -59,8 +59,8 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   def verifyIds(source: String, elem: Elem, dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
     dac6MetaData match {
-      case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
-      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _) if replaceOrDelete.contains(instruction)  => Future(verifyReplaceOrDelete(source, elem, dac6MetaData, arrangementId, disclosureId, history))
+      case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _, _) => verifyDAC6ADD(source, elem, dac6MetaData, arrangementId, history)
+      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _, _) if replaceOrDelete.contains(instruction)  => Future(verifyReplaceOrDelete(source, elem, dac6MetaData, arrangementId, disclosureId, history))
       case _ => Future(ValidationSuccess(source, Some(dac6MetaData)))
 
     }
