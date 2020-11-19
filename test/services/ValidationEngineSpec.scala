@@ -35,8 +35,7 @@ import scala.xml.{Elem, NodeSeq}
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-
-
+import scala.language.postfixOps
 
 class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
@@ -79,16 +78,15 @@ class ValidationEngineSpec  extends SpecBase with MockitoSugar {
   val relevantTpDiscloserCapacityError2 = SaxParseError(37,"cvc-type.3.1.3: The value 'DAC61105hhh' of element 'Capacity' is not valid.")
 
   val missingAddressErrors = ListBuffer(addressError1, addressError2)
+
+  val cityError1 = SaxParseError(27, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.")
+  val cityError2 = SaxParseError(27, "cvc-type.3.1.3: The value '' of element 'City' is not valid.")
   val missingCityErrors = ListBuffer(cityError1, cityError2)
 
   val invalidAttributeCodeError = SaxParseError(175,"cvc-attribute.3: The value 'VUVs' of attribute 'currCode' on element 'Amount' is not valid with respect to its type, 'currCode_Type'.")
 
   val issuedByError1 = SaxParseError(18,"cvc-enumeration-valid: Value 'GBf' is not facet-valid with respect to enumeration '[AF, AX]'. It must be a value from the enumeration.")
   val issuedByError2 = SaxParseError(18,"cvc-attribute.3: The value 'GBf' of attribute 'issuedBy' on element 'TIN' is not valid with respect to its type, 'CountryCode_Type'.")
-
-
-  val cityError1 = SaxParseError(27, "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'.")
-  val cityError2 = SaxParseError(27, "cvc-type.3.1.3: The value '' of element 'City' is not valid.")
 
 val enrolmentId = "123456"
 
@@ -136,9 +134,6 @@ val enrolmentId = "123456"
           Dac6MetaData("DAC6NEW")
 
         }
-
-
-
       }
 
     }

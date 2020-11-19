@@ -18,7 +18,7 @@ package connectors
 
 import base.SpecBase
 import config.FrontendAppConfig
-import models.enrolments.{Enrolment, EnrolmentRequest, EnrolmentResponse, KnownFact}
+import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.when
 import play.api.inject.bind
@@ -79,7 +79,7 @@ class EnrolmentStoreConnectorSpec extends SpecBase {
       val enrolmentResponseJson = Json.parse(enrolmentResponse)
 
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(200, Some(enrolmentResponseJson))))
+        .thenReturn(Future.successful(HttpResponse(200, enrolmentResponseJson, Map.empty[String,Seq[String]])))
 
       val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "id"))
       val verifiers = Seq(
@@ -95,7 +95,7 @@ class EnrolmentStoreConnectorSpec extends SpecBase {
       val enrolmentResponseJson = Json.parse(enrolmentResponse)
 
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(404, None)))
+        .thenReturn(Future.successful(HttpResponse(404, "")))
 
       val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "wrong-id"))
       val verifiers = Seq(
@@ -143,7 +143,7 @@ class EnrolmentStoreConnectorSpec extends SpecBase {
       val enrolmentResponseJson = Json.parse(enrolmentResponse)
 
       when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(200, enrolmentResponse)))
+        .thenReturn(Future.successful(HttpResponse(200, enrolmentResponseJson, Map.empty[String,Seq[String]])))
 
       val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "wrong-id"))
       val verifiers = Seq(

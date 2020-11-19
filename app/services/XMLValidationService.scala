@@ -24,12 +24,12 @@ import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.{SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.SaxParseError
 import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.Elem
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
   def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {

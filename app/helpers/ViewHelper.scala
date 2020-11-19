@@ -22,7 +22,6 @@ import com.google.inject.Inject
 import models.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, ResponseDetail, SubmissionHistory}
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
-import uk.gov.hmrc.viewmodels.SummaryList.{Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 

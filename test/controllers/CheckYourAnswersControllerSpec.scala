@@ -20,7 +20,7 @@ import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector}
 import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
-import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
+import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
