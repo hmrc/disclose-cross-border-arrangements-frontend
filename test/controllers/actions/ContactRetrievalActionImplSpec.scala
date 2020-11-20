@@ -19,14 +19,14 @@ package controllers.actions
 import base.SpecBase
 import connectors.EnrolmentStoreConnector
 import models.ContactDetails
-import models.enrolments.{Enrolment, EnrolmentRequest, EnrolmentResponse, KnownFact}
+import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
 import models.requests.{DataRequest, DataRequestWithContacts}
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import utils.EnrolmentConstants
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import org.mockito.Matchers.any
-import utils.EnrolmentConstants
 class ContactRetrievalActionImplSpec extends SpecBase {
 
 

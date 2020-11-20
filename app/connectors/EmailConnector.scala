@@ -20,6 +20,7 @@ import config.FrontendAppConfig
 import javax.inject.{Inject, Singleton}
 import models.EmailRequest
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 

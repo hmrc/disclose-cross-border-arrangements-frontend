@@ -34,13 +34,11 @@ package services
 
 import base.SpecBase
 import fixtures.XMLFixture
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import org.mockito.Matchers.{eq => eqTo, _}
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 class AuditServiceSpec extends SpecBase {
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global

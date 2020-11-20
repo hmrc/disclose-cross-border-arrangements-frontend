@@ -20,7 +20,7 @@ class BusinessRulesErrorMessageHelper {
 
   import models.{GenericError, Validation}
 
-  import scala.xml.{Elem, NodeSeq}
+  import scala.xml.Elem
 
     def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
       val xmlArray = xml.toString().split("\n")

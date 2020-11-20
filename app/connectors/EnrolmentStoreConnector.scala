@@ -18,12 +18,12 @@ package connectors
 
 import config.FrontendAppConfig
 import javax.inject.Inject
-import models.ContactDetails
 import models.enrolments.{EnrolmentRequest, EnrolmentResponse, KnownFact}
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.EnrolmentConstants
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
