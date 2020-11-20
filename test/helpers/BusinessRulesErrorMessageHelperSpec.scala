@@ -188,6 +188,17 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6DEL so there should be an ArrangementID and a DisclosureID"))
       }
 
+      "must  return correct error message taxpayerimplementing dates are populated when they shouldnt be" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), relevantTaxPayerDiscloserXml)
+        result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate"))
+      }
+
       "must  return correct default message for unexpected error key" in {
 
         val failedValidation = Validation(

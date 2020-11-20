@@ -167,26 +167,38 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
-  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+  def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+       (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
     for {
       disclosureImportInstruction <- disclosureImportInstruction
       relevantTaxPayers <- noOfRelevantTaxPayers
       taxPayerImplementingDate <- taxPayerImplementingDates
       arrangementID <- arrangementID
+      isInitialDisclosureMA <- isInitialDisclosureMA
+
     } yield {
       if ((disclosureImportInstruction == "DAC6ADD") || (disclosureImportInstruction == "DAC6REP")) {
         crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
           submissionDetails =>
-            Validation(
-              key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
-              value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
-                relevantTaxPayers == taxPayerImplementingDate.length
-              }
-              else {
-                true
-              }
-            )
+            submissionDetails.initialDisclosureMA match {
+              case true =>  Validation(
+                key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+                value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
+                  relevantTaxPayers == taxPayerImplementingDate.length
+                }
+                else {
+                  true
+                }
+              )
+              case false => Validation(
+                key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
+                value = if(relevantTaxPayers >0) {
+                  taxPayerImplementingDate.isEmpty
+                } else true
+              )
+            }
+
+
         }.recover {
           case _ =>
             logger.info("No first disclosure found")
@@ -196,8 +208,11 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         }
       } else {
         Future(Validation(
-          key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
-          value = true))
+          key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
+          value = if(disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers >0 && !isInitialDisclosureMA) {
+            taxPayerImplementingDate.isEmpty
+           } else true
+        ))
       }
     }
   }
@@ -234,7 +249,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v8 <- validateMainBenefitTestHasASpecifiedHallmark()
        v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
        v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
-       v11 <- validateTaxPayerImplementingDateAgainstFirstDisclosure()
+       v11 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
     } yield {
       v11.map { v11Validation =>
         Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation).filterNot(_.value)
