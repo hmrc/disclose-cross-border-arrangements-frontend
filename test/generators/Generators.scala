@@ -21,9 +21,14 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import utils.RegexConstants
 import wolfendale.scalacheck.regexp.RegexpGen
 
-trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators {
+trait Generators extends UserAnswersGenerator
+  with PageGenerators
+  with ModelGenerators
+  with UserAnswersEntryGenerators
+  with RegexConstants {
 
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
@@ -125,19 +130,24 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     }
   }
 
-  def validPersonalName: Gen[String] = RegexpGen.from("""^[a-zA-Z &`\-^]{1,35}$""")
+  def validPersonalName: Gen[String] = RegexpGen.from(apiNameRegex)
 
-  def validOrganisationName: Gen[String] = RegexpGen.from("""^[a-zA-Z0-9 '&\\/]{1,105}$""")
+  def validOrganisationName: Gen[String] = RegexpGen.from(apiOrganisationNameRegex)
 
   def validEmailAddress: Gen[String] = {
-    val emailRegex = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)" +
-      "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)$"
+    val emailRegexWithQuantifier = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,50}))" +
+      "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,42}))$"
 
-    RegexpGen.from(emailRegex)
+    RegexpGen.from(emailRegexWithQuantifier)
   }
 
-  def validPhoneNumber: Gen[String] = RegexpGen.from("""^\+?[\d\s]{1,24}$""")
+  def validPhoneNumber: Gen[String] = {
+    val phoneRegexWithQuantifier = """^\+?[\d\s]{1,24}$"""
+    RegexpGen.from(phoneRegexWithQuantifier)
+  }
 
   def validEmailAdressToLong(maxLength: Int): Gen[String] = validEmailAddress suchThat (_.length > maxLength)
+
+  def validSafeID: Gen[String] = RegexpGen.from(safeIDRegex)
 
 }

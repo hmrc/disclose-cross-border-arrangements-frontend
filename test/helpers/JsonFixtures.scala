@@ -20,7 +20,8 @@ import play.api.libs.json.{JsObject, JsString, Json}
 
 object JsonFixtures {
 
-  def displaySubscriptionPayload(firstName: JsString,
+  def displaySubscriptionPayload(subscriptionID: JsString,
+                                 firstName: JsString,
                                  lastName:JsString,
                                  organisationName: JsString,
                                  primaryEmail: JsString,
@@ -34,7 +35,7 @@ object JsonFixtures {
       |      "processingDate": "2020-08-09T11:23:45Z"
       |    },
       |    "responseDetail": {
-      |      "subscriptionID": "XE0001234567890",
+      |      "subscriptionID": $subscriptionID,
       |      "tradingName": "Trading Name",
       |      "isGBUser": true,
       |      "primaryContact": [
@@ -61,7 +62,8 @@ object JsonFixtures {
       |}""".stripMargin
   }
 
-  def displaySubscriptionPayloadNoSecondary(firstName: JsString,
+  def displaySubscriptionPayloadNoSecondary(subscriptionID: JsString,
+                                            firstName:JsString,
                                             lastName:JsString,
                                             primaryEmail: JsString,
                                             phone: JsString): String = {
@@ -73,7 +75,7 @@ object JsonFixtures {
        |      "processingDate": "2020-08-09T11:23:45Z"
        |    },
        |    "responseDetail": {
-       |      "subscriptionID": "XE0001234567890",
+       |      "subscriptionID": $subscriptionID,
        |      "tradingName": "Trading Name",
        |      "isGBUser": true,
        |      "primaryContact": [
@@ -91,7 +93,8 @@ object JsonFixtures {
        |}""".stripMargin
   }
 
-  def jsonForDisplaySubscription(firstName: String,
+  def jsonForDisplaySubscription(safeID: String,
+                                 firstName: String,
                                  lastName: String,
                                  organisationName: String,
                                  primaryEmail: String,
@@ -104,7 +107,7 @@ object JsonFixtures {
           "processingDate" -> "2020-08-09T11:23:45Z"
         ),
         "responseDetail" -> Json.obj(
-          "subscriptionID" -> "XE0001234567890",
+          "subscriptionID" -> safeID,
           "tradingName" -> "Trading Name",
           "isGBUser" -> true,
           "primaryContact" -> Json.obj(
@@ -315,8 +318,8 @@ object JsonFixtures {
     )
   }
 
-  val updateSubscriptionResponsePayload: String =
-    """
+  def updateSubscriptionResponsePayload(safeID: JsString): String = {
+    s"""
       |{
       |  "updateSubscriptionForDACResponse": {
       |    "responseCommon": {
@@ -328,13 +331,14 @@ object JsonFixtures {
       |      }]
       |    },
       |    "responseDetail": {
-      |      "subscriptionID": "XADAC0000123456"
+      |      "subscriptionID": $safeID
       |    }
       |  }
       |}
       |""".stripMargin
+  }
 
-  val updateSubscriptionResponseJson: JsObject = Json.obj(
+  def updateSubscriptionResponseJson(safeID: String): JsObject = Json.obj(
     "updateSubscriptionForDACResponse" -> Json.obj(
       "responseCommon" -> Json.obj(
         "status" -> "OK",
@@ -347,7 +351,7 @@ object JsonFixtures {
         )
       ),
       "responseDetail" -> Json.obj(
-        "subscriptionID" -> "XADAC0000123456"
+        "subscriptionID" -> safeID
       )
     )
   )

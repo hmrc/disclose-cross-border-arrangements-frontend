@@ -18,6 +18,7 @@ package connectors
 
 import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
+import generators.Generators
 import helpers.JsonFixtures._
 import models.subscription._
 import models.{Name, UserAnswers}
@@ -35,7 +36,9 @@ import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
+class SubscriptionConnectorSpec extends SpecBase
+  with ScalaCheckPropertyChecks
+  with Generators {
 
   val primaryContact: PrimaryContact = PrimaryContact(Seq(
     ContactInformationForIndividual(
@@ -80,48 +83,61 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
 
     "displaySubscriptionDetails" - {
       "must return the correct DisplaySubscriptionForDACResponse" in {
-        val expectedBody = displaySubscriptionPayload(
-          JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
-          JsString("email@email.com"), JsString("07111222333"))
+        forAll(validSafeID) {
+          safeID =>
+            val expectedBody = displaySubscriptionPayload(
+              JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
+              JsString("email@email.com"), JsString("email@email.com"), JsString("07111222333"))
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
+            val responseDetailUpdate: ResponseDetail = responseDetail.copy(subscriptionID = safeID)
 
-        val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe Some(displaySubscriptionForDACResponse)
+            val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+              DisplaySubscriptionForDACResponse(
+                SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
+              )
+
+            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+              .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
+
+
+            val result = connector.displaySubscriptionDetails(enrolmentID)
+            result.futureValue mustBe Some(displaySubscriptionForDACResponse)
+        }
       }
 
       "must return None if unable to validate json" in {
-        val invalidBody =
-          s"""
-             |{
-             |  "displaySubscriptionForDACResponse": {
-             |    "responseCommon": {
-             |      "status": "OK",
-             |      "processingDate": "2020-08-09T11:23:45Z"
-             |    },
-             |    "responseDetail": {
-             |      "subscriptionID": 1111234567890,
-             |      "tradingName": "Trading Name",
-             |      "isGBUser": true,
-             |      "primaryContact": [
-             |        {
-             |          "email": "email@email.com",
-             |          "individual": {
-             |            "lastName": "LastName",
-             |            "firstName": "FirstName"
-             |          }
-             |        }
-             |      ]
-             |    }
-             |  }
-             |}""".stripMargin
+        forAll(validSafeID) {
+          safeID =>
+            val invalidBody =
+              s"""
+                 |{
+                 |  "displaySubscriptionForDACResponse": {
+                 |    "responseCommon": {
+                 |      "processingDate": "2020-08-09T11:23:45Z"
+                 |    },
+                 |    "responseDetail": {
+                 |      "subscriptionID": "$safeID",
+                 |      "tradingName": "Trading Name",
+                 |      "isGBUser": true,
+                 |      "primaryContact": [
+                 |        {
+                 |          "email": "email@email.com",
+                 |          "individual": {
+                 |            "lastName": "LastName",
+                 |            "firstName": "FirstName"
+                 |          }
+                 |        }
+                 |      ]
+                 |    }
+                 |  }
+                 |}""".stripMargin
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
+            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+              .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
-        val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe None
+            val result = connector.displaySubscriptionDetails(enrolmentID)
+            result.futureValue mustBe None
+        }
       }
 
       "must return None if status is not OK" in {
@@ -136,43 +152,56 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks {
     "updateSubscription" - {
 
       "must return UpdateSubscriptionForDACResponse if status is OK and users updated their contact info" in {
-        val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
-        val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
-          UpdateSubscriptionForDACResponse(
-            UpdateSubscription(
-              responseCommon = ResponseCommon("OK", None, "2020-09-23T16:12:11Z", Some(Seq(returnParameters))),
-              responseDetail = ResponseDetailForUpdate("XADAC0000123456")))
+        forAll(validSafeID) {
+          safeID =>
+            val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
+            val responseDetailUpdate: ResponseDetail = responseDetail.copy(subscriptionID = safeID)
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload)))
+            val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+              DisplaySubscriptionForDACResponse(
+                SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
+              )
 
-        val userAnswers = UserAnswers(userAnswersId).
-          set(IndividualContactNamePage, Name("Kit", "Kat")).success.value
+            val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
+              UpdateSubscriptionForDACResponse(
+                UpdateSubscription(
+                  responseCommon = ResponseCommon("OK", None, "2020-09-23T16:12:11Z", Some(Seq(returnParameters))),
+                  responseDetail = ResponseDetailForUpdate(safeID)))
 
-        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
-        result.futureValue mustBe Some(updateSubscriptionForDACResponse)
+            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+              .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload(JsString(safeID)))))
+
+            val userAnswers = UserAnswers(userAnswersId)
+              .set(IndividualContactNamePage, Name("Kit", "Kat")).success.value
+
+            val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
+            result.futureValue mustBe Some(updateSubscriptionForDACResponse)
+        }
       }
 
       "must return None if unable to validate json" in {
-        val invalidBody =
-          """
-            |{
-            |  "updateSubscriptionForDACResponse": {
-            |    "responseCommon": {
-            |      "status": "OK"
-            |    },
-            |    "responseDetail": {
-            |      "subscriptionID": "XADAC0000123456"
-            |    }
-            |  }
-            |}
-            |""".stripMargin
+        forAll(validSafeID) {
+          safeID =>
+            val invalidBody =
+              s"""
+                |{
+                |  "updateSubscriptionForDACResponse": {
+                |    "responseCommon": {
+                |      "status": "OK"
+                |    },
+                |    "responseDetail": {
+                |      "subscriptionID": "$safeID"
+                |    }
+                |  }
+                |}
+                |""".stripMargin
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
+            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+              .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
-        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
-        result.futureValue mustBe None
+            val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
+            result.futureValue mustBe None
+        }
       }
 
       "must return None if status is not OK" in {

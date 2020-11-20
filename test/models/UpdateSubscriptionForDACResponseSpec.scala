@@ -17,30 +17,39 @@
 package models
 
 import base.SpecBase
+import generators.Generators
 import helpers.JsonFixtures.{updateSubscriptionResponseJson, updateSubscriptionResponsePayload}
 import models.subscription._
-import play.api.libs.json.Json
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
+import play.api.libs.json.{JsString, Json}
 
-class UpdateSubscriptionForDACResponseSpec extends SpecBase {
+class UpdateSubscriptionForDACResponseSpec extends SpecBase with Generators {
 
   val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
   val responseCommon: ResponseCommon = ResponseCommon(
     status = "OK", statusText = None, processingDate = "2020-09-23T16:12:11Z", returnParameters = Some(Seq(returnParameters)))
 
-  val updateSubscriptionResponse: UpdateSubscriptionForDACResponse = UpdateSubscriptionForDACResponse(
+  def updateSubscriptionResponse(safeID: String): UpdateSubscriptionForDACResponse = UpdateSubscriptionForDACResponse(
     UpdateSubscription(
       responseCommon = responseCommon,
-      responseDetail = ResponseDetailForUpdate("XADAC0000123456")
+      responseDetail = ResponseDetailForUpdate(safeID)
     )
   )
 
   "UpdateSubscriptionForDACResponse" - {
      "must deserialise UpdateSubscriptionForDACResponse" in {
-       Json.parse(updateSubscriptionResponsePayload).validate[UpdateSubscriptionForDACResponse].get mustBe updateSubscriptionResponse
+       forAll(validSafeID) {
+         safeID =>
+         Json.parse(updateSubscriptionResponsePayload(JsString(safeID)))
+           .validate[UpdateSubscriptionForDACResponse].get mustBe updateSubscriptionResponse(safeID)
+       }
      }
 
     "must serialise UpdateSubscriptionForDACResponse" in {
-      Json.toJson(updateSubscriptionResponse) mustBe updateSubscriptionResponseJson
+      forAll(validSafeID) {
+        safeID =>
+          Json.toJson(updateSubscriptionResponse(safeID)) mustBe updateSubscriptionResponseJson(safeID)
+      }
     }
   }
 

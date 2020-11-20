@@ -89,11 +89,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from What is the name of the individual or team we should contact? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
+          (answers, firstName, lastName) =>
             val updatedAnswers =
               answers
-                .set(ContactNamePage, Name("First", "Last"))
+                .set(ContactNamePage, Name(firstName, lastName))
                 .success
                 .value
             navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)
@@ -103,11 +103,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from Who should we contact if we have any questions about your disclosures? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
+          (answers, firstName, lastName) =>
             val updatedAnswers =
               answers
-                .set(IndividualContactNamePage, Name("First", "Last"))
+                .set(IndividualContactNamePage, Name(firstName, lastName))
                 .success
                 .value
             navigator.nextPage(IndividualContactNamePage, NormalMode, updatedAnswers)
@@ -117,11 +117,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from What is your email address? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validEmailAddress) {
+          (answers, email) =>
             val updatedAnswers =
               answers
-                .set(ContactEmailAddressPage, "email@email.com")
+                .set(ContactEmailAddressPage, email)
                 .success
                 .value
             navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers)
@@ -131,11 +131,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from What is your telephone number? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validPhoneNumber) {
+          (answers, phone) =>
             val updatedAnswers =
               answers
-                .set(ContactTelephoneNumberPage, "0191 111 2222")
+                .set(ContactTelephoneNumberPage, phone)
                 .success
                 .value
             navigator.nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers)
@@ -146,11 +146,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
       "must go from What is the name of the individual or team we should contact? page to " +
         "Check your contact details page - Secondary contact" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validOrganisationName) {
+          (answers, orgName) =>
             val updatedAnswers =
               answers
-                .set(SecondaryContactNamePage, "Secondary Contact Name")
+                .set(SecondaryContactNamePage, orgName)
                 .success
                 .value
             navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers)
@@ -160,11 +160,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from What is the email address for your second contact? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validEmailAddress) {
+          (answers, email) =>
             val updatedAnswers =
               answers
-                .set(SecondaryContactEmailAddressPage, "Secondary Contact Name")
+                .set(SecondaryContactEmailAddressPage, email)
                 .success
                 .value
             navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers)
@@ -174,11 +174,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
       "must go from What is the telephone number for your second contact? page to Check your contact details page" in {
 
-        forAll(arbitrary[UserAnswers]) {
-          answers =>
+        forAll(arbitrary[UserAnswers], validPhoneNumber) {
+          (answers, phone) =>
             val updatedAnswers =
               answers
-                .set(SecondaryContactTelephoneNumberPage, "Secondary Contact Name")
+                .set(SecondaryContactTelephoneNumberPage, phone)
                 .success
                 .value
             navigator.nextPage(SecondaryContactTelephoneNumberPage, NormalMode, updatedAnswers)

@@ -18,13 +18,15 @@ package controllers
 
 import base.SpecBase
 import forms.SecondaryContactEmailAddressFormProvider
+import generators.Generators
 import matchers.JsonMatchers
 import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.SecondaryContactEmailAddressPage
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
@@ -37,7 +39,12 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
 
-class SecondaryContactEmailAddressControllerSpec extends SpecBase with MockitoSugar with NunjucksSupport with JsonMatchers {
+class SecondaryContactEmailAddressControllerSpec extends SpecBase
+  with MockitoSugar
+  with NunjucksSupport
+  with JsonMatchers
+  with ScalaCheckPropertyChecks
+  with Generators {
 
   def onwardRoute = Call("GET", "/foo")
 
@@ -76,57 +83,65 @@ class SecondaryContactEmailAddressControllerSpec extends SpecBase with MockitoSu
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("")))
+      forAll(validEmailAddress) {
+        email =>
+          reset(mockRenderer)
 
-      val userAnswers = UserAnswers(userAnswersId).set(SecondaryContactEmailAddressPage, "email@email.com").success.value
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, secondaryContactEmailAddressRoute)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          when(mockRenderer.render(any(), any())(any()))
+            .thenReturn(Future.successful(Html("")))
 
-      val result = route(application, request).value
+          val userAnswers = UserAnswers(userAnswersId).set(SecondaryContactEmailAddressPage, email).success.value
+          val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+          val request = FakeRequest(GET, secondaryContactEmailAddressRoute)
+          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      status(result) mustEqual OK
+          val result = route(application, request).value
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+          status(result) mustEqual OK
 
-      val filledForm = form.bind(Map("email" -> "email@email.com"))
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      val expectedJson = Json.obj(
-        "form" -> filledForm
-      )
+          val filledForm = form.bind(Map("email" -> email))
 
-      templateCaptor.getValue mustEqual "secondaryContactEmailAddress.njk"
-      jsonCaptor.getValue must containJson(expectedJson)
+          val expectedJson = Json.obj(
+            "form" -> filledForm
+          )
 
-      application.stop()
+          templateCaptor.getValue mustEqual "secondaryContactEmailAddress.njk"
+          jsonCaptor.getValue must containJson(expectedJson)
+
+          application.stop()
+      }
     }
 
     "must redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
+      forAll(validEmailAddress) {
+        email =>
+          val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
-          .build()
+          val application =
+            applicationBuilder(userAnswers = Some(emptyUserAnswers))
+              .overrides(
+                bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+                bind[SessionRepository].toInstance(mockSessionRepository)
+              )
+              .build()
 
-      val request =
-        FakeRequest(POST, secondaryContactEmailAddressRoute)
-          .withFormUrlEncodedBody(("email", "email@email.com"))
+          val request =
+            FakeRequest(POST, secondaryContactEmailAddressRoute)
+              .withFormUrlEncodedBody(("email", email))
 
-      val result = route(application, request).value
+          val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual onwardRoute.url
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
 
-      application.stop()
+          application.stop()
+      }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {

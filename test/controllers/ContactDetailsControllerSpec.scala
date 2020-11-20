@@ -18,12 +18,14 @@ package controllers
 
 import base.SpecBase
 import connectors.SubscriptionConnector
+import generators.Generators
 import helpers.JsonFixtures.{displaySubscriptionPayload, displaySubscriptionPayloadNoSecondary, updateSubscriptionResponsePayload}
 import models.subscription.{DisplaySubscriptionForDACResponse, UpdateSubscriptionForDACResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.test.FakeRequest
@@ -32,7 +34,10 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
+class ContactDetailsControllerSpec extends SpecBase
+  with MockitoSugar
+  with ScalaCheckPropertyChecks
+  with Generators {
 
   val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
@@ -40,84 +45,97 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
 
     "must return OK and the correct view for a GET without a secondary contact" in {
 
-      val jsonPayload = displaySubscriptionPayloadNoSecondary(
-        JsString("FirstName"), JsString("LastName"), JsString("email@email.com"), JsString("07111222333"))
-      val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+      forAll(validSafeID ,validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("")))
+          reset(mockRenderer, mockSubscriptionConnector)
 
-      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+          val jsonPayload = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
+          val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
-      val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          when(mockRenderer.render(any(), any())(any()))
+            .thenReturn(Future.successful(Html("")))
 
-      val result = route(application, request).value
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
-      status(result) mustEqual OK
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+          ).build()
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+          val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      val json = jsonCaptor.getValue
-      val contactDetails = (json \ "contactDetails").toString
+          val result = route(application, request).value
 
-      templateCaptor.getValue mustEqual "contactDetails.njk"
-      contactDetails.contains("Contact name") mustBe true
-      contactDetails.contains("Email address") mustBe true
-      contactDetails.contains("Telephone") mustBe true
-      contactDetails.contains("Secondary contact name") mustBe false
-      contactDetails.contains("Secondary email address") mustBe false
-      contactDetails.contains("Secondary telephone") mustBe false
+          status(result) mustEqual OK
 
-      application.stop()
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+
+          val json = jsonCaptor.getValue
+          val contactDetails = (json \ "contactDetails").toString
+
+          templateCaptor.getValue mustEqual "contactDetails.njk"
+          contactDetails.contains("Contact name") mustBe true
+          contactDetails.contains("Email address") mustBe true
+          contactDetails.contains("Telephone") mustBe true
+          contactDetails.contains("Secondary contact name") mustBe false
+          contactDetails.contains("Secondary email address") mustBe false
+          contactDetails.contains("Secondary telephone") mustBe false
+
+          application.stop()
+      }
     }
 
     "must return OK and the correct view for a GET with a secondary contact" in {
 
-      val jsonPayload: String = displaySubscriptionPayload(
-        JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
-        JsString("email2@email.com"), JsString("07111222333"))
+      forAll(validSafeID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, email, secondaryEmail, phone) =>
 
-      val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+          reset(mockRenderer, mockSubscriptionConnector)
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("")))
+          val jsonPayload: String = displaySubscriptionPayload(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString(email),
+            JsString(secondaryEmail), JsString(phone))
 
-      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+          val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
+          when(mockRenderer.render(any(), any())(any()))
+            .thenReturn(Future.successful(Html("")))
 
-      val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
-      val result = route(application, request).value
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+          ).build()
 
-      status(result) mustEqual OK
+          val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+          val result = route(application, request).value
 
-      val json = jsonCaptor.getValue
-      val contactDetails = (json \ "contactDetails").toString
+          status(result) mustEqual OK
 
-      templateCaptor.getValue mustEqual "contactDetails.njk"
-      contactDetails.contains("Contact name") mustBe true
-      contactDetails.contains("Email address") mustBe true
-      contactDetails.contains("Telephone") mustBe true
-      contactDetails.contains("Additional contact name") mustBe true
-      contactDetails.contains("Additional contact email address") mustBe true
-      contactDetails.contains("Additional contact telephone number") mustBe true
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      application.stop()
+          val json = jsonCaptor.getValue
+          val contactDetails = (json \ "contactDetails").toString
+
+          templateCaptor.getValue mustEqual "contactDetails.njk"
+          contactDetails.contains("Contact name") mustBe true
+          contactDetails.contains("Email address") mustBe true
+          contactDetails.contains("Telephone") mustBe true
+          contactDetails.contains("Additional contact name") mustBe true
+          contactDetails.contains("Additional contact email address") mustBe true
+          contactDetails.contains("Additional contact telephone number") mustBe true
+
+          application.stop()
+      }
     }
 
     "must display the InternalServerError page if display subscription details isn't available" in {
@@ -147,30 +165,34 @@ class ContactDetailsControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when valid data is submitted" in {
 
-      val jsonPayload = displaySubscriptionPayloadNoSecondary(
-        JsString("FirstName"), JsString("LastName"), JsString("email@email.com"), JsString("07111222333"))
-      val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+          val jsonPayload = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
 
-      val updateSubscriptionForDACResponse = Json.parse(updateSubscriptionResponsePayload).as[UpdateSubscriptionForDACResponse]
+          val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+          val updateSubscriptionForDACResponse =
+            Json.parse(updateSubscriptionResponsePayload(JsString(safeID))).as[UpdateSubscriptionForDACResponse]
 
-      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
-      when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
-        .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
+          when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
+            .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+          ).build()
 
-      val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
+          val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
 
-      val result = route(application, request).value
+          val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
 
-      application.stop()
+          application.stop()
+      }
     }
 
     "must display the InternalServerError page if users click submit and display or update subscription details failed" in {

@@ -18,13 +18,15 @@ package controllers
 
 import base.SpecBase
 import forms.SecondaryContactTelephoneNumberFormProvider
+import generators.Generators
 import matchers.JsonMatchers
 import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.SecondaryContactTelephoneNumberPage
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
@@ -37,7 +39,12 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
 
-class SecondaryContactTelephoneNumberControllerSpec extends SpecBase with MockitoSugar with NunjucksSupport with JsonMatchers {
+class SecondaryContactTelephoneNumberControllerSpec extends SpecBase
+  with MockitoSugar
+  with NunjucksSupport
+  with JsonMatchers
+  with ScalaCheckPropertyChecks
+  with Generators {
 
   def onwardRoute = Call("GET", "/foo")
 
@@ -76,57 +83,64 @@ class SecondaryContactTelephoneNumberControllerSpec extends SpecBase with Mockit
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("")))
+      forAll(validPhoneNumber) {
+        phone =>
+          reset(mockRenderer)
 
-      val userAnswers = UserAnswers(userAnswersId).set(SecondaryContactTelephoneNumberPage, "+1 123 456 789").success.value
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, secondaryContactTelephoneNumberRoute)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          when(mockRenderer.render(any(), any())(any()))
+            .thenReturn(Future.successful(Html("")))
 
-      val result = route(application, request).value
+          val userAnswers = UserAnswers(userAnswersId).set(SecondaryContactTelephoneNumberPage, phone).success.value
+          val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+          val request = FakeRequest(GET, secondaryContactTelephoneNumberRoute)
+          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      status(result) mustEqual OK
+          val result = route(application, request).value
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+          status(result) mustEqual OK
 
-      val filledForm = form.bind(Map("telephoneNumber" -> "+1 123 456 789"))
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      val expectedJson = Json.obj(
-        "form" -> filledForm
-      )
+          val filledForm = form.bind(Map("telephoneNumber" -> phone))
 
-      templateCaptor.getValue mustEqual "secondaryContactTelephoneNumber.njk"
-      jsonCaptor.getValue must containJson(expectedJson)
+          val expectedJson = Json.obj(
+            "form" -> filledForm
+          )
 
-      application.stop()
+          templateCaptor.getValue mustEqual "secondaryContactTelephoneNumber.njk"
+          jsonCaptor.getValue must containJson(expectedJson)
+
+          application.stop()
+      }
     }
 
     "must redirect to the next page when valid data is submitted" in {
-
       val mockSessionRepository = mock[SessionRepository]
 
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      forAll(validPhoneNumber) {
+        phone =>
+          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-      val application =
-        applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
-          .build()
+          val application =
+            applicationBuilder(userAnswers = Some(emptyUserAnswers))
+              .overrides(
+                bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+                bind[SessionRepository].toInstance(mockSessionRepository)
+              )
+              .build()
 
-      val request =
-        FakeRequest(POST, secondaryContactTelephoneNumberRoute)
-          .withFormUrlEncodedBody(("telephoneNumber", "+1 123 456 789"))
+          val request =
+            FakeRequest(POST, secondaryContactTelephoneNumberRoute)
+              .withFormUrlEncodedBody(("telephoneNumber", phone))
 
-      val result = route(application, request).value
+          val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual onwardRoute.url
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual onwardRoute.url
 
-      application.stop()
+          application.stop()
+      }
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {

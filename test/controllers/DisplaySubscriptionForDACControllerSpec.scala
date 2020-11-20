@@ -18,12 +18,14 @@ package controllers
 
 import base.SpecBase
 import connectors.SubscriptionConnector
+import generators.Generators
 import helpers.JsonFixtures._
 import models.subscription.DisplaySubscriptionForDACResponse
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
 import play.api.libs.json.{JsString, Json}
 import play.api.test.FakeRequest
@@ -32,7 +34,10 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar {
+class DisplaySubscriptionForDACControllerSpec extends SpecBase
+  with MockitoSugar
+  with ScalaCheckPropertyChecks
+  with Generators {
 
   val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
@@ -40,34 +45,41 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with MockitoSugar
 
     "return OK and the correct view for a GET and there are subscription details available" in {
 
-      val jsonPayload = displaySubscriptionPayload(
-        JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString("email@email.com"),
-        JsString("email@email.com"), JsString("07111222333"))
-      val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get
+      forAll(validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (email, secondaryEmail, phone) =>
 
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("")))
+          reset(mockRenderer, mockSubscriptionConnector)
 
-      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+          val jsonPayload = displaySubscriptionPayload(
+            JsString("XADAC0000123456"), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
+            JsString(email), JsString(secondaryEmail), JsString(phone))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-        ).build()
+          val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get
 
-      val request = FakeRequest(GET, routes.DisplaySubscriptionForDACController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+          when(mockRenderer.render(any(), any())(any()))
+            .thenReturn(Future.successful(Html("")))
 
-      val result = route(application, request).value
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
 
-      status(result) mustEqual OK
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .overrides(
+              bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+            ).build()
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+          val request = FakeRequest(GET, routes.DisplaySubscriptionForDACController.onPageLoad().url)
+          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
-      templateCaptor.getValue mustEqual "displaySubscriptionForDAC.njk"
+          val result = route(application, request).value
 
-      application.stop()
+          status(result) mustEqual OK
+
+          verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+          templateCaptor.getValue mustEqual "displaySubscriptionForDAC.njk"
+
+          application.stop()
+      }
     }
 
     "redirect to index page if display subscription isn't available" in {

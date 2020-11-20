@@ -34,12 +34,12 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
   "DisplaySubscriptionForDACResponse" - {
     "must deserialise DisplaySubscriptionForDACResponse" in {
 
-      forAll(validPersonalName, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (firstName, lastName, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
+      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
 
           val primaryContact: PrimaryContact = PrimaryContact(Seq(
             ContactInformationForIndividual(
-              individual = IndividualDetails(firstName = firstName, lastName = lastName, middleName = None),
+              individual = IndividualDetails(firstName = name, lastName = name, middleName = None),
               email = primaryEmail, phone = Some(phoneNumber), mobile = Some(phoneNumber))
           ))
           val secondaryContact: SecondaryContact = SecondaryContact(Seq(
@@ -49,7 +49,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
           ))
 
           val responseDetail: ResponseDetail = ResponseDetail(
-            subscriptionID = "XE0001234567890",
+            subscriptionID = safeID,
             tradingName = Some("Trading Name"),
             isGBUser = true,
             primaryContact = primaryContact,
@@ -58,7 +58,8 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
           val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse = DisplaySubscriptionForDACResponse(
             SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
-          val jsonPayload = displaySubscriptionPayload(JsString(firstName), JsString(lastName), JsString(organisationName),
+          val jsonPayload = displaySubscriptionPayload(
+            JsString(safeID), JsString(name), JsString(name), JsString(organisationName),
             JsString(primaryEmail), JsString(secondaryEmail), JsString(phoneNumber))
 
           Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get mustBe displaySubscriptionForDACResponse
@@ -67,12 +68,12 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
 
     "must serialise DisplaySubscriptionForDACResponse" in {
 
-      forAll(validPersonalName, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (firstName, lastName, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
+      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
 
           val primaryContact: PrimaryContact = PrimaryContact(Seq(
             ContactInformationForIndividual(
-              individual = IndividualDetails(firstName = firstName, lastName = lastName, middleName = None),
+              individual = IndividualDetails(firstName = name, lastName = name, middleName = None),
               email = primaryEmail, phone = Some(phoneNumber), mobile = Some(phoneNumber))
           ))
           val secondaryContact: SecondaryContact = SecondaryContact(Seq(
@@ -82,7 +83,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
           ))
 
           val responseDetail: ResponseDetail = ResponseDetail(
-            subscriptionID = "XE0001234567890",
+            subscriptionID = safeID,
             tradingName = Some("Trading Name"),
             isGBUser = true,
             primaryContact = primaryContact,
@@ -91,7 +92,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
           val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse = DisplaySubscriptionForDACResponse(
             SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
-          val json = jsonForDisplaySubscription(firstName, lastName, organisationName, primaryEmail, secondaryEmail, phoneNumber)
+          val json = jsonForDisplaySubscription(safeID, name, name, organisationName, primaryEmail, secondaryEmail, phoneNumber)
 
           Json.toJson(displaySubscriptionForDACResponse) mustBe json
       }
