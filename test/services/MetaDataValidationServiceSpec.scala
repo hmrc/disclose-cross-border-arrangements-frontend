@@ -44,8 +44,6 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
   val arrangementId1 = "GBA20200101AAA123"
   val arrangementId2 = "GBA20200101BBB456"
 
-  val messageRefId = "GB123456XYZ789"
-
   val disclosureId1 = "GBD20200101AAA123"
   val disclosureId2 = "GBD20200101BBB456"
 
@@ -58,7 +56,10 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
   implicit val postFixOps = scala.language.postfixOps
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-  val enrolmentId = "123456"
+  val enrolmentId = "XADAC0001234567"
+
+  val messageRefId = s"GB${enrolmentId}XYZ789"
+
 
   val submissionDateTime1 = LocalDateTime.now()
   val submissionDateTime2 = submissionDateTime1.plusDays(1)
@@ -622,25 +623,86 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
       "should return a ValidationSuccess for a file with MessageRefId in correct format" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
           initialDisclosureMA = true, messageRefId = messageRefId))
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "New",
-          initialDisclosureMA = true,
-          messageRefId = messageRefId)
-
-        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+        val submissionHistory = SubmissionHistory(List())
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
         val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
         result mustBe ValidationSuccess(downloadSource, dac6MetaData)
       }
+
+      "should return a ValidationFailure for a file with MessageRefId which does not start GB" in {
+
+        val invalidMessageRefId = "123456XYZ789"
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
+          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+
+        val submissionHistory = SubmissionHistory(List())
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(3, "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less")))
+      }
+
+      "should return a ValidationFailure for a file with MessageRefId which does not contain users enrolment id " +
+        "after GB" in {
+
+        val wrongEnrolmentId = "XADAC0007654321"
+
+        val invalidMessageRefId = s"GB${wrongEnrolmentId}XYZ789"
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
+          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+
+        val submissionHistory = SubmissionHistory(List())
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(3, "Check UserID is correct, it must match the ID you got at registration to create a valid MessageRefID")))
+      }
+
+      "should return a ValidationFailure for a file with MessageRefId which does have any chars after userId" in {
+
+
+        val invalidMessageRefId = s"GB$enrolmentId"
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
+          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+
+        val submissionHistory = SubmissionHistory(List())
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe ValidationFailure(List(GenericError(3, "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less")))
+      }
+
+//      "should return a ValidationFailure for a file with MessageRefId has been used before by this user" in {
+//
+//        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId2),
+//          disclosureInformationPresent = true, initialDisclosureMA = true, messageRefId = messageRefId))
+//
+//        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+//          submissionTime = submissionDateTime1,
+//          fileName = "fileName.xml",
+//          arrangementID = Some(arrangementId1),
+//          disclosureID = Some(disclosureId1),
+//          importInstruction = "New",
+//          initialDisclosureMA = true,
+//          messageRefId = messageRefId)
+//
+//        val submissionHistory = SubmissionHistory(List(submissionDetails1))
+//        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+//
+//        val result = Await.result(service.verifyMetaData(downloadSource, testXml, dac6MetaData, enrolmentId), 10 seconds)
+//        result mustBe ValidationFailure(List(GenericError(3, "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less")))
+//      }
 
     }
 

@@ -25,6 +25,7 @@ import org.joda.time.DateTime
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 import scala.xml.Elem
 
 class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector) {
@@ -37,7 +38,25 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
 
     dac6MetaData match {
-      case Some(Dac6MetaData("DAC6NEW", _,_, _, _, _)) =>  Future(verifyDisclosureInformation(source, elem, dac6MetaData.get))
+      case Some(Dac6MetaData("DAC6NEW", _,_, _, _, _)) =>  Future(verifyDisclosureInformation(source, elem, dac6MetaData.get)).map(
+                         status => {
+                        val messageRefResult =   dac6MetaData match {
+                             case Some(Dac6MetaData(_, _, _, _, _, messageRefId)) =>
+                               val messageRefIdError = verifyMessageRefId(messageRefId, enrolmentId)
+                               if(messageRefIdError.isEmpty) {
+                               ValidationSuccess(source, dac6MetaData)
+                             }else ValidationFailure(List(GenericError(getLineNumber(elem, "MessageRefId"), messageRefIdError.get)))
+                           }
+                           (status, messageRefResult) match {
+                             case (ValidationSuccess(_,_), ValidationSuccess(_,_)) => ValidationSuccess(source, dac6MetaData)
+                             case (ValidationFailure(errors), ValidationSuccess(_,_)) => ValidationFailure(errors)
+                             case (ValidationSuccess(_,_), ValidationFailure(errors)) => ValidationFailure(errors)
+                             case (ValidationFailure(errors1), ValidationFailure(errors2)) => ValidationFailure(errors1 ++ errors2)
+
+                           }
+                         }
+
+      )
 
       case Some(Dac6MetaData(_, _,_, _, _, _)) =>
 
@@ -153,6 +172,23 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
   }
 
+  }
+
+  private def verifyMessageRefId(messageRefId: String, enrolmentId: String): Option[String] ={
+   val result = Try {
+     val prefixValid = messageRefId.startsWith("GB")
+     val userId = messageRefId.substring(2, 17)
+     val userIdValid = userId.equals(enrolmentId)
+     if(prefixValid && userIdValid && messageRefId.length > 19){
+       None }else
+       if(userIdValid){
+         Some("The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less")
+       }
+       else Some("Check UserID is correct, it must match the ID you got at registration to create a valid MessageRefID")
+
+
+    }
+    if(result.isSuccess) result.get else Some("The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less")
   }
 
   private def isMarketableArrangement(dac6MetaData: Dac6MetaData, history: SubmissionHistory): Boolean = {
