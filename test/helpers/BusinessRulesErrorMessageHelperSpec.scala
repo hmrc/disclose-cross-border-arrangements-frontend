@@ -199,15 +199,48 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate"))
       }
 
-      "must  return correct error message for date of birth before 01/01/1903" in {
+      "must  return correct error message for relevant taxpayer date of birth before 01/01/1903" in {
 
         val failedValidation = Validation(
-          key = "businessrules.dateOfBirth.maxDateOfBirthExceeded",
+          key = "businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded",
           value = false
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(17, "Check BirthDate, it must be on or after 1 January 1903"))
+        result mustBe List(GenericError(15, "Check BirthDate, all RelevantTaxPayer dates of birth must be on or after 1 January 1903"))
+      }
+
+      "must  return correct error message for disclosing date of birth before 01/01/1903" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
+        result mustBe List(GenericError(8, "Check BirthDate, Disclosing date of birth must be on or after 1 January 1903"))
+      }
+
+      "must  return correct error message for intermediary date of birth before 01/01/1903" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
+        result mustBe List(GenericError(20, "Check BirthDate, all Intermediary dates of birth must be on or after 1 January 1903"))
+      }
+
+      "must  return correct error message for affectedPersons date of birth before 01/01/1903" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
+        result mustBe List(GenericError(24, "Check BirthDate, all AffectedPersons dates of birth must be on or after 1 January 1903"))
       }
 
       "must  return correct default message for unexpected error key" in {
