@@ -1993,7 +1993,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None,
-                                                    disclosureInformationPresent = true, initialDisclosureMA = true))
+                                                    disclosureInformationPresent = true, initialDisclosureMA = true,
+                                                    messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6NEW  when disclosure info is not present" in {
@@ -2009,7 +2010,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None,
-                                               disclosureInformationPresent = false, initialDisclosureMA = false))
+                                               disclosureInformationPresent = false, initialDisclosureMA = false,
+                                                messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6ADD" in {
@@ -2033,7 +2035,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
-                                                 disclosureInformationPresent = true, initialDisclosureMA = false))
+                                                 disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                  messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6ADD with RelevantTaxpayers who all have implementing dates" in {
@@ -2065,7 +2068,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
-                                                    disclosureInformationPresent = true, initialDisclosureMA = false))
+                                                    disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                    messageRefId = "GB0000000XXX"))
   }
 
 
@@ -2097,7 +2101,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
-                                                 disclosureInformationPresent = true, initialDisclosureMA = false))
+                                                 disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                  messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6REP" in {
@@ -2122,7 +2127,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000"),
-                                                   disclosureInformationPresent = true, initialDisclosureMA = false))
+                                                   disclosureInformationPresent = true,
+                                                    initialDisclosureMA = false, messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6DEL" in {
@@ -2147,7 +2153,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
     service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000"),
-                                                     disclosureInformationPresent = true, initialDisclosureMA = false))
+                                                     disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                      messageRefId = "GB0000000XXX"))
   }
   "must throw exception if disclosureImportInstruction is invalid or missing" in {
     val xml =

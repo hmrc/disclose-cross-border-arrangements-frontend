@@ -22,7 +22,8 @@ case class Dac6MetaData(importInstruction: String,
                         arrangementID: Option[String] = None,
                         disclosureID: Option[String] = None,
                         disclosureInformationPresent: Boolean,
-                        initialDisclosureMA: Boolean)
+                        initialDisclosureMA: Boolean,
+                        messageRefId: String)
 
 object Dac6MetaData {
   implicit val format = Json.format[Dac6MetaData]

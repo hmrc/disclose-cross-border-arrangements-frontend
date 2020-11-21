@@ -41,7 +41,8 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
 
 
       val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA001"),
-                                  disclosureInformationPresent = true, initialDisclosureMA = false)
+                                  disclosureInformationPresent = true, initialDisclosureMA = false,
+                                  messageRefId = "GB0000000XXX")
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 

@@ -263,15 +263,16 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       disclosureID <- disclosureID
       disclosureInformation <- disclosureInformation
       isInitialDisclosureMA <- isInitialDisclosureMA
+      messageRefId <- messageRefID
     } yield {
 
       val infoPresent = disclosureInformation.nonEmpty
 
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA)
-        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA)
-        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA)
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
     }
