@@ -1489,7 +1489,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = true, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))
@@ -1526,7 +1527,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
   "must correctly invalidate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
 
     val replacedFirstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace", initialDisclosureMA = false)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(replacedFirstDisclosure))
@@ -1562,7 +1564,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
   "must correctly invalidate a DAC6ADD for a non-marketable arrangment where user has putTaxPayer Implementation Dates" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = false)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))
@@ -1598,7 +1601,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
   "must correctly invalidate a DAC6REP for a non-marketable arrangement where user has putTaxPayer Implementation Dates" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = false)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))
@@ -1636,7 +1640,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = true, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))

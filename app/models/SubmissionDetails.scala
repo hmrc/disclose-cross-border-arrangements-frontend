@@ -32,7 +32,8 @@ case class SubmissionDetails(enrolmentID: String,
                              arrangementID: Option[String],
                              disclosureID: Option[String],
                              importInstruction: String,
-                             initialDisclosureMA: Boolean)
+                             initialDisclosureMA: Boolean,
+                             messageRefId: String)
 
 object SubmissionDetails {
   implicit val format: OFormat[SubmissionDetails] = Json.format[SubmissionDetails]

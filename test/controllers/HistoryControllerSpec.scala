@@ -54,7 +54,8 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
         Some("arrangementID"),
         Some("disclosureID"),
         "New",
-        initialDisclosureMA = true
+        initialDisclosureMA = true,
+        messageRefId = "GB0000000XXX"
       )
     )
   )

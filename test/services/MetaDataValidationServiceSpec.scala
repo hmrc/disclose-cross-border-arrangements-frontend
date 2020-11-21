@@ -44,6 +44,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
   val arrangementId1 = "GBA20200101AAA123"
   val arrangementId2 = "GBA20200101BBB456"
 
+  val messageRefId = "GB123456XYZ789"
+
   val disclosureId1 = "GBD20200101AAA123"
   val disclosureId2 = "GBD20200101BBB456"
 
@@ -116,7 +118,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
 
@@ -152,7 +155,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
                                                   importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false)
+                                                  initialDisclosureMA = false,
+                                                  messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -174,7 +178,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId2),
                                                   importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false)
+                                                  initialDisclosureMA = false,
+                                                  messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -197,7 +202,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId2),
                                                   importInstruction = "DAC6DEL",
-                                                  initialDisclosureMA = false)
+                                                  initialDisclosureMA = false,
+                                                  messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -219,7 +225,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
                                                   importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false)
+                                                  initialDisclosureMA = false,
+                                                  messageRefId = messageRefId)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime2,
@@ -227,7 +234,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId2),
                                                   disclosureID = Some(disclosureId2),
                                                   importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false)
+                                                  initialDisclosureMA = false,
+                                                  messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -249,7 +257,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
                                                   arrangementID = Some(arrangementId1),
                                                   disclosureID = Some(disclosureId1),
                                                   importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = true)
+                                                  initialDisclosureMA = true,
+                                                  messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -271,7 +280,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6NEW",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime2,
@@ -279,7 +289,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
@@ -303,7 +314,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6NEW",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime2,
@@ -311,7 +323,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionDetails3 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime3,
@@ -319,7 +332,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2, submissionDetails3))
@@ -370,7 +384,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -393,7 +408,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -416,7 +432,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -438,7 +455,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -458,7 +476,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -478,7 +497,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
@@ -486,7 +506,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId2),
           importInstruction = "Add",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -507,7 +528,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
@@ -515,7 +537,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId2),
           importInstruction = "Add",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -535,7 +558,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -555,7 +579,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -575,7 +600,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
-          initialDisclosureMA = true)
+          initialDisclosureMA = true,
+          messageRefId = messageRefId)
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
