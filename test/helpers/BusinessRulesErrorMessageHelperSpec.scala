@@ -199,6 +199,17 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate"))
       }
 
+      "must  return correct error message for date of birth before 01/01/1903" in {
+
+        val failedValidation = Validation(
+          key = "businessrules.dateOfBirth.maxDateOfBirthExceeded",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
+        result mustBe List(GenericError(17, "Check BirthDate, it must be on or after 1 January 1903"))
+      }
+
       "must  return correct default message for unexpected error key" in {
 
         val failedValidation = Validation(

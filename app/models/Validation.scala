@@ -42,12 +42,11 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID" => "DisclosureImportInstruction is DAC6DEL so there should be an ArrangementID and a DisclosureID"
        case "businessrules.addDisclosure.mustNotBeInitialDisclosureMA" => "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"
        case "businessrules.nonMA.cantHaveRelevantTaxPayer" => "Remove the TaxpayerImplementingDate"
+       case "businessrules.dateOfBirth.maxDateOfBirthExceeded" => "Check BirthDate, it must be on or after 1 January 1903"
        case _ => "There is a problem with this line number"
 
      }
   }
-
-
 
   def path: String = {
 
@@ -62,6 +61,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent" => "MainBenefitTest1"
       case "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo" => "DAC6D1OtherInfo"
       case "businessrules.nonMA.cantHaveRelevantTaxPayer" => "RelevantTaxPayers"
+      case "businessrules.dateOfBirth.maxDateOfBirthExceeded" => "BirthDate"
       case  _ => "DisclosureImportInstruction"
 
     }

@@ -79,6 +79,60 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       BusinessRuleValidationService.noOfRelevantTaxPayers(xml).value mustBe 0
     }
 
+    "must fail validation if date of births are on or after 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1902-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.dateOfBirth.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must pass validation if date of births are on a after 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1903-01-01</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List()
+      }
+    }
+
     "must pass validation if an initial disclosure marketable arrangement has one or more relevant taxpayers" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

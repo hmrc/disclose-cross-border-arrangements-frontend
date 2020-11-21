@@ -167,6 +167,16 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
+  def validateDateOfBirths(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- datesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.dateOfBirth.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date._1.before(maxBirthDate))
+    )
+  }
+
   def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
        (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
     for {
@@ -250,9 +260,10 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
        v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
        v11 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+       v12 <- validateDateOfBirths()
     } yield {
       v11.map { v11Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation).filterNot(_.value)
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation, v12).filterNot(_.value)
       }
     }
   }
@@ -261,6 +272,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 object BusinessRuleValidationService {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
   val implementationStartDate: Date = new GregorianCalendar(2018, Calendar.JUNE, 25).getTime
+  val maxBirthDate: Date = new GregorianCalendar(1903, Calendar.JANUARY, 1).getTime
   val hallmarksForMainBenefitTest: Set[String] = Set("DAC6A1","DAC6A2","DAC6A2b","DAC6A3","DAC6B1","DAC6B2","DAC6B3","DAC6C1bi","DAC6C1c","DAC6C1d")
 
   val isInitialDisclosureMA: ReaderT[Option, NodeSeq, Boolean] =
@@ -291,6 +303,24 @@ object BusinessRuleValidationService {
     ReaderT[Option, NodeSeq, Int](xml => {
       Some((xml \\ "RelevantTaxpayer").length)
     })
+
+  val datesOfBirth: ReaderT[Option, NodeSeq, Seq[(Date, Int)]] =
+    ReaderT[Option, NodeSeq, Seq[(Date, Int)]](xml => {
+      Some {
+        (xml \\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _).zipWithIndex
+      }
+    })
+
+//  val datesOfBirthPostions: ReaderT[Option, NodeSeq, Seq[Int]] =
+//    ReaderT[Option, NodeSeq, Seq[Int]](xml => {
+//      Some {
+//        (xml \\ "BirthDate")
+//          .map(x => x.attribute())
+//          //.map(parseDate _).zipWithIndex
+//      }
+//    })
 
   val taxPayerImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] =
     ReaderT[Option, NodeSeq, Seq[Date]](xml => {
