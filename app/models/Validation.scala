@@ -58,6 +58,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD" => "Provide DisclosureInformation in this DAC6ADD file. This is a mandatory field for arrangements that are not marketable"
        case "metaDataRules.messageRefId.wrongFormat" => "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less"
        case "metaDataRules.messageRefId.noUserId" => "Check UserID is correct, it must match the ID you got at registration to create a valid MessageRefID"
+       case "metaDataRules.messageRefId.notUnique" => "Check your MessageRefID is unique. It should start with GB, then your User ID, followed by unique identifying characters of your choice. It must be 200 characters or less"
 
        case _ => "There is a problem with this line number"
 
@@ -93,6 +94,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD" => "DisclosureImportInstruction"
       case "metaDataRules.messageRefId.wrongFormat" => "MessageRefId"
       case "metaDataRules.messageRefId.noUserId" => "MessageRefId"
+      case "metaDataRules.messageRefId.notUnique" => "MessageRefId"
 
 
 

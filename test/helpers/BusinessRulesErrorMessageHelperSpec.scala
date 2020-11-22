@@ -368,6 +368,17 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(3, "Check UserID is correct, it must match the ID you got at registration to create a valid MessageRefID"))
       }
 
+      "must  return correct error message when MessageRefID is not unique" in {
+
+        val failedValidation = Validation(
+          key = "metaDataRules.messageRefId.notUnique",
+          value = false
+        )
+
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
+        result mustBe List(GenericError(3, "Check your MessageRefID is unique. It should start with GB, then your User ID, followed by unique identifying characters of your choice. It must be 200 characters or less"))
+      }
+
 
 
 

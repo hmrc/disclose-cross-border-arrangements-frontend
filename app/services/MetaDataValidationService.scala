@@ -16,17 +16,15 @@
 
 package services
 
-import java.time.{LocalDate, LocalDateTime}
+import java.time.LocalDateTime
 
 import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
-import models.{Dac6MetaData, GenericError, SubmissionHistory, Validation, ValidationFailure, ValidationSuccess, XMLValidationStatus}
-import org.joda.time.DateTime
+import models.{Dac6MetaData, SubmissionHistory, Validation}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
-import scala.xml.Elem
 
 class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector) {
 
@@ -37,36 +35,30 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
   def verifyMetaData(dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Validation]] = {
 
-    dac6MetaData match {
-      case Some(Dac6MetaData("DAC6NEW", _,_, _, _, _)) =>  Future(verifyDisclosureInformation(dac6MetaData.get)).map(
-                         status => {
-                        val messageRefResult =   verifyMessageRefId(dac6MetaData, enrolmentId)
-                               status ++ messageRefResult
-                         }
+    connector.getSubmissionHistory(enrolmentId).flatMap { history =>
+      val messageRefResult = verifyMessageRefId(dac6MetaData, enrolmentId, history)
 
-      )
+      dac6MetaData match {
+        case Some(Dac6MetaData("DAC6NEW", _, _, _, _, _)) =>
 
-      case Some(Dac6MetaData(_, _,_, _, _, _)) =>
+          val disclosureInformationResult = verifyDisclosureInformation(dac6MetaData.get, Some(history))
+          Future(disclosureInformationResult ++ messageRefResult)
 
-        for {
-          history <- connector.getSubmissionHistory(enrolmentId)
-          idResult <- verifyIds(dac6MetaData.get, history)
-        } yield {
 
-          idResult
+        case Some(Dac6MetaData(_, _, _, _, _, _)) => verifyIds(dac6MetaData.get, history).map(_ ++ messageRefResult)
 
-        }
-      case _ => Future(Seq(Validation("File does not contain necessary data", false)))
+
+        case _ => Future(Seq(Validation("File does not contain necessary data", false)))
+      }
     }
-
   }
 
   def verifyIds(dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Validation]] = {
     dac6MetaData match {
       case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _, _, _) => verifyDAC6ADD(dac6MetaData, arrangementId, history)
-      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _, _, _) if replaceOrDelete.contains(instruction)  =>
-                    Future(verifyReplaceOrDelete(dac6MetaData, arrangementId, disclosureId, history))
+      case Dac6MetaData(instruction, Some(arrangementId), Some(disclosureId), _, _, _) if replaceOrDelete.contains(instruction) =>
+        Future(verifyReplaceOrDelete(dac6MetaData, arrangementId, disclosureId, history))
       case _ => Future(Seq())
 
     }
@@ -79,16 +71,16 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
     verifyArrangementId(arrangementId, history) map { r1 =>
 
-        val results = (r1, disclosureInformationResult)
+      val results = (r1, disclosureInformationResult)
 
-        results match {
-          case (true, Seq()) => Seq()
-          case (false, Seq()) => Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))
-          case (true,  Seq(errors)) => Seq(errors)
-        case (false,  Seq(errors))  => Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false), errors)
+      results match {
+        case (true, Seq()) => Seq()
+        case (false, Seq()) => Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))
+        case (true, Seq(errors)) => Seq(errors)
+        case (false, Seq(errors)) => Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false), errors)
 
-        }
       }
+    }
 
   }
 
@@ -96,17 +88,17 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
                                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Boolean] = {
 
     val arrangementIdExists = history.details.exists(submission => submission.arrangementID.contains(arrangementId))
-     if(arrangementIdExists) {
-       Future(true)
-     }else {
-       connector.verifyArrangementId(arrangementId)
-     }
+    if (arrangementIdExists) {
+      Future(true)
+    } else {
+      connector.verifyArrangementId(arrangementId)
+    }
 
   }
 
   private def verifyReplaceOrDelete(dac6MetaData: Dac6MetaData, arrangementId: String, disclosureId: String,
-                            history: SubmissionHistory)
-                           (implicit hc: HeaderCarrier, ec: ExecutionContext): Seq[Validation] = {
+                                    history: SubmissionHistory)
+                                   (implicit hc: HeaderCarrier, ec: ExecutionContext): Seq[Validation] = {
 
     val submissionContainingDisclosureId = history.details.find(submission => submission.disclosureID.contains(disclosureId))
 
@@ -118,13 +110,13 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
           case "DAC6REP" if submission.importInstruction.equals("New") && !dac6MetaData.disclosureInformationPresent =>
             Seq(Validation("metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW", false))
 
-          case "DAC6REP" if !isMarketableArrangement(dac6MetaData,history) && !dac6MetaData.disclosureInformationPresent =>
+          case "DAC6REP" if !isMarketableArrangement(dac6MetaData, history) && !dac6MetaData.disclosureInformationPresent =>
             Seq(Validation("metaDataRules.disclosureInformation.noInfoForNonMaDAC6REP", false))
 
-          case "DAC6REP" if !isMarketableArrangement(dac6MetaData,history) && dac6MetaData.initialDisclosureMA =>
+          case "DAC6REP" if !isMarketableArrangement(dac6MetaData, history) && dac6MetaData.initialDisclosureMA =>
             Seq(Validation("metaDataRules.initialDisclosureMA.arrangementNowMarketable", false))
 
-          case "DAC6REP" if isMarketableArrangement(dac6MetaData,history) && !dac6MetaData.initialDisclosureMA =>
+          case "DAC6REP" if isMarketableArrangement(dac6MetaData, history) && !dac6MetaData.initialDisclosureMA =>
             Seq(Validation("metaDataRules.initialDisclosureMA.arrangementNoLongerMarketable", false))
 
           case _ => Seq()
@@ -139,35 +131,42 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
     }
   }
+
   private def verifyDisclosureInformation(dac6MetaData: Dac6MetaData, history: Option[SubmissionHistory] = None)
-                                  (implicit hc: HeaderCarrier, ec: ExecutionContext): Seq[Validation] = {
-   dac6MetaData.importInstruction match {
-     case "DAC6NEW" => if(dac6MetaData.disclosureInformationPresent) {
-       Seq()
+                                         (implicit hc: HeaderCarrier, ec: ExecutionContext): Seq[Validation] = {
+    dac6MetaData.importInstruction match {
+      case "DAC6NEW" => if (dac6MetaData.disclosureInformationPresent) {
+        Seq()
 
-     }else Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6NEW", false))
+      } else Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6NEW", false))
 
-     case "DAC6ADD" => if(!isMarketableArrangement(dac6MetaData, history.get) && !dac6MetaData.disclosureInformationPresent){
-       Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD", false))
+      case "DAC6ADD" => if (!isMarketableArrangement(dac6MetaData, history.get) && !dac6MetaData.disclosureInformationPresent) {
+        Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD", false))
 
 
-     }else Seq()
+      } else Seq()
+
+    }
 
   }
 
-  }
+  private def verifyMessageRefId(dac6MetaData: Option[Dac6MetaData], enrolmentId: String,
+                                 history: SubmissionHistory): Seq[Validation] = {
+    val result = Try {
+      val prefixValid = dac6MetaData.get.messageRefId.startsWith("GB")
+      val userId = dac6MetaData.get.messageRefId.substring(2, 17)
+      val userIdValid = userId.equals(enrolmentId)
+      val isUnique = isMessageRefIdUnique(dac6MetaData.get.messageRefId, history)
 
-  private def verifyMessageRefId(dac6MetaData: Option[Dac6MetaData], enrolmentId: String): Seq[Validation] ={
-   val result = Try {
-     val prefixValid = dac6MetaData.get.messageRefId.startsWith("GB")
-     val userId = dac6MetaData.get.messageRefId.substring(2, 17)
-     val userIdValid = userId.equals(enrolmentId)
-     if(prefixValid && userIdValid && dac6MetaData.get.messageRefId.length > 19){
-       None }else
-       if(userIdValid){
-         Some("metaDataRules.messageRefId.wrongFormat")
-       }
-       else Some("metaDataRules.messageRefId.noUserId")
+      if (prefixValid && userIdValid && dac6MetaData.get.messageRefId.length > 19 && isUnique) {
+        None
+      }else if (!isUnique) {
+        Some("metaDataRules.messageRefId.notUnique")
+      }
+      else if (userIdValid) {
+        Some("metaDataRules.messageRefId.wrongFormat")
+      }
+      else Some("metaDataRules.messageRefId.noUserId")
 
 
     }
@@ -175,8 +174,12 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
     result match {
       case Success(Some(error)) => Seq(Validation(error, false))
       case Success(None) => Seq()
-      case _ =>  Seq(Validation("metaDataRules.messageRefId.wrongFormat", false))
+      case _ => Seq(Validation("metaDataRules.messageRefId.wrongFormat", false))
     }
+  }
+
+  private def isMessageRefIdUnique(messageRefId: String, history: SubmissionHistory): Boolean = {
+    !history.details.exists(submissionDetails => submissionDetails.messageRefId.equals(messageRefId))
   }
 
   private def isMarketableArrangement(dac6MetaData: Dac6MetaData, history: SubmissionHistory): Boolean = {
