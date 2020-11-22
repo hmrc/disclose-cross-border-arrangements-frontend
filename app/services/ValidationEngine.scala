@@ -18,7 +18,7 @@ package services
 
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
-import models.{ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -43,7 +43,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
 
       for {
-        metaDateResult <- metaDataValidationService.verifyMetaData(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId)
+        metaDateResult <- performMetaDataValidation(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId)
         businessRulesResult <- performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
       } yield {
         combineResults(xmlAndXmlValidationStatus._2, businessRulesResult, metaDateResult) match {
@@ -60,7 +60,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   }
 
   private def combineResults(xmlResult: XMLValidationStatus, businessRulesResult: XMLValidationStatus,
-                             idResult: XMLValidationStatus): XMLValidationStatus = {
+                             metaDataResult: XMLValidationStatus): XMLValidationStatus = {
 
     val xmlErrors = xmlResult match {
       case ValidationSuccess(_, _) => List()
@@ -72,7 +72,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
         case ValidationFailure(errors) => errors
       }
 
-    val idErrors = idResult match {
+    val idErrors = metaDataResult match {
       case ValidationSuccess(_, _) => List()
       case ValidationFailure(errors) => errors
     }
@@ -119,5 +119,23 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       Future.successful(ValidationSuccess(source))
     }
   }
+
+  def performMetaDataValidation(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
+
+      val result = metaDataValidationService.verifyMetaData(dac6MetaData, enrolmentId)
+
+      result.map {
+          seqValidation =>
+            if (seqValidation.isEmpty) {
+              ValidationSuccess(source)
+            }
+            else {
+              ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
+            }
+        }
+
+    }
+
 
 }

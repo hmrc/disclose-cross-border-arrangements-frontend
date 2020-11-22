@@ -173,6 +173,7 @@ trait TestXml {
           <ImplementingDate>2018-06-25</ImplementingDate>
         </DisclosureInformation>
       </DAC6Disclosures>
+      <DisclosureID>AAA000000000</DisclosureID>
     </DAC6_Arrangement>
 
   val missingTaxPayerImplementingDateXml =

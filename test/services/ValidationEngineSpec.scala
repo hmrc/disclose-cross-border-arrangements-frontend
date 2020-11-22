@@ -162,14 +162,15 @@ val enrolmentId = "123456"
 
       "must return ValidationSuccess for valid file" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationSuccess(source, mockMetaData))
       }
 
-      "must return ValidationFailure for valid file which fails IdVerifcation" in new SetUp {
+      "must return ValidationFailure for valid file which fails metaDataCheck" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
-        val expectedErrors = GenericError(1, "ArrangementID does not match HMRC's records")
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationFailure(List(expectedErrors))))
+        val expectedErrors = GenericError(0, "ArrangementID does not match HMRC's records")
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
+          Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds) mustBe Right(ValidationFailure(List(expectedErrors)))
       }
 
@@ -178,7 +179,7 @@ val enrolmentId = "123456"
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(addressError1, addressError2, cityError1, cityError2)))
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(27, "Enter a City"))
 
@@ -189,7 +190,7 @@ val enrolmentId = "123456"
 
         val missingAttributeError = SaxParseError(175, "cvc-complex-type.4: Attribute 'currCode' must appear on element 'Amount'.")
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(missingAttributeError)))
@@ -205,7 +206,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError1, maxlengthError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(116, "BuildingIdentifier must be 400 characters or less"))
 
@@ -218,7 +219,7 @@ val enrolmentId = "123456"
          when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(maxLengthError3, maxlengthError4)))
 
-         when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+         when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
@@ -230,7 +231,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryCodeError1, countryCodeError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(123, "Country is not one of the ISO country codes"))
 
@@ -241,7 +242,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(concernedMsError1, concernedMsError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(177, "ConcernedMS is not one of the ISO EU Member State country codes"))
 
@@ -253,7 +254,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(countryExemptionError1, countryExemptionError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(133, "CountryExemption is not one of the ISO country codes"))
 
@@ -266,7 +267,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(reasonError1, reasonError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(169, "Reason is not one of the allowed values"))
 
@@ -278,7 +279,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(intermediaryCapacityError1, intermediaryCapacityError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
@@ -290,7 +291,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(relevantTpDiscloserCapacityError1, relevantTpDiscloserCapacityError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
@@ -302,7 +303,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(issuedByError1, issuedByError2)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(18, "TIN issuedBy is not one of the ISO country codes"))
 
@@ -317,7 +318,7 @@ val enrolmentId = "123456"
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem,
           ListBuffer(randomParseError)))
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
@@ -327,7 +328,7 @@ val enrolmentId = "123456"
       "must return ValidationFailure for file which fails business rules validation" in new SetUp {
         override val doesFileHaveBusinessErrors = true
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, noErrors))
 
@@ -341,7 +342,7 @@ val enrolmentId = "123456"
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
@@ -351,7 +352,7 @@ val enrolmentId = "123456"
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateXml(any())).thenReturn((elem, missingAddressErrors))
-        when(mockMetaDataValidationService.verifyMetaData(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(ValidationSuccess(source, mockMetaData)))
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId, businessRulesCheckRequired = false), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
