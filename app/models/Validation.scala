@@ -46,6 +46,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded" => "Check BirthDate, Disclosing date of birth must be on or after 1 January 1903"
        case "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" => "Check BirthDate, all Intermediary dates of birth must be on or after 1 January 1903"
        case "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" => "Check BirthDate, all AffectedPersons dates of birth must be on or after 1 January 1903"
+       case "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" => "Check BirthDate, all AssociatedEnterprises dates of birth must be on or after 1 January 1903"
 
        case "metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords" => "ArrangementID does not match HMRC's records"
        case "metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW" => "Provide DisclosureInformation in this DAC6REP file, to replace the original arrangement details"
@@ -82,6 +83,8 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded" => "Disclosing"
       case "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" => "Intermediaries"
       case "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" => "AffectedPersons"
+      case "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" => "AssociatedEnterprises"
+
 
       case "metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords" => "ArrangementID"
       case "metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW" => "DisclosureImportInstruction"

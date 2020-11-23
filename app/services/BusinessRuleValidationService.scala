@@ -187,6 +187,16 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
+  def validateAssociatedEnterprisesDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- associatedEnterprisesDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+
   def validateIntermediaryDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       datesOfBirth <- intermediaryDatesOfBirth
@@ -294,9 +304,10 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v13 <- validateDisclosingDatesOfBirth()
        v14 <- validateIntermediaryDatesOfBirth()
        v15 <- validateAffectedPersonsDatesOfBirth()
+       v16 <- validateAssociatedEnterprisesDatesOfBirth()
     } yield {
       v11.map { v11Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation, v12, v13, v14, v15).filterNot(_.value)
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation, v12, v13, v14, v15, v16).filterNot(_.value)
       }
     }
   }
@@ -350,6 +361,15 @@ object BusinessRuleValidationService {
     ReaderT[Option, NodeSeq, Seq[Date]](xml => {
       Some {
         (xml \\ "Disclosing"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+  val associatedEnterprisesDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "AssociatedEnterprise"\\ "BirthDate")
           .map(_.text)
           .map(parseDate _)
       }

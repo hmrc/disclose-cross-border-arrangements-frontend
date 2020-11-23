@@ -102,6 +102,36 @@ trait TestXml {
             <AffectedPerson>
            </AffectedPerson>
            </AffectedPersons>
+          <AssociatedEnterprises>
+            <AssociatedEnterprise>
+              <AssociatedEnterpriseID>
+                <Individual>
+                  <IndividualName>
+                    <FirstName>Name</FirstName>
+                    <LastName>C</LastName>
+                    <Suffix>(Cat)</Suffix>
+                  </IndividualName>
+                  <BirthDate>1902-12-31</BirthDate>
+                  <BirthPlace>BirthPlace</BirthPlace>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Street</Street>
+                    <BuildingIdentifier>No 10</BuildingIdentifier>
+                    <SuiteIdentifier>Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>DistrictName</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Individual>
+              </AssociatedEnterpriseID>
+              <AffectedPerson>true</AffectedPerson>
+            </AssociatedEnterprise>
+          </AssociatedEnterprises>
         </DAC6Disclosures>
       </DAC6_Arrangement>
 

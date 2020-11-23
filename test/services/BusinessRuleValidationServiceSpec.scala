@@ -79,7 +79,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       BusinessRuleValidationService.noOfRelevantTaxPayers(xml).value mustBe 0
     }
 
-    "must fail validation if RelevantTaxPayer date of births are on or after 01/01/1903" in {
+    "must fail validation if RelevantTaxPayer date of births are before 01/01/1903" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -106,7 +106,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if disclosing date of births are on or after 01/01/1903" in {
+    "must fail validation if disclosing date of births are before 01/01/1903" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -166,7 +166,65 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if intermediary date of births are on or after 01/01/1903" in {
+    "must fail validation if AssociatedEnterprise date of births are on or after 01/01/1903" in {
+
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+            <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1988-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+          <AssociatedEnterprises>
+            <AssociatedEnterprise>
+              <AssociatedEnterpriseID>
+                <Individual>
+                  <IndividualName>
+                    <FirstName>Name</FirstName>
+                    <LastName>C</LastName>
+                    <Suffix>(Cat)</Suffix>
+                  </IndividualName>
+                  <BirthDate>1902-12-31</BirthDate>
+                  <BirthPlace>BirthPlace</BirthPlace>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Street</Street>
+                    <BuildingIdentifier>No 10</BuildingIdentifier>
+                    <SuiteIdentifier>Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>DistrictName</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Individual>
+              </AssociatedEnterpriseID>
+              <AffectedPerson>true</AffectedPerson>
+            </AssociatedEnterprise>
+          </AssociatedEnterprises>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must fail validation if intermediary date of births are before 01/01/1903" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -229,7 +287,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if affected persons date of births are on or after 01/01/1903" in {
+    "must fail validation if affected persons date of births are before 01/01/1903" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
