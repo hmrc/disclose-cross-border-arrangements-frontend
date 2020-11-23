@@ -18,6 +18,7 @@ package models.subscription
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 import models.UserAnswers
 import pages._
@@ -39,14 +40,13 @@ object RequestCommonForUpdate {
     //Format: ISO 8601 YYYY-MM-DDTHH:mm:ssZ e.g. 2020-09-23T16:12:11Z
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
-    val r = new Random()
-    val idSize: Int = 1 + r.nextInt(33) //Generate a size between 1 and 32
-    val generateAcknowledgementReference: String = r.alphanumeric.take(idSize).mkString
+    //Generate a 32 chars UUID without hyphens
+    val acknowledgementReference = UUID.randomUUID().toString.replace("-", "")
 
     RequestCommonForUpdate(
       regime = "DAC",
       receiptDate = ZonedDateTime.now().format(formatter),
-      acknowledgementReference = generateAcknowledgementReference,
+      acknowledgementReference = acknowledgementReference,
       originatingSystem = "MDTP",
       requestParameters = None
     )

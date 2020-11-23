@@ -142,11 +142,11 @@ trait Generators extends UserAnswersGenerator
   }
 
   def validPhoneNumber: Gen[String] = {
-    val phoneRegexWithQuantifier = """^\+?[\d\s]{1,24}$"""
+    val phoneRegexWithQuantifier = """^\+?([\d]){1}([\d\s]){1,22}$"""
     RegexpGen.from(phoneRegexWithQuantifier)
   }
 
-  def validEmailAdressToLong(maxLength: Int): Gen[String] = validEmailAddress suchThat (_.length > maxLength)
+  def validEmailAdressToLong(maxLength: Int): Gen[String] = RegexpGen.from(emailRegex) suchThat (_.length > maxLength)
 
   def validSafeID: Gen[String] = RegexpGen.from(safeIDRegex)
 
