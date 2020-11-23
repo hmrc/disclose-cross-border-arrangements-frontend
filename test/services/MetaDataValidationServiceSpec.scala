@@ -21,19 +21,14 @@ import java.time.LocalDateTime
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
 import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, Validation, ValidationFailure, ValidationSuccess}
-import org.joda.time.DateTime
 import org.mockito.Matchers.any
 import org.mockito.Mockito
-import org.mockito.Mockito.when
-import org.mockito.MockitoAnnotations.Mock
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.time.Seconds
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
