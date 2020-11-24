@@ -19,16 +19,24 @@ package helpers
 import java.time.LocalDateTime
 
 import base.SpecBase
-import models.{ContactInformationForIndividual, ContactInformationForOrganisation, GenericError, IndividualDetails, OrganisationDetails, PrimaryContact, ResponseDetail, SecondaryContact, SubmissionDetails, SubmissionHistory}
+import controllers.routes
+import generators.Generators
+import helpers.JsonFixtures.{displaySubscriptionPayload, displaySubscriptionPayloadNoSecondary}
+import models.subscription._
+import models.{GenericError, SubmissionDetails, SubmissionHistory}
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.json.Json
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
+import play.api.libs.json.{JsString, JsValue, Json}
+import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, Table, _}
 
-class ViewHelperSpec extends SpecBase with MockitoSugar {
+class ViewHelperSpec extends SpecBase
+  with MockitoSugar
+  with Generators {
 
   val viewHelper = new ViewHelper
-  val mockURL = Json.toJson("www.test.com")
+  val mockURL: JsValue = Json.toJson("www.test.com")
 
   "linkToHomePageText" - {
 
@@ -238,7 +246,7 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         )
       )
 
-      val result = viewHelper.buildDisplaySubscription(Some(responseDetail))
+      val result = viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = true)
 
       result mustBe Table(
         head = Seq(
@@ -247,24 +255,182 @@ class ViewHelperSpec extends SpecBase with MockitoSugar {
         ),
         rows = expectedRows)
     }
+  }
 
-    "must return an empty row if there's nothing to display" in {
-      val expectedRows = Seq(
-        Seq(
-          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"displaySubscriptionForDAC.noDetails", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "noDetails"))
-        )
-      )
+  "Building contact details page" - {
 
-      val result = viewHelper.buildDisplaySubscription(None)
+    "must create row for Contact name" in {
+      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+        val expectedRow =
+          Row(
+            key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+            value = Value(lit"Kit Kat"),
+            actions = List(
+              Action(
+                content = msg"site.edit",
+                href = routes.IndividualContactNameController.onPageLoad().url,
+                visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
+                attributes = Map("id" -> "change-primary-contact-name")
+              )
+            )
+          )
 
-      result mustBe Table(
-        head = Seq(
-          Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
-        ),
-        rows = expectedRows)
+        val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
+          JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+        val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
+          Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
+
+        val result = viewHelper.primaryContactName(
+          displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+        result mustBe expectedRow
+      }
+    }
+
+    "must create row for Email address" in {
+      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"$email"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = routes.ContactEmailAddressController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-primary-contact-email")
+                )
+              )
+            )
+
+          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
+            Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
+
+          val result = viewHelper.primaryContactEmail(
+            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+          result mustBe expectedRow
+      }
+    }
+
+    "must create row for Telephone" in {
+      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"$phone"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = routes.ContactTelephoneNumberController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-primary-phone-number")
+                )
+              )
+            )
+
+          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
+            Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
+
+          val result = viewHelper.primaryPhoneNumber(
+            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+          result mustBe expectedRow
+      }
+    }
+
+    "must create row for Secondary contact name" in {
+      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, name, orgName, email, secondaryEmail, phone) =>
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.secondaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"$orgName"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = routes.SecondaryContactNameController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-secondary-contact-name")
+                )
+              )
+            )
+
+          val displayPayload: String = displaySubscriptionPayload(
+            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
+            JsString(secondaryEmail), JsString(phone))
+          val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
+
+          val result = viewHelper.secondaryContactName(
+            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+          result mustBe expectedRow
+      }
+    }
+
+    "must create row for Secondary email address" in {
+      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, name, orgName, email, secondaryEmail, phone) =>
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"$secondaryEmail"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = routes.SecondaryContactEmailAddressController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-secondary-contact-email")
+                )
+              )
+            )
+
+          val displayPayload: String = displaySubscriptionPayload(
+            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
+            JsString(secondaryEmail), JsString(phone))
+          val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
+
+          val result = viewHelper.secondaryContactEmail(
+            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+          result mustBe expectedRow
+      }
+    }
+
+    "must create row for Secondary telephone - None if it's missing" in {
+      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, name, orgName, email, secondaryEmail, phone) =>
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"None"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-secondary-phone-number")
+                )
+              )
+            )
+
+          val displayPayload: String = displaySubscriptionPayload(
+            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
+            JsString(secondaryEmail), JsString(phone))
+          val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
+
+          val result = viewHelper.secondaryPhoneNumber(
+            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+
+          result mustBe expectedRow
+      }
     }
   }
 }

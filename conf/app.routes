@@ -52,3 +52,27 @@ POST       /your-disclosures                            controllers.HistoryContr
 GET        /your-disclosures-results                    controllers.SearchHistoryResultsController.onPageLoad()
 
 GET        /display-subscription                        controllers.DisplaySubscriptionForDACController.onPageLoad()
+
+GET        /contact-details                             controllers.ContactDetailsController.onPageLoad()
+POST       /contact-details                             controllers.ContactDetailsController.onSubmit()
+
+GET        /change-contact-name                         controllers.ContactNameController.onPageLoad()
+POST       /change-contact-name                         controllers.ContactNameController.onSubmit()
+
+GET        /change-contact-email                        controllers.ContactEmailAddressController.onPageLoad()
+POST       /change-contact-email                        controllers.ContactEmailAddressController.onSubmit()
+
+GET        /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onPageLoad()
+POST       /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onSubmit()
+
+GET        /change-secondary-contact-name               controllers.SecondaryContactNameController.onPageLoad()
+POST       /change-secondary-contact-name               controllers.SecondaryContactNameController.onSubmit()
+
+GET        /change-secondary-contact-email              controllers.SecondaryContactEmailAddressController.onPageLoad()
+POST       /change-secondary-contact-email              controllers.SecondaryContactEmailAddressController.onSubmit()
+
+GET        /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onPageLoad()
+POST       /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onSubmit()
+
+GET        /change-name                                 controllers.IndividualContactNameController.onPageLoad()
+POST       /change-name                                 controllers.IndividualContactNameController.onSubmit()

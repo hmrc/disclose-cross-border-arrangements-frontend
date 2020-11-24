@@ -1,0 +1,71 @@
+{% extends "includes/layout.njk" %}
+
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "govuk/components/input/macro.njk"         import govukInput %}
+{% from "govuk/components/button/macro.njk"        import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "macros/title.njk"                         import title %}
+
+{% block pageTitle %}
+  {{ title(messages("individualContactName.title"), form.errors) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  {{ govukBackLink({
+    text: messages("site.back")
+  }) }}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        {% if form.errors.length > 0 %}
+          {{ govukErrorSummary({
+            "titleText": messages("error.summary.title"),
+            "errorList": form.errors
+          }) }}
+        {% endif %}
+
+        <form action="{{ routes.controllers.IndividualContactNameController.onSubmit().url }}" method="post">
+
+          {{ csrf() | safe }}
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("individualContactName.heading") }}
+        </h1>
+
+          {{ govukInput({
+            label: {
+              text: messages('individualContactName.firstName')
+            },
+            classes: "govuk-!-width-two-thirds",
+            id: "firstName",
+            name: "firstName",
+            value: form.firstName.value,
+            errorMessage: form.firstName.error
+          }) }}
+
+          {{ govukInput({
+            label: {
+              text: messages('individualContactName.lastName')
+            },
+            classes: "govuk-!-width-two-thirds",
+            id: "lastName",
+            name: "lastName",
+            value: form.lastName.value,
+            errorMessage: form.lastName.error
+          }) }}
+
+          {{ govukButton({
+            text: messages("site.continue"),
+            attributes:{"id": "submit"}
+          }) }}
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

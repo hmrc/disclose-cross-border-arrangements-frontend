@@ -16,30 +16,45 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
-import controllers.actions.IdentifierAction
+import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
+import models.UserAnswers
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class IndexController @Inject()(
+                                 sessionRepository: SessionRepository,
                                  identify: IdentifierAction,
+                                 getData: DataRetrievalAction,
+                                 frontendAppConfig: FrontendAppConfig,
                                  crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
                                  val controllerComponents: MessagesControllerComponents,
                                  renderer: Renderer
                                )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify).async { implicit request =>
-    {for {
-      noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
-    } yield {
-      val context = Json.obj("hasSubmissions" -> (noOfPreviousSubmissions > 0))
-      renderer.render("index.njk", context).map(Ok(_))
-    }}.flatten
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async { implicit request =>
+    {
+
+      val userAnswers = request.userAnswers.getOrElse[UserAnswers](UserAnswers(request.internalId))
+
+      for {
+        noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
+        _                       <- sessionRepository.set(userAnswers)
+      } yield {
+        val context = Json.obj(
+          "hasSubmissions" -> (noOfPreviousSubmissions > 0),
+          "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle
+        )
+        renderer.render("index.njk", context).map(Ok(_))
+      }
+    }.flatten
   }
 }

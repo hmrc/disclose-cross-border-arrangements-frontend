@@ -86,6 +86,105 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
               .mustBe(routes.SearchHistoryResultsController.onPageLoad())
         }
       }
+
+      "must go from What is the name of the individual or team we should contact? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
+          (answers, firstName, lastName) =>
+            val updatedAnswers =
+              answers
+                .set(ContactNamePage, Name(firstName, lastName))
+                .success
+                .value
+            navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from Who should we contact if we have any questions about your disclosures? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
+          (answers, firstName, lastName) =>
+            val updatedAnswers =
+              answers
+                .set(IndividualContactNamePage, Name(firstName, lastName))
+                .success
+                .value
+            navigator.nextPage(IndividualContactNamePage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from What is your email address? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validEmailAddress) {
+          (answers, email) =>
+            val updatedAnswers =
+              answers
+                .set(ContactEmailAddressPage, email)
+                .success
+                .value
+            navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from What is your telephone number? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validPhoneNumber) {
+          (answers, phone) =>
+            val updatedAnswers =
+              answers
+                .set(ContactTelephoneNumberPage, phone)
+                .success
+                .value
+            navigator.nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from What is the name of the individual or team we should contact? page to " +
+        "Check your contact details page - Secondary contact" in {
+
+        forAll(arbitrary[UserAnswers], validOrganisationName) {
+          (answers, orgName) =>
+            val updatedAnswers =
+              answers
+                .set(SecondaryContactNamePage, orgName)
+                .success
+                .value
+            navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from What is the email address for your second contact? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validEmailAddress) {
+          (answers, email) =>
+            val updatedAnswers =
+              answers
+                .set(SecondaryContactEmailAddressPage, email)
+                .success
+                .value
+            navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
+
+      "must go from What is the telephone number for your second contact? page to Check your contact details page" in {
+
+        forAll(arbitrary[UserAnswers], validPhoneNumber) {
+          (answers, phone) =>
+            val updatedAnswers =
+              answers
+                .set(SecondaryContactTelephoneNumberPage, phone)
+                .success
+                .value
+            navigator.nextPage(SecondaryContactTelephoneNumberPage, NormalMode, updatedAnswers)
+              .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
+      }
     }
 
     "in Check mode" - {

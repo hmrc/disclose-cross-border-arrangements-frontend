@@ -18,7 +18,8 @@ package connectors
 
 import config.FrontendAppConfig
 import javax.inject.Inject
-import models.{DisplaySubscriptionDetails, DisplaySubscriptionForDACRequest, DisplaySubscriptionForDACResponse}
+import models.UserAnswers
+import models.subscription._
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
@@ -50,6 +51,30 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
           }
           case errorStatus: Int =>
             logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
+            None
+        }
+    }
+  }
+
+  def updateSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)
+                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateSubscriptionForDACResponse]] = {
+
+    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/update-subscription"
+
+    http.POST[UpdateSubscriptionForDACRequest, HttpResponse](
+      submissionUrl,
+      UpdateSubscriptionForDACRequest(UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, userAnswers))
+    ).map {
+      response =>
+        response.status match {
+          case OK => response.json.validate[UpdateSubscriptionForDACResponse] match {
+            case JsSuccess(response, _) => Some(response)
+            case JsError(errors) =>
+              logger.warn("Validation of update subscription response failed", errors)
+              None
+          }
+          case errorStatus: Int =>
+            logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
             None
         }
     }
