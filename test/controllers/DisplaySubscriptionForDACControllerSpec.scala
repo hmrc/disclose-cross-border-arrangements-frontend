@@ -45,13 +45,13 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
 
     "return OK and the correct view for a GET and there are subscription details available" in {
 
-      forAll(validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (email, secondaryEmail, phone) =>
+      forAll(validSafeID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, email, secondaryEmail, phone) =>
 
           reset(mockRenderer, mockSubscriptionConnector)
 
           val jsonPayload = displaySubscriptionPayload(
-            JsString("XA1234567891234"), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
             JsString(email), JsString(secondaryEmail), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get
