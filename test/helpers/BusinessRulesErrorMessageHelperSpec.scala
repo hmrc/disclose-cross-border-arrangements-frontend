@@ -104,7 +104,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), implementingDateAfterStartDateXml)
-        result mustBe List(GenericError(17, "The TaxpayerImplementingDate when the arrangement has been or will be made available to each taxpayer must be on or after 25 June 2018"))
+        result mustBe List(GenericError(15, "Check the TaxpayerImplementingDate for all arrangements is on or after 25 June 2018"))
       }
 
      "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
@@ -196,7 +196,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), relevantTaxPayerDiscloserXml)
-        result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate"))
+        result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate for any arrangements that are not marketable"))
       }
 
       "must  return correct error message for relevant taxpayer date of birth before 01/01/1903" in {
@@ -207,7 +207,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(15, "Check BirthDate, all RelevantTaxPayer dates of birth must be on or after 1 January 1903"))
+        result mustBe List(GenericError(15, "Check BirthDate field is on or after 1 January 1903 for all RelevantTaxPayers"))
       }
 
       "must  return correct error message for AssociatedEnterprises date of birth before 01/01/1903" in {
@@ -218,7 +218,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(28, "Check BirthDate, all AssociatedEnterprises dates of birth must be on or after 1 January 1903"))
+        result mustBe List(GenericError(28, "Check BirthDate field is on or after 1 January 1903 for all AssociatedEnterprises"))
       }
 
       "must  return correct error message for disclosing date of birth before 01/01/1903" in {
@@ -229,7 +229,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(8, "Check BirthDate, Disclosing date of birth must be on or after 1 January 1903"))
+        result mustBe List(GenericError(8, "Check BirthDate field is on or after 1 January 1903 for Disclosing"))
       }
 
       "must  return correct error message for intermediary date of birth before 01/01/1903" in {
@@ -240,7 +240,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(20, "Check BirthDate, all Intermediary dates of birth must be on or after 1 January 1903"))
+        result mustBe List(GenericError(20, "Check BirthDate field is on or after 1 January 1903 for all intermediaries"))
       }
 
       "must  return correct error message for affectedPersons date of birth before 01/01/1903" in {
@@ -251,7 +251,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(24, "Check BirthDate, all AffectedPersons dates of birth must be on or after 1 January 1903"))
+        result mustBe List(GenericError(24, "Check BirthDate field is on or after 1 January 1903 for all AffectedPersons"))
       }
 
       "must  return correct error message when ArrangementID does not match HMRC's records" in {
