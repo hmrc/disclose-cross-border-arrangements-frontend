@@ -22,7 +22,10 @@ if(backLink){
   });
 }
 
-document.getElementById('printLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    window.print();
-});
+var printLink = document.getElementById('printLink');
+if(printLink){
+    printLink.addEventListener('click', function(e){
+        e.preventDefault();
+        window.print();
+    });
+}
