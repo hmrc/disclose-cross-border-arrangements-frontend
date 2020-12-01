@@ -23,7 +23,7 @@ if(backLink){
 }
 
 if (document.getElementById('printLink')){
-    printLink.addEventListener('click', function(e){
+    document.getElementById('printLink').addEventListener('click', function(e){
         e.preventDefault();
         window.print();
     });
