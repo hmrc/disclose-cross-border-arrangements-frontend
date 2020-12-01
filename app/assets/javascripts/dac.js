@@ -22,8 +22,7 @@ if(backLink){
   });
 }
 
-var printLink = document.getElementById('printLink');
-if(printLink){
+if (document.getElementById('printLink')){
     printLink.addEventListener('click', function(e){
         e.preventDefault();
         window.print();
