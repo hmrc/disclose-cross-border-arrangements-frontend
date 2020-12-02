@@ -17,28 +17,37 @@
 package controllers.actions
 
 import base.SpecBase
-import connectors.EnrolmentStoreConnector
+import connectors.{EnrolmentStoreConnector, SubscriptionConnector}
+import helpers.JsonFixtures.displaySubscriptionPayloadNoSecondary
 import models.ContactDetails
 import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
 import models.requests.{DataRequest, DataRequestWithContacts}
+import models.subscription.DisplaySubscriptionForDACResponse
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
+import play.api.libs.json.{JsString, Json}
 import utils.EnrolmentConstants
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 class ContactRetrievalActionImplSpec extends SpecBase {
 
+  val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
+  val mockEnrolmentConnector: EnrolmentStoreConnector = mock[EnrolmentStoreConnector]
 
-
-  class Harness(enrolmentConnector: EnrolmentStoreConnector) extends ContactRetrievalActionImpl(enrolmentConnector, mockAppConfig) {
+  class Harness(enrolmentConnector: EnrolmentStoreConnector) extends ContactRetrievalActionImpl(enrolmentConnector, mockAppConfig, mockSubscriptionConnector) {
     def callTransform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] = transform(request)
   }
 
   "Contact retrieval action" - {
     "return request with contactinformation" in {
+      val jsonPayload: String = displaySubscriptionPayloadNoSecondary(
+        JsString("id"), JsString("FirstName"), JsString("LastName"), JsString("test@test.com"), JsString("0191 111 2222"))
+      val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
-      val mockEnrolmentConnector = mock[EnrolmentStoreConnector]
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
       when(mockEnrolmentConnector.getEnrolments(any())(any())).thenReturn(
         Future.successful(Some(
         EnrolmentResponse(EnrolmentConstants.dac6EnrolmentKey,Seq(
@@ -51,13 +60,14 @@ class ContactRetrievalActionImplSpec extends SpecBase {
         ))
       ))
       )
+
       val action = new Harness(mockEnrolmentConnector)
 
       val futureResult = action.callTransform(new DataRequest(fakeRequest,
         "id", "id",emptyUserAnswers))
 
       whenReady(futureResult) { result =>
-        result.contacts mustBe Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), None, None))
+        result.contacts mustBe Some(ContactDetails(Some("FirstName LastName"), Some("test@test.com"), None, None))
       }
       }
 

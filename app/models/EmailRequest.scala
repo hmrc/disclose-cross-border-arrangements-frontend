@@ -25,23 +25,31 @@ object EmailRequest {
   implicit val format: OFormat[EmailRequest] = Json.format[EmailRequest]
 
   def sendConfirmation(email: String,
+                       importInstruction: String,
                        arrangementID: String,
                        disclosureID: String,
                        dateSubmitted: String,
-                       filename: String,
-                       submissionNumber: String,
-                       name: Option[String]): EmailRequest =
+                       messageRefID: String,
+                       name: Option[String]): EmailRequest = {
+
+    val templateID = importInstruction match {
+      case "DAC6NEW" => "dac6_new_disclosure_confirmation"
+      case "DAC6ADD" => "dac6_additional_disclosure_confirmation"
+      case "DAC6REP" => "dac6_replace_disclosure_confirmation"
+      case "DAC6DEL" => "dac6_delete_disclosure_confirmation"
+    }
+
     EmailRequest(
       List(email),
-      "dac6_disclosure_confirmation",
+      templateID,
       name.map(n => "name" -> n).toMap ++
         Map(
           "arrangementID" -> arrangementID,
           "disclosureID" -> disclosureID,
           "dateSubmitted" -> dateSubmitted,
-          "filename" -> filename,
-          "submissionNumber" -> submissionNumber
+          "messageRefID" -> messageRefID
         )
     )
+  }
 
 }

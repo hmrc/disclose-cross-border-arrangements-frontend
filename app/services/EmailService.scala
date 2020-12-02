@@ -17,19 +17,22 @@
 package services
 
 import connectors.EmailConnector
-import javax.inject.{Inject, Singleton}
 import models.{ContactDetails, EmailRequest, GeneratedIDs}
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmailService @Inject()(emailConnector: EmailConnector)(implicit executionContext: ExecutionContext) {
 
-  def sendEmail(contacts: Option[ContactDetails], filename: String, ids: GeneratedIDs)(implicit hc: HeaderCarrier): Future[Option[HttpResponse]] = {
+  def sendEmail(contacts: Option[ContactDetails],
+                ids: GeneratedIDs,
+                importInstruction: String,
+                messageRefID: String)(implicit hc: HeaderCarrier): Future[Option[HttpResponse]] = {
 
     contacts match {
       case Some(contactDetails) =>
@@ -41,24 +44,22 @@ class EmailService @Inject()(emailConnector: EmailConnector)(implicit executionC
         (ids.arrangementID, ids.disclosureID) match {
           case (Some(arrangementID), Some(disclosureID)) =>
             val dateSubmitted = DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate())
-            //ToDo extract submission number
-            val submissionNumber = ""
 
             for {
               primaryResponse <- emailAddress
                 .filter(EmailAddress.isValid)
                 .fold(Future.successful(Option.empty[HttpResponse])) {
                   email =>
-                    emailConnector.sendEmail(EmailRequest.sendConfirmation(email, arrangementID, disclosureID,
-                      dateSubmitted, filename, submissionNumber, primaryContactName)).map(Some.apply)
+                    emailConnector.sendEmail(EmailRequest.sendConfirmation(email, importInstruction, arrangementID, disclosureID,
+                      dateSubmitted, messageRefID, primaryContactName)).map(Some.apply)
                 }
 
               _ <- secondaryEmailAddress
                 .filter(EmailAddress.isValid)
                 .fold(Future.successful(Option.empty[HttpResponse])) {
                   secondaryEmailAddress =>
-                    emailConnector.sendEmail(EmailRequest.sendConfirmation(secondaryEmailAddress, arrangementID, disclosureID,
-                      dateSubmitted, filename, submissionNumber, secondaryName)).map(Some.apply)
+                    emailConnector.sendEmail(EmailRequest.sendConfirmation(secondaryEmailAddress, importInstruction, arrangementID,
+                      disclosureID, dateSubmitted, messageRefID, secondaryName)).map(Some.apply)
                 }
             }
               yield primaryResponse
