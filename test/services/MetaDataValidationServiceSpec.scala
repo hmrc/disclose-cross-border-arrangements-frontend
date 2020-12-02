@@ -42,6 +42,8 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
   val disclosureId1 = "GBD20200101AAA123"
   val disclosureId2 = "GBD20200101BBB456"
 
+  val messageRefID = "GB0000000XXX"
+
   val mockConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
   val idVerificationService = new MetaDataValidationService(mockConnector)
@@ -88,7 +90,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
     "verifyIds" -{
       "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under another users arrangemntid" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1), messageRefID = messageRefID))
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(List())))
@@ -100,7 +102,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
       "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under their own arrangemntid" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1), messageRefID = messageRefID))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
@@ -123,7 +125,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
       "should return a ValidationFailure if ArrangementId matches hmrcs record for DAC6ADD" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1), messageRefID = messageRefID))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(List())))
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
@@ -135,7 +137,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationSuccess if disclosureId relates to them for DAC6REP" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1)))
+          disclosureID = Some(disclosureId1), messageRefID = messageRefID))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime1,
@@ -157,7 +159,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationFailure if disclosureId does not relate to them for DAC6REP" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1)))
+          disclosureID = Some(disclosureId1), messageRefID = messageRefID))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime1,
@@ -180,7 +182,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 "should return a ValidationFailure if disclosureId does not relate to them for DAC6DEL" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6DEL", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1)))
+          disclosureID = Some(disclosureId1), messageRefID = messageRefID))
 
         val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime1,
@@ -202,7 +204,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationFailure if disclosureId does not relate to the given ArrangementId" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2)))
+          disclosureID = Some(disclosureId2), messageRefID = messageRefID))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime1,
@@ -232,7 +234,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationSuccess if DAC6ADD for a marketable arrangement has implementingDates populated for new RelevantTaxpayers" in {
 
         val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2)))
+          disclosureID = Some(disclosureId2), messageRefID = messageRefID))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
                                                   submissionTime = submissionDateTime1,
@@ -253,7 +255,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
 
        "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates populated for new RelevantTaxpayers" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1), messageRefID = messageRefID))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
@@ -284,7 +286,7 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
       "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates " +
       "populated for new RelevantTaxpayers 2" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)))
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1), messageRefID = messageRefID))
 
         val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,

@@ -207,13 +207,14 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
+      messageRefID <- messageRefID
     } yield {
 
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
-        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
-        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, None, None, messageRefID)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), None, messageRefID)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), messageRefID)
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), messageRefID)
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
     }

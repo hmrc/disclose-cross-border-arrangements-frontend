@@ -131,7 +131,7 @@ val enrolmentId = "123456"
         for {
           _ <-  dummyReader
         }yield {
-          Dac6MetaData("DAC6NEW")
+          Dac6MetaData("DAC6NEW", messageRefID = "GB0000000XXX")
 
         }
       }
@@ -147,7 +147,7 @@ val enrolmentId = "123456"
     val source = "src"
     val elem: Elem = <dummyElement>Test</dummyElement>
     val mockXML: Elem = <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-    val mockMetaData = Some(Dac6MetaData("DAC6NEW"))
+    val mockMetaData = Some(Dac6MetaData("DAC6NEW", messageRefID = "GB0000000XXX"))
 
   }
   "ValidationEngine" - {

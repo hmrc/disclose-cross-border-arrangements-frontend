@@ -17,7 +17,8 @@
 package controllers
 
 import base.SpecBase
-import connectors.CrossBorderArrangementsConnector
+import config.FrontendAppConfig
+import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -29,7 +30,8 @@ import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.XMLValidationService
+import services.{EmailService, XMLValidationService}
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
@@ -40,7 +42,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
     "return OK and the correct view for a GET" in {
 
 
-      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA001"))
+      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA001"), "GB0000000XXX")
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
@@ -101,12 +103,18 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
     }
 
     "when submitted the uploaded file must be submitted to the backend" in {
+      val mockEmailService: EmailService = mock[EmailService]
+      val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
+      val metaData: Dac6MetaData = Dac6MetaData("DAC6NEW", None, None, "GB0000000XXX")
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")
         .success
         .value
         .set(URLPage, "url")
+        .success
+        .value
+        .set(Dac6MetaDataPage, metaData)
         .success
         .value
 
@@ -116,21 +124,31 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[EmailService].toInstance(mockEmailService),
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
         ).build()
 
       when(mockXmlValidationService.loadXML(any[String]())).
         thenReturn(<test><value>Success</value></test>)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockAppConfig.sendEmailToggle).thenReturn(true)
+      when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(None))
 
       val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
 
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DeleteDisclosureConfirmationController.onPageLoad().url
       verify(mockCrossBorderArrangementsConnector, times(1))
         .submitDocument(any(), any(), any())(any())
+      verify(mockEmailService, times(1)).sendEmail(any(), any(), any(), any())(any())
 
       application.stop()
     }
