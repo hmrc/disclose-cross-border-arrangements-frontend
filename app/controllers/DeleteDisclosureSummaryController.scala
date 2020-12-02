@@ -16,19 +16,23 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions._
-import javax.inject.Inject
+import models.GeneratedIDs
+import models.requests.DataRequestWithContacts
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.XMLValidationService
+import services.{EmailService, XMLValidationService}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
@@ -37,8 +41,11 @@ class DeleteDisclosureSummaryController @Inject()(
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    contactRetrievalAction: ContactRetrievalAction,
     sessionRepository: SessionRepository,
     xmlValidationService: XMLValidationService,
+    emailService: EmailService,
+    frontendAppConfig: FrontendAppConfig,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
@@ -67,16 +74,30 @@ class DeleteDisclosureSummaryController @Inject()(
       }
   }
 
-  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  private def sendMail(ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
+    if (frontendAppConfig.sendEmailToggle) {
+      val messageRefID = request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(metaData) => metaData.messageRefID
+        case None => ""
+      }
+
+      emailService.sendEmail(request.contacts, ids, importInstruction = "DAC6DEL", messageRefID)
+    }
+    else {
+      Future.successful(None)
+    }
+  }
+
+  def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
       (request.userAnswers.get(URLPage), request.userAnswers.get(ValidXMLPage)) match {
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
           for {
-            ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
+            ids                <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
-            _ <- sessionRepository.set(userAnswersWithIDs)
-            //TODO: send confirmation emails
+            _                  <- sessionRepository.set(userAnswersWithIDs)
+            _                  <- sendMail(ids)
           } yield {
             Redirect(routes.DeleteDisclosureConfirmationController.onPageLoad().url)
           }

@@ -18,24 +18,27 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector}
+import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector, SubscriptionConnector}
 import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.Mockito.{reset, times, verify, when}
+import org.scalatest.BeforeAndAfterEach
 import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
+import play.api.http.Status.OK
 import play.api.inject.bind
 import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.XMLValidationService
+import services.{EmailService, XMLValidationService}
+import uk.gov.hmrc.http.HttpResponse
 import utils.EnrolmentConstants
 
 import scala.concurrent.Future
 
-class CheckYourAnswersControllerSpec extends SpecBase {
+class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   val userAnswers: UserAnswers = UserAnswers(userAnswersId)
     .set(ValidXMLPage, "file-name.xml")
@@ -48,17 +51,25 @@ class CheckYourAnswersControllerSpec extends SpecBase {
   val mockXmlValidationService: XMLValidationService =  mock[XMLValidationService]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
   val mockEnrolmentStoreConnector: EnrolmentStoreConnector = mock[EnrolmentStoreConnector]
+  val mockEmailService: EmailService = mock[EmailService]
+  val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
   val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "id"))
   val verifiers = Seq(
     KnownFact("CONTACTNAME", "test testing"),
     KnownFact("EMAIL", "me@test.com"))
-  val enrolmentResponse = EnrolmentResponse(EnrolmentConstants.dac6EnrolmentKey, Seq(Enrolment(identifiers, verifiers)))
+  val enrolmentResponse: EnrolmentResponse = EnrolmentResponse(EnrolmentConstants.dac6EnrolmentKey, Seq(Enrolment(identifiers, verifiers)))
 
-   when(mockEnrolmentStoreConnector.getEnrolments(any())(any())).
-     thenReturn(Future.successful(Some(enrolmentResponse)))
+   override def beforeEach: Unit = {
+     when(mockEnrolmentStoreConnector.getEnrolments(any())(any())).
+       thenReturn(Future.successful(Some(enrolmentResponse)))
 
-  when(mockAppConfig.sendEmailToggle).thenReturn(false)
+     when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+       .thenReturn(Future.successful(None))
+
+     reset(mockEmailService)
+   }
+
 
   "Check Your Answers Controller" - {
 
@@ -131,7 +142,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       application.stop()
     }
 
-    "when submitted the uploaded file must be submitted to the backend" in {
+    "when submitted the uploaded file must be submitted to the backend and redirect to /upload if import instruction is missing" in {
 
       val application = applicationBuilder(Some(userAnswers))
       .overrides(
@@ -153,23 +164,18 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustBe routes.UploadFormController.onPageLoad().url
       verify(mockCrossBorderArrangementsConnector, times(1))
         .submitDocument(any(), any(), any())(any())
+      verify(mockEmailService, times(0)).sendEmail(any(), any(), any(), any())(any())
 
       application.stop()
     }
 
     "must redirect to the creation confirmation page when user submits XML and the instructions is DAC6NEW" in {
+      val metaData: Dac6MetaData = Dac6MetaData("DAC6NEW", None, None, "GB0000000XXX")
+      val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
-      val application = applicationBuilder(Some(userAnswers))
-        .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
-            bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
-
-      when(mockAppConfig.sendEmailToggle).thenReturn(false)
       val xml =
         <DAC6_Arrangement version="First">
           <DAC6Disclosures>
@@ -177,9 +183,22 @@ class CheckYourAnswersControllerSpec extends SpecBase {
           </DAC6Disclosures>
         </DAC6_Arrangement>
 
+      val application = applicationBuilder(Some(updatedUserAnswers))
+        .overrides(
+          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
+          bind[EmailService].toInstance(mockEmailService),
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
+        ).build()
+
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockAppConfig.sendEmailToggle).thenReturn(true)
+      when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
       val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
 
@@ -187,17 +206,23 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
       status(result) mustEqual SEE_OTHER
       redirectLocation(result).value mustEqual routes.CreateConfirmationController.onPageLoad().url
+      verify(mockEmailService, times(1)).sendEmail(any(), any(), any(), any())(any())
 
       application.stop()
     }
 
     "must redirect to the upload confirmation page when user submits XML and the instructions is DAC6ADD" in {
+      val metaData: Dac6MetaData = Dac6MetaData("DAC6ADD", None, None, "GB0000000XXX")
+      val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
-      val application = applicationBuilder(Some(userAnswers))
+      val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
+          bind[EmailService].toInstance(mockEmailService),
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
         ).build()
 
       val xml =
@@ -210,6 +235,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockAppConfig.sendEmailToggle).thenReturn(true)
+      when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
       val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
 
@@ -217,17 +245,23 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
       status(result) mustEqual SEE_OTHER
       redirectLocation(result).value mustEqual routes.UploadConfirmationController.onPageLoad().url
+      verify(mockEmailService, times(1)).sendEmail(any(), any(), any(), any())(any())
 
       application.stop()
     }
 
     "must redirect to the replacement confirmation page when user submits XML and the instructions is DAC6REP" in {
+      val metaData: Dac6MetaData = Dac6MetaData("DAC6REP", None, None, "GB0000000XXX")
+      val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
-      val application = applicationBuilder(Some(userAnswers))
+      val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-            bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector)
+          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
+          bind[EmailService].toInstance(mockEmailService),
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
       ).build()
 
       val xml =
@@ -240,6 +274,9 @@ class CheckYourAnswersControllerSpec extends SpecBase {
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockAppConfig.sendEmailToggle).thenReturn(true)
+      when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
       val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
 
@@ -247,6 +284,7 @@ class CheckYourAnswersControllerSpec extends SpecBase {
 
       status(result) mustEqual SEE_OTHER
       redirectLocation(result).value mustEqual routes.ReplaceConfirmationController.onPageLoad().url
+      verify(mockEmailService, times(1)).sendEmail(any(), any(), any(), any())(any())
 
       application.stop()
     }
