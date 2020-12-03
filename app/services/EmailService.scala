@@ -18,7 +18,7 @@ package services
 
 import connectors.EmailConnector
 import models.{ContactDetails, EmailRequest, GeneratedIDs}
-import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -43,7 +43,10 @@ class EmailService @Inject()(emailConnector: EmailConnector)(implicit executionC
 
         (ids.arrangementID, ids.disclosureID) match {
           case (Some(arrangementID), Some(disclosureID)) =>
-            val dateSubmitted = DateTimeFormat.forPattern("dd MMMM yyyy").print(new LocalDate())
+            val dateSubmitted = DateTimeFormat.forPattern("hh:mma 'on' d MMMM yyyy")
+              .print(new LocalDateTime())
+              .replace("AM", "am")
+              .replace("PM","pm")
 
             for {
               primaryResponse <- emailAddress
@@ -61,8 +64,7 @@ class EmailService @Inject()(emailConnector: EmailConnector)(implicit executionC
                     emailConnector.sendEmail(EmailRequest.sendConfirmation(secondaryEmailAddress, importInstruction, arrangementID,
                       disclosureID, dateSubmitted, messageRefID, secondaryName)).map(Some.apply)
                 }
-            }
-              yield primaryResponse
+            } yield primaryResponse
           case _ => Future.successful(None)
         }
       case _ => Future.successful(None)
