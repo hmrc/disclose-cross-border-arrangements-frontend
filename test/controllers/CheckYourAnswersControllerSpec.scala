@@ -18,8 +18,7 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import connectors.{CrossBorderArrangementsConnector, EnrolmentStoreConnector, SubscriptionConnector}
-import models.enrolments.{Enrolment, EnrolmentResponse, KnownFact}
+import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -34,7 +33,6 @@ import play.api.test.Helpers._
 import play.twirl.api.Html
 import services.{EmailService, XMLValidationService}
 import uk.gov.hmrc.http.HttpResponse
-import utils.EnrolmentConstants
 
 import scala.concurrent.Future
 
@@ -50,20 +48,10 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   val mockXmlValidationService: XMLValidationService =  mock[XMLValidationService]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
-  val mockEnrolmentStoreConnector: EnrolmentStoreConnector = mock[EnrolmentStoreConnector]
   val mockEmailService: EmailService = mock[EmailService]
   val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
-  val identifiers = Seq(KnownFact(EnrolmentConstants.dac6IdentifierKey, "id"))
-  val verifiers = Seq(
-    KnownFact("CONTACTNAME", "test testing"),
-    KnownFact("EMAIL", "me@test.com"))
-  val enrolmentResponse: EnrolmentResponse = EnrolmentResponse(EnrolmentConstants.dac6EnrolmentKey, Seq(Enrolment(identifiers, verifiers)))
-
    override def beforeEach: Unit = {
-     when(mockEnrolmentStoreConnector.getEnrolments(any())(any())).
-       thenReturn(Future.successful(Some(enrolmentResponse)))
-
      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
        .thenReturn(Future.successful(None))
 
@@ -87,9 +75,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         .set(Dac6MetaDataPage, metaData)
         .success.value
 
-      val application = applicationBuilder(Some(userAnswers))
-        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
-        .build()
+      val application = applicationBuilder(Some(userAnswers)).build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -110,9 +96,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
-        .build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -127,9 +111,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
     "must redirect to Session Expired for a GET if no existing data is found" in {
 
-      val application = applicationBuilder(userAnswers = None)
-        .overrides(bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector))
-        .build()
+      val application = applicationBuilder(userAnswers = None).build()
 
       val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
@@ -148,7 +130,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       .overrides(
         bind[XMLValidationService].toInstance(mockXmlValidationService),
         bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-        bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
         bind[FrontendAppConfig].toInstance(mockAppConfig)
       ).build()
 
@@ -187,7 +168,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
@@ -219,7 +199,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
@@ -258,7 +237,6 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         .overrides(
           bind[XMLValidationService].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[EnrolmentStoreConnector].toInstance(mockEnrolmentStoreConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
