@@ -45,7 +45,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
     "must return OK and the correct view for a GET without a secondary contact" in {
 
-      forAll(validSafeID ,validEmailAddress, validPhoneNumber) {
+      forAll(validDacID ,validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
 
           reset(mockRenderer, mockSubscriptionConnector)
@@ -92,7 +92,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
     "must return OK and the correct view for a GET with a secondary contact" in {
 
-      forAll(validSafeID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
 
           reset(mockRenderer, mockSubscriptionConnector)
@@ -165,7 +165,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
     "must redirect to the next page when valid data is submitted" in {
 
-      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
           val jsonPayload = displaySubscriptionPayloadNoSecondary(
             JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))

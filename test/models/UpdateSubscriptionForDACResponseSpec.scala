@@ -38,7 +38,7 @@ class UpdateSubscriptionForDACResponseSpec extends SpecBase with Generators {
 
   "UpdateSubscriptionForDACResponse" - {
      "must deserialise UpdateSubscriptionForDACResponse" in {
-       forAll(validSafeID) {
+       forAll(validDacID) {
          safeID =>
          Json.parse(updateSubscriptionResponsePayload(JsString(safeID)))
            .validate[UpdateSubscriptionForDACResponse].get mustBe updateSubscriptionResponse(safeID)
@@ -46,7 +46,7 @@ class UpdateSubscriptionForDACResponseSpec extends SpecBase with Generators {
      }
 
     "must serialise UpdateSubscriptionForDACResponse" in {
-      forAll(validSafeID) {
+      forAll(validDacID) {
         safeID =>
           Json.toJson(updateSubscriptionResponse(safeID)) mustBe updateSubscriptionResponseJson(safeID)
       }

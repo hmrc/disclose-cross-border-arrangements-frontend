@@ -148,6 +148,6 @@ trait Generators extends UserAnswersGenerator
 
   def validEmailAdressToLong(maxLength: Int): Gen[String] = RegexpGen.from(emailRegex) suchThat (_.length > maxLength)
 
-  def validSafeID: Gen[String] = RegexpGen.from(safeIDRegex)
+  def validDacID: Gen[String] = RegexpGen.from(dacIDRegex)
 
 }

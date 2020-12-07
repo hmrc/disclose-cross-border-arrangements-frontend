@@ -34,7 +34,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
   "DisplaySubscriptionForDACResponse" - {
     "must deserialise DisplaySubscriptionForDACResponse" in {
 
-      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
 
           val primaryContact: PrimaryContact = PrimaryContact(Seq(
@@ -68,7 +68,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
 
     "must serialise DisplaySubscriptionForDACResponse" in {
 
-      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
 
           val primaryContact: PrimaryContact = PrimaryContact(Seq(
