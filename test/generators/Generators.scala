@@ -21,9 +21,14 @@ import java.time.{Instant, LocalDate, ZoneOffset}
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen._
 import org.scalacheck.{Gen, Shrink}
+import utils.RegexConstants
 import wolfendale.scalacheck.regexp.RegexpGen
 
-trait Generators extends UserAnswersGenerator with PageGenerators with ModelGenerators with UserAnswersEntryGenerators {
+trait Generators extends UserAnswersGenerator
+  with PageGenerators
+  with ModelGenerators
+  with UserAnswersEntryGenerators
+  with RegexConstants {
 
   implicit val dontShrink: Shrink[String] = Shrink.shrinkAny
 
@@ -97,6 +102,12 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     chars     <- listOfN(length, arbitrary[Char])
   } yield chars.mkString
 
+  def stringsLongerThanAlpha(minLength: Int): Gen[String] = for {
+    maxLength <- (minLength * 2).max(100)
+    length    <- Gen.chooseNum(minLength + 1, maxLength)
+    chars     <- listOfN(length, Gen.alphaChar)
+  } yield chars.mkString
+
   def stringsExceptSpecificValues(excluded: Seq[String]): Gen[String] =
     nonEmptyString suchThat (!excluded.contains(_))
 
@@ -119,17 +130,24 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
     }
   }
 
-  def validPersonalName: Gen[String] = RegexpGen.from("""^[a-zA-Z &`\-^]{1,35}$""")
+  def validPersonalName: Gen[String] = RegexpGen.from(apiNameRegex)
 
-  def validOrganisationName: Gen[String] = RegexpGen.from("""^[a-zA-Z0-9 '&\\/]{1,105}$""")
+  def validOrganisationName: Gen[String] = RegexpGen.from(apiOrganisationNameRegex)
 
   def validEmailAddress: Gen[String] = {
-    val emailRegex = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)" +
-      "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]+)*)$"
+    val emailRegexWithQuantifier = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,50}))" +
+      "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,42}))$"
 
-    RegexpGen.from(emailRegex)
+    RegexpGen.from(emailRegexWithQuantifier)
   }
 
-  def validPhoneNumber: Gen[String] = RegexpGen.from("""^\+?[\d\s]{1,24}$""")
+  def validPhoneNumber: Gen[String] = {
+    val phoneRegexWithQuantifier = """^\+?([\d]){1}([\d\s]){1,22}$"""
+    RegexpGen.from(phoneRegexWithQuantifier)
+  }
+
+  def validEmailAdressToLong(maxLength: Int): Gen[String] = RegexpGen.from(emailRegex) suchThat (_.length > maxLength)
+
+  def validDacID: Gen[String] = RegexpGen.from(dacIDRegex)
 
 }

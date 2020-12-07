@@ -157,6 +157,7 @@ index.guidance = Upload an XML file to tell us about an arrangement.
 index.continue = Disclose a cross-border arrangement
 
 history.link = View uploaded files
+contactDetails.link = View and change contact details
 submissionHistory.title = Your disclosures
 submissionHistory.heading = Your disclosures
 submissionHistory.caption = Your disclosures
@@ -283,3 +284,69 @@ displaySubscriptionForDAC.individualMobile = Individual Mobile
 displaySubscriptionForDAC.organisationEmail = Organisation Email
 displaySubscriptionForDAC.organisationPhone = Organisation Phone
 displaySubscriptionForDAC.organisationMobile = Organisation Mobile
+
+contactDetails.title = Check your contact details
+contactDetails.heading = Check your contact details
+contactDetails.h2 = Contact details
+contactDetails.primaryContactName.checkYourAnswersLabel = Contact name
+contactDetails.primaryContactEmail.checkYourAnswersLabel = Email address
+contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Telephone
+contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact name
+contactDetails.secondaryContactEmail.checkYourAnswersLabel = Additional contact email address
+contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Additional contact telephone number
+contactDetails.button = Confirm and send
+
+contactName.title = Who should we contact if we have any questions about your disclosures?
+contactName.heading = Who should we contact if we have any questions about your disclosures?
+contactName.firstName = First name
+contactName.lastName = Last name
+contactName.error.firstName.required = Enter the first name of the person we should contact if we have any questions about your disclosures
+contactName.error.firstName.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+contactName.error.firstName.length = First name must be 35 characters or less
+contactName.error.lastName.required = Enter the last name of the person we should contact if we have any questions about your disclosures
+contactName.error.lastName.invalid = Last name  must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+contactName.error.lastName.length = Last name must be 35 characters or less
+
+contactEmailAddress.title = What is your email address?
+contactEmailAddress.heading = What is your email address?
+contactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
+contactEmailAddress.error.required = Enter an email address
+contactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
+contactEmailAddress.error.length = Enter an email address that is 132 characters or less
+
+contactTelephoneNumber.title = What is your telephone number?
+contactTelephoneNumber.heading = What is your telephone number?
+contactTelephoneNumber.hint = For international numbers include the country code.
+contactTelephoneNumber.error.required = Enter a telephone number
+contactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
+
+secondaryContactName.title = What is the name of the individual or team we should contact?
+secondaryContactName.heading = What is the name of the individual or team we should contact?
+secondaryContactName.hint = For example, ‘DAC6 team’ or ‘Ashley Smith’.
+secondaryContactName.error.required = Enter the name of the individual or team we should contact
+secondaryContactName.error.invalid = Name of the individual or team must only include letters a to z, numbers 0 to 9, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+secondaryContactName.error.length = Individual or team must be 35 characters or less
+
+secondaryContactEmailAddress.title = What is the email address for your second contact?
+secondaryContactEmailAddress.heading = What is the email address for your second contact?
+secondaryContactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
+secondaryContactEmailAddress.error.required = Enter an email address
+secondaryContactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
+secondaryContactEmailAddress.error.length = Enter an email address that is 132 characters or less
+
+secondaryContactTelephoneNumber.title = What is the telephone number for your second contact?
+secondaryContactTelephoneNumber.heading = What is the telephone number for your second contact?
+secondaryContactTelephoneNumber.hint = For international numbers include the country code.
+secondaryContactTelephoneNumber.error.required = Enter a telephone number
+secondaryContactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
+
+individualContactName.title = What is your name?
+individualContactName.heading = What is your name?
+individualContactName.firstName = First name
+individualContactName.lastName = Last name
+individualContactName.error.firstName.required = Enter your first name
+individualContactName.error.firstName.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+individualContactName.error.firstName.length = First name must be 35 characters or less
+individualContactName.error.lastName.required = Enter your last name
+individualContactName.error.lastName.invalid = Last name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+individualContactName.error.lastName.length = Last name must be 35 characters or less

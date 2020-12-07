@@ -35,7 +35,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
   with GuiceOneAppPerSuite
   with MockitoSugar
   with WireMockHelper
-  with ScalaFutures{
+  with ScalaFutures {
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder()
     .configure(
@@ -114,7 +114,9 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       val json = Json.obj(
         "details" -> JsArray(Seq(Json.obj(
           "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> "2007-12-03T10:15:30",
+          "submissionTime" -> Json.obj(
+            "$date" -> 1196676930000L
+          ),
           "fileName" -> "fileName",
           "importInstruction" -> "New",
           "initialDisclosureMA" -> false,
@@ -157,7 +159,9 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       "should return the submission details for the first disclosure from backend" in {
         val json = Json.obj(
           "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> "2020-05-14T17:10:00",
+          "submissionTime" -> Json.obj(
+            "$date" -> 1589476200000L
+          ),
           "fileName" -> "fileName",
           "arrangementID" -> arrangementID,
           "disclosureID" -> disclosureID,

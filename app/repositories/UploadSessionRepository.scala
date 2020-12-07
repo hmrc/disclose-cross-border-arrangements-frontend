@@ -18,20 +18,35 @@ package repositories
 
 import javax.inject.Inject
 import models.upscan._
+import play.api.Configuration
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.indexes.{Index, IndexType}
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UploadSessionRepository @Inject()(mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
-
+class UploadSessionRepository @Inject()(mongo: ReactiveMongoApi,
+                                        config: Configuration)(implicit ec: ExecutionContext) {
 
   private val collectionName = "uploadSessionRepository"
+  private val cacheTtl = config.get[Int]("mongodb.timeToLiveInSeconds")
 
   private def collection: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection](collectionName))
+
+  private val lastUpdatedIndex = Index(
+    key     = Seq("lastUpdated" -> IndexType.Ascending),
+    name    = Some("upload-last-updated-index"),
+    options = BSONDocument("expireAfterSeconds" -> cacheTtl)
+  )
+
+  val started: Future[Unit] =
+    collection.flatMap {
+      _.indexesManager.ensure(lastUpdatedIndex)
+    }.map(_ => ())
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadSessionDetails]] = {
     collection.flatMap(_.find(Json.obj("uploadId" -> Json.toJson(uploadId)), None).one[UploadSessionDetails])

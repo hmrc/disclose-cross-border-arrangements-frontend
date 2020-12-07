@@ -17,6 +17,7 @@
 package generators
 
 import models.UserAnswers
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages._
@@ -26,6 +27,13 @@ trait UserAnswersGenerator extends TryValues {
   self: Generators =>
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
+    arbitrary[(IndividualContactNamePage.type, JsValue)] ::
+    arbitrary[(SecondaryContactTelephoneNumberPage.type, JsValue)] ::
+    arbitrary[(SecondaryContactEmailAddressPage.type, JsValue)] ::
+    arbitrary[(SecondaryContactNamePage.type, JsValue)] ::
+    arbitrary[(ContactTelephoneNumberPage.type, JsValue)] ::
+    arbitrary[(ContactEmailAddressPage.type, JsValue)] ::
+    arbitrary[(ContactNamePage.type, JsValue)] ::
     Nil
 
   implicit lazy val arbitraryUserData: Arbitrary[UserAnswers] = {

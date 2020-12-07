@@ -17,18 +17,21 @@
 package controllers
 
 import base.SpecBase
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
+import matchers.JsonMatchers
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import play.api.inject.bind
+import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class IndexControllerSpec extends SpecBase {
+class IndexControllerSpec extends SpecBase with JsonMatchers {
 
   "Index Controller" - {
 
@@ -41,9 +44,12 @@ class IndexControllerSpec extends SpecBase {
       when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
         .thenReturn(Future.successful(0L))
 
+      when(mockAppConfig.contactDetailsToggle).thenReturn(false)
+
       val application = applicationBuilder(userAnswers = None)
         .overrides(
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
         ).build()
 
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
@@ -53,10 +59,56 @@ class IndexControllerSpec extends SpecBase {
       status(result) mustEqual OK
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+
+      val expectedJson = Json.obj(
+        "hasSubmissions" -> false,
+        "contactDetailsToggle" -> false
+      )
 
       templateCaptor.getValue mustEqual "index.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
+
+      application.stop()
+    }
+
+    "must return OK and the correct view for a GET with both links present" in {
+      val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("foo")))
+
+      when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
+        .thenReturn(Future.successful(2L))
+
+      when(mockAppConfig.contactDetailsToggle).thenReturn(true)
+
+      val application = applicationBuilder(userAnswers = None)
+        .overrides(
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
+        ).build()
+
+      val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual OK
+
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+
+      val expectedJson = Json.obj(
+        "hasSubmissions" -> true,
+        "contactDetailsToggle" -> true
+      )
+
+      templateCaptor.getValue mustEqual "index.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
     }
