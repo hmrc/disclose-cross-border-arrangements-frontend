@@ -1942,6 +1942,214 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
+  "must report correct dob of birth errors" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Disclosing>
+              <ID>
+                <Organisation>
+                  <OrganisationName>Tyrell Corporation</OrganisationName>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Sesame</Street>
+                    <BuildingIdentifier>4</BuildingIdentifier>
+                    <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>Westminster</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Organisation>
+              </ID>
+              <Liability>
+                <IntermediaryDiscloser>
+                  <IntermediaryNexus>FTNAE</IntermediaryNexus>
+                  <Capacity>DAC61107</Capacity>
+                  <Intermediary>
+                    <ID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>1899-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </ID>
+                    <Capacity>DAC61102</Capacity>
+                    <NationalExemption>
+                      <Exemption></Exemption>
+                      <CountryExemptions>
+                        <CountryExemption>VU</CountryExemption>
+                      </CountryExemptions>
+                    </NationalExemption>
+                  </Intermediary>
+                </IntermediaryDiscloser>
+              </Liability>
+            </Disclosing>
+            <InitialDisclosureMA>true</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>1994-04-25</BirthDate>
+                    <BirthPlace>Petrol Station</BirthPlace>
+                    <TIN issuedBy="GB">AA000000A</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+                <AssociatedEnterprises>
+                  <AssociatedEnterprise>
+                    <AssociatedEnterpriseID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>2007-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </AssociatedEnterpriseID>
+                    <AffectedPerson>true</AffectedPerson>
+                  </AssociatedEnterprise>
+                </AssociatedEnterprises>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+            <Intermediaries>
+              <Intermediary>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2007-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AA000000D</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <Capacity>DAC61102</Capacity>
+                <NationalExemption>
+                  <Exemption>true</Exemption>
+                  <CountryExemptions>
+                    <CountryExemption>VU</CountryExemption>
+                  </CountryExemptions>
+                </NationalExemption>
+              </Intermediary>
+            </Intermediaries>
+            <AffectedPersons>
+              <AffectedPerson>
+                <AffectedPersonID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Palmerston</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2012-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AB000000D</TIN>
+                    <Address>
+                      <Street>King Charles Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Lord Palmerston Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </AffectedPersonID>
+              </AffectedPerson>
+            </AffectedPersons>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List(Validation("businessrules.DisclosingBirthDates.maxDateOfBirthExceeded",false,None))
+
+    }
+  }
+
   "must correctly invalidate that other info is provided when hallmark absent" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

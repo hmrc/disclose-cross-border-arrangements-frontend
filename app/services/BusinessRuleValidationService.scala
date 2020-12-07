@@ -351,7 +351,7 @@ object BusinessRuleValidationService {
   val relevantTaxPayerDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
     ReaderT[Option, NodeSeq, Seq[Date]](xml => {
       Some {
-        (xml \\ "RelevantTaxpayer"\\ "BirthDate")
+        (xml \\ "RelevantTaxPayers" \\ "RelevantTaxpayer"\\ "BirthDate")
           .map(_.text)
           .map(parseDate _)
       }
@@ -378,7 +378,7 @@ object BusinessRuleValidationService {
   val intermediaryDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
     ReaderT[Option, NodeSeq, Seq[Date]](xml => {
       Some {
-        (xml \\ "Intermediary"\\ "BirthDate")
+        (xml \\ "Intermediaries" \\ "Intermediary"\\ "BirthDate")
           .map(_.text)
           .map(parseDate _)
       }
