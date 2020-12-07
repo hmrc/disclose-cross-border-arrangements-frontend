@@ -169,7 +169,7 @@ object UpdateSubscriptionDetails {
       }
 
     RequestDetailForUpdate(
-      IDType = "SAFE",
+      IDType = "DAC",
       IDNumber = responseDetail.subscriptionID,
       tradingName = None,
       isGBUser = responseDetail.isGBUser,

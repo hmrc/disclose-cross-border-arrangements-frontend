@@ -260,7 +260,7 @@ class ViewHelperSpec extends SpecBase
   "Building contact details page" - {
 
     "must create row for Contact name" in {
-      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
         val expectedRow =
           Row(
@@ -289,7 +289,7 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Email address" in {
-      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
           val expectedRow =
             Row(
@@ -318,7 +318,7 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Telephone" in {
-      forAll(validSafeID, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
           val expectedRow =
             Row(
@@ -347,7 +347,7 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Secondary contact name" in {
-      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, orgName, email, secondaryEmail, phone) =>
           val expectedRow =
             Row(
@@ -376,7 +376,7 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Secondary email address" in {
-      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, orgName, email, secondaryEmail, phone) =>
           val expectedRow =
             Row(
@@ -405,7 +405,7 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Secondary telephone - None if it's missing" in {
-      forAll(validSafeID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, orgName, email, secondaryEmail, phone) =>
           val expectedRow =
             Row(

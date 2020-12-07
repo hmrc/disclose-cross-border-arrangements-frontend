@@ -45,7 +45,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
 
     "return OK and the correct view for a GET and there are subscription details available" in {
 
-      forAll(validSafeID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
 
           reset(mockRenderer, mockSubscriptionConnector)
