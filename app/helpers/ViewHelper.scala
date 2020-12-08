@@ -33,7 +33,7 @@ import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
 class ViewHelper @Inject()() {
 
   def linkToHomePageText(href: JsValue)(implicit messages: Messages): Html = {
-    Html(s"${{ messages("confirmation.link.text")}} <a id='homepage-link' href=$href>${{ messages("confirmation.link.text2") }}</a>.")
+    Html(s"<a id='homepage-link' href=$href>${{ messages("confirmation.link.text") }}</a>.")
   }
 
   def surveyLinkText(href: JsValue)(implicit messages: Messages): Html = {

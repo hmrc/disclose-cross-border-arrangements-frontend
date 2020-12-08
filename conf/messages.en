@@ -252,25 +252,22 @@ uploadConfirmation.h2 = What happens next
 uploadConfirmation.p1 = We have sent a confirmation email to {0}.
 uploadConfirmation.p2 = Your message reference ID for this update is {0}.
 uploadConfirmation.p3 = You will need the disclosure ID if you need to make any changes to the disclosure.
-uploadConfirmation.p4 = If we have any questions about the disclosure, we will contact you.
 
 deleteDisclosureConfirmation.title = Disclosure has been deleted
 deleteDisclosureConfirmation.heading = Your disclosure has been deleted
 deleteDisclosureConfirmation.p1 = Your disclosure {0} for arrangement {1} has been deleted. For your records, the MessageRefID for this action is {2}.
 deleteDisclosureConfirmation.p2 = We have sent a confirmation email to {0}.
 
-confirmation.link.text = Go to
-confirmation.link.text2 = disclose cross-border arrangements
+confirmation.link.text = Disclose a cross-border arrangement
 confirmation.survey.link = What did you think of this service?
 confirmation.survey.text = (takes 30 seconds)
 
 createConfirmation.title = Disclosure received
 createConfirmation.panel.title = Disclosure received
-createConfirmation.panel.html = Your arrangement reference number
-createConfirmation.h2 = What happens next
+createConfirmation.panel.html = Your arrangement ID
 createConfirmation.p1 = We have sent a confirmation email to {0}.
-createConfirmation.p2 = Share the arrangement reference number with anyone else involved in the arrangement.
-createConfirmation.p3 = Your disclosure ID is {0}. You will need this if you want to make any changes to the disclosure.
+createConfirmation.p2 = Share the above arrangement ID with any other people or organisations involved in this arrangement.
+createConfirmation.p3 = Your disclosure ID is {0}. You will need it to make any changes to the disclosure.
 createConfirmation.p4 = Your MessageRefID is {0}. This is unique for every file you upload. You can use it to match the arrangement and disclosure IDs we give you to the correct file in your system.
 
 displaySubscriptionForDAC.title = Display Subscription for DAC
