@@ -18,8 +18,10 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import handlers.ErrorHandler
 import helpers.ViewHelper
 import javax.inject.Inject
+import pages.Dac6MetaDataPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -34,16 +36,31 @@ class ReplaceConfirmationController @Inject()(
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    contactRetrievalAction: ContactRetrievalAction,
+    errorHandler: ErrorHandler,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer,
     viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
+
+      val messageRef = request.userAnswers.get(Dac6MetaDataPage) match {
+        case Some(metaData) => metaData.messageRefID
+        case None => errorHandler.onServerError(request, new Exception("MessageRefID is missing"))
+      }
+
+      val emailMessage = request.contacts match {
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails) => contactDetails.contactEmail.getOrElse("")
+        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+      }
 
       renderer.render("replaceConfirmation.njk",
         Json.obj(
+          "messageRefID" -> messageRef.toString,
+          "emailMessage" -> emailMessage.toString,
           "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(frontEndAppConfig.discloseArrangeLink)),
           "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(frontEndAppConfig.betaFeedbackUrl))
         )

@@ -36,14 +36,22 @@ class DeleteDisclosureConfirmationController @Inject()(
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
+    contactRetrievalAction: ContactRetrievalAction,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer,
     errorHandler: ErrorHandler,
     viewHelper: ViewHelper
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
+
+      val emailMessage = request.contacts match {
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails) => contactDetails.contactEmail.getOrElse("")
+        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+      }
+
       request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(xmlData) =>
           renderer.render(
@@ -51,8 +59,11 @@ class DeleteDisclosureConfirmationController @Inject()(
             Json.obj(
               "disclosureID" -> xmlData.disclosureID,
               "arrangementID" -> xmlData.arrangementID,
+              "messageRefID" -> xmlData.messageRefID,
+              "emailMessage" -> emailMessage.toString,
               "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
-              "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
+              "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl)),
+              "emailMessage" -> emailMessage.toString
             )
           ).map(Ok(_))
 

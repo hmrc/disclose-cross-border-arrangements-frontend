@@ -20,8 +20,8 @@
         </h1>
 
         <div class="govuk-body">
-            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID) }}</p>
-            <p>{{ messages("deleteDisclosureConfirmation.p2") }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID, messageRefID) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p2", emailMessage) }}</p>
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>

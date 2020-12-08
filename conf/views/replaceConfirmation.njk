@@ -19,13 +19,14 @@
       }) }}
 
         <div class="govuk-body">
-            <p>{{ messages("replaceConfirmation.p1") }}</p>
+            <p>{{ messages("replaceConfirmation.p1", email) }}</p>
+            <p>{{ messages("replaceConfirmation.p2", messageRefID) }}</p>
 
             <h2 class="govuk-heading-m">
                 {{ messages("replaceConfirmation.heading.two") }}
             </h2>
 
-            <p>{{ messages("replaceConfirmation.p2") }}</p>
+            <p>{{ messages("replaceConfirmation.p3") }}</p>
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>
