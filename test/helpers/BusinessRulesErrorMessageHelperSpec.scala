@@ -69,7 +69,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
-        result mustBe List(GenericError(7, "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"))
+        result mustBe List(GenericError(8, "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"))
       }
 
 

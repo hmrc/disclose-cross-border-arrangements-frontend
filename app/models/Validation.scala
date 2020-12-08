@@ -98,6 +98,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "metaDataRules.messageRefId.wrongFormat" => "MessageRefId"
       case "metaDataRules.messageRefId.noUserId" => "MessageRefId"
       case "metaDataRules.messageRefId.notUnique" => "MessageRefId"
+      case "businessrules.addDisclosure.mustNotBeInitialDisclosureMA" => "InitialDisclosureMA"
 
 
 
