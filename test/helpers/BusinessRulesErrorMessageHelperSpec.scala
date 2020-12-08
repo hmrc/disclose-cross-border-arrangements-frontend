@@ -115,7 +115,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(8, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
+        result mustBe List(GenericError(9, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
       }
 
       "must  return correct error message when InitialDisclosureMA is true in the Initial disclosure and relevant taxpayers do not have implementing Date" in {
