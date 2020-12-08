@@ -218,6 +218,16 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 
   def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
        (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+    println("*****************************************")
+    println("*****************************************")
+    println("*****************************************")
+    println("*****************************************")
+    println("in validateTaxPayerImplementingDateAgainstMarketableArrangementStatus")
+    println("*****************************************")
+    println("*****************************************")
+    println("*****************************************")
+    println("*****************************************")
+
     for {
       disclosureImportInstruction <- disclosureImportInstruction
       relevantTaxPayers <- noOfRelevantTaxPayers
@@ -226,9 +236,24 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       isInitialDisclosureMA <- isInitialDisclosureMA
 
     } yield {
+      println("*****************************************")
+      println("*****************************************")
+      println("*****************************************")
+      println("*****************************************")
+      println("disclosureImportInstruction " + disclosureImportInstruction)
+      println("relevantTaxPayers " + relevantTaxPayers)
+      println("taxPayerImplementingDate " + taxPayerImplementingDate )
+      println("arrangementID " + arrangementID)
+      println("isInitialDisclosureMA " + isInitialDisclosureMA)
+      println("*****************************************")
+      println("*****************************************")
+      println("*****************************************")
+      println("*****************************************")
+
       if ((disclosureImportInstruction == "DAC6ADD") || (disclosureImportInstruction == "DAC6REP")) {
         crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
           submissionDetails =>
+            println("ojfbnbrb")
             submissionDetails.initialDisclosureMA match {
               case true =>  Validation(
                 key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
