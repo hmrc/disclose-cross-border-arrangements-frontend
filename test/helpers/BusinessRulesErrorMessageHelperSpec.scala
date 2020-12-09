@@ -138,7 +138,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
-        result mustBe List(GenericError(10, "MainBenefitTest1 is false but the hallmarks A, B, C1bi, C1c and/or C1d have been selected"))
+        result mustBe List(GenericError(11, "MainBenefitTest1 is false or blank but the hallmarks A, B, C1bi, C1c and/or C1d have been selected"))
       }
 
 
