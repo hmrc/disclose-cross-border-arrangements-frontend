@@ -130,19 +130,6 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 
       }
   }
-  def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
-    for {
-      initialDisclosureMA <- isInitialDisclosureMA
-      relevantTaxPayers <- noOfRelevantTaxPayers
-      taxPayerImplementingDate <- taxPayerImplementingDates
-    } yield Validation(
-      key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
-      value = if(initialDisclosureMA && relevantTaxPayers > 0)
-                relevantTaxPayers == taxPayerImplementingDate.length
-              else true
-    )
-  }
-
   def validateMainBenefitTestHasASpecifiedHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       mainBenefitTest1 <- hasMainBenefitTest1
@@ -295,19 +282,18 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
        v5 <- validateAllImplementingDatesAreAfterStart()
        v6 <- validateDisclosureImportInstruction()
-       v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
-       v8 <- validateMainBenefitTestHasASpecifiedHallmark()
-       v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
-       v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
-       v11 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
-       v12 <- validateRelevantTaxPayerDatesOfBirths()
-       v13 <- validateDisclosingDatesOfBirth()
-       v14 <- validateIntermediaryDatesOfBirth()
-       v15 <- validateAffectedPersonsDatesOfBirth()
-       v16 <- validateAssociatedEnterprisesDatesOfBirth()
+       v7 <- validateMainBenefitTestHasASpecifiedHallmark()
+       v8 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
+       v9 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
+       v10 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+       v11 <- validateRelevantTaxPayerDatesOfBirths()
+       v12 <- validateDisclosingDatesOfBirth()
+       v13 <- validateIntermediaryDatesOfBirth()
+       v14 <- validateAffectedPersonsDatesOfBirth()
+       v15 <- validateAssociatedEnterprisesDatesOfBirth()
     } yield {
-      v11.map { v11Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation, v12, v13, v14, v15, v16).filterNot(_.value)
+      v10.map { v10Validation =>
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15).filterNot(_.value)
       }
     }
   }

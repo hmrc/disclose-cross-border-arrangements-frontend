@@ -126,7 +126,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(8, "Arrangement ID relates to a previous initial disclosure where " +
+        result mustBe List(GenericError(8, "ArrangementID relates to a previous initial disclosure where " +
           "InitialDisclosureMA is true so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
       }
 
