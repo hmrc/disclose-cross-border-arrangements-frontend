@@ -17,12 +17,14 @@
 package controllers
 
 import base.SpecBase
-import models.{GeneratedIDs, UserAnswers}
+import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
+import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import pages.GeneratedIDPage
+import pages.{Dac6MetaDataPage, GeneratedIDPage}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
@@ -39,11 +41,20 @@ class CreateConfirmationControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
+        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", None, None, "GBD20200701AA0002"))
+        .success
+        .value
         .set(GeneratedIDPage, GeneratedIDs(Some("GBA20200701AAAB00"), Some("GBD20200701AA0001")))
         .success
         .value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
+
       val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 

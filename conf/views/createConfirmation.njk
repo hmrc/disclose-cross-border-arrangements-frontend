@@ -19,7 +19,11 @@
         }) }}
 
         <div class="govuk-body">
-            <p>{{ messages("createConfirmation.p1", emailMessage) }}</p>
+
+           {% if config.sendEmailToggle %}
+                <p>{{ messages("createConfirmation.p1", emailMessage) }}</p>
+           {% endif %}
+
             <p>{{ messages("createConfirmation.p2") }}</p>
             <p>{{ messages("createConfirmation.p3", disclosureID) }}</p>
             <p>{{ messages("createConfirmation.p4", messageRefID) }}</p>

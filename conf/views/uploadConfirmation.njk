@@ -19,7 +19,11 @@
         }) }}
 
         <div class="govuk-body">
-            <p>{{ messages("uploadConfirmation.p1", email) }}</p>
+
+            {% if config.sendEmailToggle %}
+                <p>{{ messages("uploadConfirmation.p1", email) }}</p>
+            {% endif %}
+
             <p>{{ messages("uploadConfirmation.p2", messageRefID) }}</p>
 
             <h2 class="govuk-heading-m">

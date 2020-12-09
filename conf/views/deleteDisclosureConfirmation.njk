@@ -20,8 +20,13 @@
         </h1>
 
         <div class="govuk-body">
-            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID, messageRefID) }}</p>
-            <p>{{ messages("deleteDisclosureConfirmation.p2", emailMessage) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p1", disclosureID, arrangementID) }}</p>
+            <p>{{ messages("deleteDisclosureConfirmation.p2", messageRefID) }}</p>
+
+            {% if config.sendEmailToggle %}
+                <p>{{ messages("deleteDisclosureConfirmation.p3", emailMessage) }}</p>
+            {% endif %}
+
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>

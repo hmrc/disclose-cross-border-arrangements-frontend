@@ -127,7 +127,8 @@ class UploadFormControllerSpec extends SpecBase
         "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
           "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
           "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
-          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements",
+          "sendEmailToggle" -> true)
       )
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 
@@ -147,11 +148,12 @@ class UploadFormControllerSpec extends SpecBase
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       val expectedArgument = Json.obj(
+        "guidanceLink" -> "???",
         "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
           "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
           "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
-          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements"),
-          "guidanceLink" -> "???"
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements",
+          "sendEmailToggle" -> true)
       )
 
       val result = controller.showError("EntityTooLarge", "Your proposed upload exceeds the maximum allowed size", "errorReqId")(FakeRequest("", ""))

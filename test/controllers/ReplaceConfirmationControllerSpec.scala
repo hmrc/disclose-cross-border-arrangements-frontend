@@ -17,10 +17,14 @@
 package controllers
 
 import base.SpecBase
+import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
+import models.{ContactDetails, Dac6MetaData, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
+import pages.Dac6MetaDataPage
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
@@ -36,7 +40,17 @@ class ReplaceConfirmationControllerSpec extends SpecBase with MockitoSugar {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"), "GBD20200701AA0002"))
+        .success
+        .value
+
+      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
       val request = FakeRequest(GET, routes.ReplaceConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
