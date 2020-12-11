@@ -130,19 +130,6 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 
       }
   }
-  def validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate(): ReaderT[Option, NodeSeq, Validation] = {
-    for {
-      initialDisclosureMA <- isInitialDisclosureMA
-      relevantTaxPayers <- noOfRelevantTaxPayers
-      taxPayerImplementingDate <- taxPayerImplementingDates
-    } yield Validation(
-      key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
-      value = if(initialDisclosureMA && relevantTaxPayers > 0)
-                relevantTaxPayers == taxPayerImplementingDate.length
-              else true
-    )
-  }
-
   def validateMainBenefitTestHasASpecifiedHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       mainBenefitTest1 <- hasMainBenefitTest1
@@ -167,26 +154,87 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
-  def validateTaxPayerImplementingDateAgainstFirstDisclosure()
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+  def validateRelevantTaxPayerDatesOfBirths(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- relevantTaxPayerDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+
+  def validateDisclosingDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- disclosingDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+
+  def validateAssociatedEnterprisesDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- associatedEnterprisesDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+
+  def validateIntermediaryDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- intermediaryDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+  def validateAffectedPersonsDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
+    for {
+      datesOfBirth <- affectedPersonsDatesOfBirth
+    } yield
+      Validation(
+      key = "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" ,
+      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+    )
+  }
+
+  def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+       (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
     for {
       disclosureImportInstruction <- disclosureImportInstruction
       relevantTaxPayers <- noOfRelevantTaxPayers
       taxPayerImplementingDate <- taxPayerImplementingDates
       arrangementID <- arrangementID
+      isInitialDisclosureMA <- isInitialDisclosureMA
+
     } yield {
       if ((disclosureImportInstruction == "DAC6ADD") || (disclosureImportInstruction == "DAC6REP")) {
         crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
           submissionDetails =>
-            Validation(
-              key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
-              value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
-                relevantTaxPayers == taxPayerImplementingDate.length
-              }
-              else {
-                true
-              }
-            )
+            submissionDetails.initialDisclosureMA match {
+              case true =>  Validation(
+                key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+                value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
+                  relevantTaxPayers == taxPayerImplementingDate.length
+                }
+                else {
+                  true
+                }
+              )
+              case false => Validation(
+                key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
+                value = if(relevantTaxPayers >0) {
+                  taxPayerImplementingDate.isEmpty
+                } else true
+              )
+            }
+
+
         }.recover {
           case _ =>
             logger.info("No first disclosure found")
@@ -196,8 +244,11 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         }
       } else {
         Future(Validation(
-          key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
-          value = true))
+          key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
+          value = if(disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers >0 && !isInitialDisclosureMA) {
+            taxPayerImplementingDate.isEmpty
+           } else true
+        ))
       }
     }
   }
@@ -207,13 +258,18 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       disclosureImportInstruction <- disclosureImportInstruction
       arrangementID <- arrangementID
       disclosureID <- disclosureID
+      disclosureInformation <- disclosureInformation
+      isInitialDisclosureMA <- isInitialDisclosureMA
+      messageRefId <- messageRefID
     } yield {
 
+      val infoPresent = disclosureInformation.nonEmpty
+
       disclosureImportInstruction match {
-        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction)
-        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID))
-        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
-        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID))
+        case "DAC6NEW" => Dac6MetaData(disclosureImportInstruction, disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6ADD" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6REP" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
+        case "DAC6DEL" => Dac6MetaData(disclosureImportInstruction, Some(arrangementID), Some(disclosureID), disclosureInformationPresent = infoPresent, initialDisclosureMA = isInitialDisclosureMA, messageRefId = messageRefId)
         case _ => throw new RuntimeException("XML Data extraction failed - disclosure import instruction Missing")
       }
     }
@@ -226,14 +282,18 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
        v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
        v5 <- validateAllImplementingDatesAreAfterStart()
        v6 <- validateDisclosureImportInstruction()
-       v7 <- validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()
-       v8 <- validateMainBenefitTestHasASpecifiedHallmark()
-       v9 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
-       v10 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
-       v11 <- validateTaxPayerImplementingDateAgainstFirstDisclosure()
+       v7 <- validateMainBenefitTestHasASpecifiedHallmark()
+       v8 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
+       v9 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
+       v10 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+       v11 <- validateRelevantTaxPayerDatesOfBirths()
+       v12 <- validateDisclosingDatesOfBirth()
+       v13 <- validateIntermediaryDatesOfBirth()
+       v14 <- validateAffectedPersonsDatesOfBirth()
+       v15 <- validateAssociatedEnterprisesDatesOfBirth()
     } yield {
-      v11.map { v11Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11Validation).filterNot(_.value)
+      v10.map { v10Validation =>
+        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15).filterNot(_.value)
       }
     }
   }
@@ -242,6 +302,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 object BusinessRuleValidationService {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
   val implementationStartDate: Date = new GregorianCalendar(2018, Calendar.JUNE, 25).getTime
+  val maxBirthDate: Date = new GregorianCalendar(1903, Calendar.JANUARY, 1).getTime
   val hallmarksForMainBenefitTest: Set[String] = Set("DAC6A1","DAC6A2","DAC6A2b","DAC6A3","DAC6B1","DAC6B2","DAC6B3","DAC6C1bi","DAC6C1c","DAC6C1d")
 
   val isInitialDisclosureMA: ReaderT[Option, NodeSeq, Boolean] =
@@ -273,6 +334,52 @@ object BusinessRuleValidationService {
       Some((xml \\ "RelevantTaxpayer").length)
     })
 
+  val relevantTaxPayerDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "RelevantTaxPayers" \\ "RelevantTaxpayer"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+  val disclosingDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "Disclosing"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+  val associatedEnterprisesDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "AssociatedEnterprise"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+  val intermediaryDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "Intermediaries" \\ "Intermediary"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+  val affectedPersonsDatesOfBirth: ReaderT[Option, NodeSeq, Seq[Date]] =
+    ReaderT[Option, NodeSeq, Seq[Date]](xml => {
+      Some {
+        (xml \\ "AffectedPersons"\\ "BirthDate")
+          .map(_.text)
+          .map(parseDate _)
+      }
+    })
+
+
   val taxPayerImplementingDates: ReaderT[Option, NodeSeq, Seq[Date]] =
     ReaderT[Option, NodeSeq, Seq[Date]](xml => {
       Some {
@@ -303,6 +410,11 @@ object BusinessRuleValidationService {
   val disclosureImportInstruction: ReaderT[Option, NodeSeq, String] =
     ReaderT[Option, NodeSeq, String](xml => {
       Some((xml \\ "DisclosureImportInstruction").text)
+    })
+
+  val disclosureInformation: ReaderT[Option, NodeSeq, String] =
+    ReaderT[Option, NodeSeq, String](xml => {
+      Some((xml \\ "DisclosureInformation").text)
     })
 
   val disclosureID: ReaderT[Option, NodeSeq, String] =

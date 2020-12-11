@@ -138,9 +138,11 @@ class ViewHelperSpec extends SpecBase
       val mockSubmissionHistory = SubmissionHistory(
         List(
           SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-01T10:23:30"),
-            "fileName", Some("arrangementID"), Some("disclosureID"), "New", initialDisclosureMA = false),
+            "fileName", Some("arrangementID"), Some("disclosureID"), "New",
+            initialDisclosureMA = false, messageRefId = "GB0000000XXX"),
           SubmissionDetails("enrolmentI2", LocalDateTime.parse("2020-07-02T20:23:30"),
-            "fileName2", Some("arrangementID2"), Some("disclosureID2"), "Add", initialDisclosureMA = false),
+            "fileName2", Some("arrangementID2"), Some("disclosureID2"), "Add",
+             initialDisclosureMA = false, messageRefId = "GB0000000XXX"),
         )
       )
 

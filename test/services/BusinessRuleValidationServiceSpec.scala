@@ -79,6 +79,297 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       BusinessRuleValidationService.noOfRelevantTaxPayers(xml).value mustBe 0
     }
 
+    "must fail validation if RelevantTaxPayer date of births are before 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1902-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must fail validation if disclosing date of births are before 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <Disclosing>
+            <ID>
+              <Individual>
+                <IndividualName>
+                  <FirstName>John</FirstName>
+                  <LastName>Charles</LastName>
+                  <Suffix>Mr</Suffix>
+                </IndividualName>
+                <BirthDate>1902-12-31</BirthDate>
+                <BirthPlace>Random Town</BirthPlace>
+                <TIN issuedBy="GB">AA000000D</TIN>
+                <Address>
+                  <Street>Random Street</Street>
+                  <BuildingIdentifier>No 10</BuildingIdentifier>
+                  <SuiteIdentifier>Random Suite</SuiteIdentifier>
+                  <FloorIdentifier>Second</FloorIdentifier>
+                  <DistrictName>Random District</DistrictName>
+                  <POB>48</POB>
+                  <PostCode>SW1A 4GG</PostCode>
+                  <City>Random City</City>
+                  <Country>GB</Country>
+                </Address>
+                <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                <ResCountryCode>VU</ResCountryCode>
+              </Individual>
+            </ID>
+            <Liability>
+              <RelevantTaxpayerDiscloser>
+                <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                <Capacity>DAC61105</Capacity>
+              </RelevantTaxpayerDiscloser>
+            </Liability>
+          </Disclosing>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1988-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.DisclosingBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must fail validation if AssociatedEnterprise date of births are on or after 01/01/1903" in {
+
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+            <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1988-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+          <AssociatedEnterprises>
+            <AssociatedEnterprise>
+              <AssociatedEnterpriseID>
+                <Individual>
+                  <IndividualName>
+                    <FirstName>Name</FirstName>
+                    <LastName>C</LastName>
+                    <Suffix>(Cat)</Suffix>
+                  </IndividualName>
+                  <BirthDate>1902-12-31</BirthDate>
+                  <BirthPlace>BirthPlace</BirthPlace>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Street</Street>
+                    <BuildingIdentifier>No 10</BuildingIdentifier>
+                    <SuiteIdentifier>Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>DistrictName</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Individual>
+              </AssociatedEnterpriseID>
+              <AffectedPerson>true</AffectedPerson>
+            </AssociatedEnterprise>
+          </AssociatedEnterprises>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must fail validation if intermediary date of births are before 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+           <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1988-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+             <Intermediaries>
+               <Intermediary>
+                 <ID>
+                   <Individual>
+                     <IndividualName>
+                       <FirstName>Larry</FirstName>
+                       <LastName>C</LastName>
+                       <Suffix>DDD</Suffix>
+                     </IndividualName>
+                     <BirthDate>1902-12-31</BirthDate>
+                     <BirthPlace>BirthPlace</BirthPlace>
+                     <TIN issuedBy="GB">AA000000D</TIN>
+                     <Address>
+                       <Street>Downing Street</Street>
+                       <BuildingIdentifier>No 10</BuildingIdentifier>
+                       <SuiteIdentifier>Suite</SuiteIdentifier>
+                       <FloorIdentifier>Second</FloorIdentifier>
+                       <DistrictName>DistrictName</DistrictName>
+                       <POB>48</POB>
+                       <PostCode>SW1A 4GG</PostCode>
+                       <City>London</City>
+                       <Country>GB</Country>
+                     </Address>
+                     <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                     <ResCountryCode>VU</ResCountryCode>
+                   </Individual>
+                 </ID>
+                 <Capacity>DAC61102</Capacity>
+                 <NationalExemption>
+                   <Exemption>true</Exemption>
+                   <CountryExemptions>
+                     <CountryExemption>VU</CountryExemption>
+                   </CountryExemptions>
+                 </NationalExemption>
+               </Intermediary>
+             </Intermediaries>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must fail validation if affected persons date of births are before 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+           <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1988-12-31</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+             <AffectedPersons>
+               <AffectedPerson>
+                 <AffectedPersonID>
+                   <Individual>
+                     <IndividualName>
+                       <FirstName>FirstName</FirstName>
+                       <LastName>LastName</LastName>
+                       <Suffix>Suffix</Suffix>
+                     </IndividualName>
+                     <BirthDate>1902-12-31</BirthDate>
+                     <BirthPlace>BirthPlace</BirthPlace>
+                     <TIN issuedBy="GB">AB000000D</TIN>
+                     <Address>
+                       <Street>Street</Street>
+                       <BuildingIdentifier>No 10</BuildingIdentifier>
+                       <SuiteIdentifier>BuildingIdentifier</SuiteIdentifier>
+                       <FloorIdentifier>Second</FloorIdentifier>
+                       <DistrictName>DistrictName</DistrictName>
+                       <POB>48</POB>
+                       <PostCode>SW1A 4GG</PostCode>
+                       <City>City</City>
+                       <Country>GB</Country>
+                     </Address>
+                     <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                     <ResCountryCode>VU</ResCountryCode>
+                   </Individual>
+                 </AffectedPersonID>
+               </AffectedPerson>
+             </AffectedPersons>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded", false))
+      }
+    }
+
+    "must pass validation if date of births are on a after 01/01/1903" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1903-01-01</BirthDate>
+              </RelevantTaxpayer>
+              <RelevantTaxpayer></RelevantTaxpayer>
+            </RelevantTaxPayers>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List()
+      }
+    }
+
     "must pass validation if an initial disclosure marketable arrangement has one or more relevant taxpayers" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
@@ -1072,8 +1363,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
-  }
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }  }
 
   "must correctly invalidate an initial disclosure MA with Relevant Tax Payers has a missing TaxPayer Implementation Date" in {
     val xml =
@@ -1096,8 +1390,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe false
-  }
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }  }
 
   "must correctly validate an non initial disclosure MA with Relevant Tax Payers has a missing TaxPayer Implementation Date" in {
     val xml =
@@ -1111,7 +1408,6 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
           <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
-              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
             </RelevantTaxpayer>
             <RelevantTaxpayer>
             </RelevantTaxpayer>
@@ -1120,8 +1416,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
-  }
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }  }
 
   "must correctly extract the hallmarks" in {
     val xml =
@@ -1220,8 +1519,11 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.validateInitialDisclosureMAWithRelevantTaxPayerHasImplementingDate()(xml).get.value mustBe true
-  }
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _.value mustBe true
+    }  }
 
   "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is true, " +
     "first disclosure for arrangement ID is not found and Relevant Tax Payers exist" in {
@@ -1237,17 +1539,15 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
           <InitialDisclosureMA>true</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
-              <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
             </RelevantTaxpayer>
             <RelevantTaxpayer>
-              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
             </RelevantTaxpayer>
           </RelevantTaxPayers>
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
     val service = application.injector.instanceOf[BusinessRuleValidationService]
-    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
       _.value mustBe true
@@ -1258,7 +1558,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = true, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))
@@ -1285,18 +1586,18 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = application.injector.instanceOf[BusinessRuleValidationService]
-    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
       _.value mustBe true
     }
   }
 
-  "must correctly validate a file that has missing TaxPayer Implementation Dates if initial disclosure MA is false, " +
-    "first disclosure has been replaced and now InitialDisclosureMA is false, and Relevant Tax Payers exist" in {
+  "must correctly invalidate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
 
     val replacedFirstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace", initialDisclosureMA = false)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(replacedFirstDisclosure))
@@ -1309,7 +1610,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
         </Header>
         <ArrangementID>GBA20200904AAAAAA</ArrangementID>
         <DAC6Disclosures>
-          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
           <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
@@ -1322,18 +1623,18 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = application.injector.instanceOf[BusinessRuleValidationService]
-    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _.value mustBe true
+      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false)
     }
   }
 
-  "must correctly invalidate a file with missing TaxPayer Implementation Dates if initial disclosure MA is false, " +
-    "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
+  "must correctly invalidate a DAC6ADD for a non-marketable arrangment where user has putTaxPayer Implementation Dates" in {
 
     val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
-      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New", initialDisclosureMA = true)
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
     when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
       .thenReturn(Future.successful(firstDisclosure))
@@ -1359,7 +1660,83 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = application.injector.instanceOf[BusinessRuleValidationService]
-    val result = service.validateTaxPayerImplementingDateAgainstFirstDisclosure()(implicitly, implicitly)(xml)
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false)
+    }
+  }
+
+  "must correctly invalidate a DAC6REP for a non-marketable arrangement where user has putTaxPayer Implementation Dates" in {
+
+    val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = false, messageRefId = "GB0000000XXX")
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
+      .thenReturn(Future.successful(firstDisclosure))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6REP</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false)
+    }
+  }
+
+
+  "must correctly invalidate a file with missing TaxPayer Implementation Dates if initial disclosure MA is false, " +
+    "first disclosure's InitialDisclosureMA is true and Relevant Tax Payers exist" in {
+
+    val firstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
+      "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "New",
+      initialDisclosureMA = true, messageRefId = "GB0000000XXX")
+
+    when(mockCrossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID("GBA20200904AAAAAA"))
+      .thenReturn(Future.successful(firstDisclosure))
+
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6ADD</DisclosureImportInstruction>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = application.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
       _.value mustBe false
@@ -1550,6 +1927,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
             <Timestamp>2020-05-14T17:10:00</Timestamp>
           </Header>
           <DAC6Disclosures>
+            <InitialDisclosureMA>true</InitialDisclosureMA>
             <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
             <Disclosing>
               <Liability>
@@ -1572,6 +1950,214 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
 
     whenReady(result.get) {
       _ mustBe List()
+    }
+  }
+
+  "must report correct dob of birth errors" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Disclosing>
+              <ID>
+                <Organisation>
+                  <OrganisationName>Tyrell Corporation</OrganisationName>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Sesame</Street>
+                    <BuildingIdentifier>4</BuildingIdentifier>
+                    <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>Westminster</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Organisation>
+              </ID>
+              <Liability>
+                <IntermediaryDiscloser>
+                  <IntermediaryNexus>FTNAE</IntermediaryNexus>
+                  <Capacity>DAC61107</Capacity>
+                  <Intermediary>
+                    <ID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>1899-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </ID>
+                    <Capacity>DAC61102</Capacity>
+                    <NationalExemption>
+                      <Exemption></Exemption>
+                      <CountryExemptions>
+                        <CountryExemption>VU</CountryExemption>
+                      </CountryExemptions>
+                    </NationalExemption>
+                  </Intermediary>
+                </IntermediaryDiscloser>
+              </Liability>
+            </Disclosing>
+            <InitialDisclosureMA>true</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>1994-04-25</BirthDate>
+                    <BirthPlace>Petrol Station</BirthPlace>
+                    <TIN issuedBy="GB">AA000000A</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+                <AssociatedEnterprises>
+                  <AssociatedEnterprise>
+                    <AssociatedEnterpriseID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>2007-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </AssociatedEnterpriseID>
+                    <AffectedPerson>true</AffectedPerson>
+                  </AssociatedEnterprise>
+                </AssociatedEnterprises>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+            <Intermediaries>
+              <Intermediary>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2007-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AA000000D</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <Capacity>DAC61102</Capacity>
+                <NationalExemption>
+                  <Exemption>true</Exemption>
+                  <CountryExemptions>
+                    <CountryExemption>VU</CountryExemption>
+                  </CountryExemptions>
+                </NationalExemption>
+              </Intermediary>
+            </Intermediaries>
+            <AffectedPersons>
+              <AffectedPerson>
+                <AffectedPersonID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Palmerston</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2012-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AB000000D</TIN>
+                    <Address>
+                      <Street>King Charles Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Lord Palmerston Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </AffectedPersonID>
+              </AffectedPerson>
+            </AffectedPersons>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List(Validation("businessrules.DisclosingBirthDates.maxDateOfBirthExceeded",false,None))
+
     }
   }
 
@@ -1659,7 +2245,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
-  "must return correct metadata for import instruction DAC6NEW" in {
+  "must return correct metadata for import instruction DAC6NEW when disclosure info is present" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
         <Header>
@@ -1679,10 +2265,30 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
             </Hallmarks>
           </DisclosureInformation>
         </DAC6Disclosures>
+        <InitialDisclosureMA>true</InitialDisclosureMA>
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None,
+                                                    disclosureInformationPresent = true, initialDisclosureMA = true,
+                                                    messageRefId = "GB0000000XXX"))
+  }
+
+  "must return correct metadata for import instruction DAC6NEW  when disclosure info is not present" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+        <DAC6Disclosures>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6NEW", None, None,
+                                               disclosureInformationPresent = false, initialDisclosureMA = false,
+                                                messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6ADD" in {
@@ -1705,7 +2311,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
+                                                 disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                  messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6ADD with RelevantTaxpayers who all have implementing dates" in {
@@ -1736,7 +2344,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
+                                                    disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                    messageRefId = "GB0000000XXX"))
   }
 
 
@@ -1767,7 +2377,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6ADD", Some("AAA000000000"), None,
+                                                 disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                  messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6REP" in {
@@ -1791,7 +2403,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000")))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6REP", Some("AAA000000000"), Some("AAA000000000"),
+                                                   disclosureInformationPresent = true,
+                                                    initialDisclosureMA = false, messageRefId = "GB0000000XXX"))
   }
 
   "must return correct metadata for import instruction DAC6DEL" in {
@@ -1815,7 +2429,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       </DAC6_Arrangement>
 
     val service = app.injector.instanceOf[BusinessRuleValidationService]
-    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000")))
+    service.extractDac6MetaData()(xml) mustBe Some(Dac6MetaData("DAC6DEL", Some("AAA000000000"), Some("AAA000000000"),
+                                                     disclosureInformationPresent = true, initialDisclosureMA = false,
+                                                      messageRefId = "GB0000000XXX"))
   }
   "must throw exception if disclosureImportInstruction is invalid or missing" in {
     val xml =

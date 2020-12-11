@@ -73,6 +73,70 @@ trait TestXml {
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
+
+  val invalidDatesOfBirthXml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <Disclosing>
+            <Liability>
+              <RelevantTaxpayerDiscloser>
+                <RelevantTaxpayerNexus>RTNEXb</RelevantTaxpayerNexus>
+                <Capacity>DAC61105</Capacity>
+              </RelevantTaxpayerDiscloser>
+            </Liability>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <BirthDate>1902-12-31</BirthDate>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+            <Intermediaries>
+              <Intermediary></Intermediary>
+            </Intermediaries>
+          </Disclosing>
+          <AffectedPersons>
+            <AffectedPerson>
+           </AffectedPerson>
+           </AffectedPersons>
+          <AssociatedEnterprises>
+            <AssociatedEnterprise>
+              <AssociatedEnterpriseID>
+                <Individual>
+                  <IndividualName>
+                    <FirstName>Name</FirstName>
+                    <LastName>C</LastName>
+                    <Suffix>(Cat)</Suffix>
+                  </IndividualName>
+                  <BirthDate>1902-12-31</BirthDate>
+                  <BirthPlace>BirthPlace</BirthPlace>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Street</Street>
+                    <BuildingIdentifier>No 10</BuildingIdentifier>
+                    <SuiteIdentifier>Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>DistrictName</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Individual>
+              </AssociatedEnterpriseID>
+              <AffectedPerson>true</AffectedPerson>
+            </AssociatedEnterprise>
+          </AssociatedEnterprises>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+
+
   val intermediaryDiscloserXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
       <Header>
@@ -139,6 +203,7 @@ trait TestXml {
           <ImplementingDate>2018-06-25</ImplementingDate>
         </DisclosureInformation>
       </DAC6Disclosures>
+      <DisclosureID>AAA000000000</DisclosureID>
     </DAC6_Arrangement>
 
   val missingTaxPayerImplementingDateXml =

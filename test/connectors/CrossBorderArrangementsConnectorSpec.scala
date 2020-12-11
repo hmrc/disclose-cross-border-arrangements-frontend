@@ -119,7 +119,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           ),
           "fileName" -> "fileName",
           "importInstruction" -> "New",
-          "initialDisclosureMA" -> false
+          "initialDisclosureMA" -> false,
+          "messageRefId" -> "GB0000000XXX"
         )))
       )
 
@@ -143,7 +144,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
                 None,
                 None,
                 "New",
-                initialDisclosureMA = false
+                initialDisclosureMA = false,
+                messageRefId = "GB0000000XXX"
               )
             )
           )
@@ -164,7 +166,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           "arrangementID" -> arrangementID,
           "disclosureID" -> disclosureID,
           "importInstruction" -> "New",
-          "initialDisclosureMA" -> true
+          "initialDisclosureMA" -> true,
+          "messageRefId" -> "GB0000000XXX"
         )
 
         server.stubFor(
@@ -186,7 +189,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
                 Some(arrangementID),
                 Some(disclosureID),
                 "New",
-                initialDisclosureMA = true
+                initialDisclosureMA = true,
+                messageRefId = "GB0000000XXX"
               )
         }
       }
@@ -259,7 +263,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           arrangementID = Some("GBA20200601AAA000"),
           disclosureID = Some("GBD20200601AAA000"),
           importInstruction = "DAC6ADD",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = "GB0000000XXX")
 
         val submissionHistory = SubmissionHistory(Seq(submissionDetails))
 
@@ -312,7 +317,9 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           arrangementID = Some("GBA20200601AAA000"),
           disclosureID = Some("GBD20200601AAA000"),
           importInstruction = "Add",
-          initialDisclosureMA = false)
+          initialDisclosureMA = false,
+          messageRefId = "GB0000000XXX")
+
         val submissionHistory = SubmissionHistory(Seq(submissionDetails))
 
         server.stubFor(
