@@ -106,7 +106,6 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
 
     "must return a ValidationFailure with correct errors for missing mandatory information" in new ActualSetup {
       val result = sut.validateXml(invalidXmlUrl)._2
-      println("vf = " + result)
       result.length mustBe 2
 
       result.head.lineNumber mustBe 20

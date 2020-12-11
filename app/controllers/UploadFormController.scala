@@ -18,9 +18,10 @@ package controllers
 
 import com.google.inject.Inject
 import config.FrontendAppConfig
-import connectors.UpscanConnector
+import connectors.{CrossBorderArrangementsConnector, UpscanConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
+
 import javax.inject.Singleton
 import models.UserAnswers
 import models.upscan.{Failed, Quarantined, UploadId, UploadedSuccessfully, UpscanInitiateRequest}
@@ -45,7 +46,7 @@ class UploadFormController @Inject()(
                                       getData: DataRetrievalAction,
                                       requireData: DataRequiredAction,
                                       upscanInitiateConnector: UpscanConnector,
-                                      uploadProgressTracker: UploadProgressTracker,
+                                      connector: CrossBorderArrangementsConnector,
                                       sessionRepository: SessionRepository,
                                       renderer: Renderer,
                                       errorHandler: ErrorHandler
@@ -59,13 +60,13 @@ class UploadFormController @Inject()(
       val uploadId           = UploadId.generate
       val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
       val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
-      val callbackUrl        = controllers.routes.UploadCallbackController.callback().absoluteURL(appConfig.upscanUseSSL)
+      val callbackUrl        = appConfig.crossBorderArrangementsUrl + "/disclose-cross-border-arrangements/callback"
       val initiateBody       = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
 
       {
         for {
           upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
-          _                      <- uploadProgressTracker.requestUpload(uploadId, upscanInitiateResponse.fileReference)
+          _                      <- connector.requestUpload(uploadId, upscanInitiateResponse.fileReference)
           updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
           _                      <- sessionRepository.set(updatedAnswers)
         } yield {
@@ -108,7 +109,7 @@ class UploadFormController @Inject()(
 
       request.userAnswers.get(UploadIDPage) match {
         case Some(uploadId) =>
-          uploadProgressTracker.getUploadResult(uploadId) flatMap {
+          connector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
             case Some(Quarantined) =>

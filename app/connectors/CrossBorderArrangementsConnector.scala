@@ -17,9 +17,13 @@
 package connectors
 
 import config.FrontendAppConfig
+import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadStatus, UpscanIdentifiers}
+
 import javax.inject.Inject
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import play.api.http.HeaderNames
+import play.api.http.Status.OK
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.SubmissionUtil._
@@ -28,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
 class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfig,
-                                                 httpClient: HttpClient)(implicit val ec: ExecutionContext) {
+                                                 httpClient: HttpClient)(implicit ec: ExecutionContext) {
+
   val baseUrl = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
   val submitUrl = s"$baseUrl/submit"
 
@@ -41,7 +46,7 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   }
 
   private val headers = Seq(
-    HeaderNames.CONTENT_TYPE -> "application/xml"
+  HeaderNames.CONTENT_TYPE -> "application/xml"
   )
 
   def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] = {
@@ -49,14 +54,14 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   }
 
   def findNoOfPreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[Long] =
-    httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
+  httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
 
   //TODO: should have paging to support large no of filings
   def retrievePreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
-    httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
+  httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
 
   def retrieveFirstDisclosureForArrangementID(arrangementID: String)(implicit hc: HeaderCarrier): Future[SubmissionDetails] =
-    httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
+  httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
 
   def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
     httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map { response =>
@@ -78,5 +83,38 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
       case _ => SubmissionHistory(Seq())
     }
   }
+
+  def requestUpload(uploadId: UploadId, fileReference: Reference)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+    httpClient.POST[UpscanIdentifiers, HttpResponse](s"$baseUrl/upscan/upload", UpscanIdentifiers(uploadId, fileReference))
+
+  def getUploadDetails(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadSessionDetails]] = {
+    httpClient.GET[HttpResponse](s"$baseUrl/upscan/details/${uploadId.value}").map {
+      response =>  response.status match {
+        case OK => response.json.validate[UploadSessionDetails] match {
+          case JsSuccess(details, _) =>
+            Some(details)
+          case JsError(_) =>
+            None
+        }
+        case _ => None
+      }
+    }
+  }
+
+  def getUploadStatus(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadStatus]] = {
+    httpClient.GET[HttpResponse](s"$baseUrl/upscan/status/${uploadId.value}").map {
+      response =>  response.status match {
+        case OK => response.json.validate[UploadStatus] match {
+          case JsSuccess(status, _) =>
+            Some(status)
+          case JsError(_) =>
+            None
+        }
+        case _ => None
+      }
+    }
+  }
+
+
 
 }
