@@ -1378,14 +1378,12 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
         </Header>
         <DAC6Disclosures>
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
               <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
             </RelevantTaxpayer>
-            <RelevantTaxpayer>
-            </RelevantTaxpayer>
-          </RelevantTaxPayers>
+           </RelevantTaxPayers>
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
@@ -1421,6 +1419,33 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     whenReady(result.get) {
       _.value mustBe true
     }  }
+
+  "must correctly invalidate an initial disclosure MA with Relevant Tax Payers that has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List(Validation("businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue", false))
+    }
+  }
 
   "must correctly extract the hallmarks" in {
     val xml =
@@ -1525,7 +1550,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       _.value mustBe true
     }  }
 
-  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is true, " +
+  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is false, " +
     "first disclosure for arrangement ID is not found and Relevant Tax Payers exist" in {
 
     val xml =
@@ -1536,7 +1561,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
         </Header>
         <DAC6Disclosures>
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
             </RelevantTaxpayer>
@@ -1593,7 +1618,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
-  "must correctly invalidate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
+  "must correctly validate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
 
     val replacedFirstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
       "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace",
@@ -1613,10 +1638,8 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
           <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
-            <RelevantTaxpayer>
-            </RelevantTaxpayer>
-            <RelevantTaxpayer>
-              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+                <RelevantTaxpayer>
+              <TaxpayerImplementingDate></TaxpayerImplementingDate>
             </RelevantTaxpayer>
           </RelevantTaxPayers>
         </DAC6Disclosures>
@@ -1626,7 +1649,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false)
+      _ mustBe Validation("businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue", true)
     }
   }
 
@@ -1927,7 +1950,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
             <Timestamp>2020-05-14T17:10:00</Timestamp>
           </Header>
           <DAC6Disclosures>
-            <InitialDisclosureMA>true</InitialDisclosureMA>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
             <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
             <Disclosing>
               <Liability>
@@ -2023,7 +2046,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                 </IntermediaryDiscloser>
               </Liability>
             </Disclosing>
-            <InitialDisclosureMA>true</InitialDisclosureMA>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
             <RelevantTaxPayers>
               <RelevantTaxpayer>
                 <ID>
