@@ -244,7 +244,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         }
       } else {
         Future(Validation(
-          key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
+          key = "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates",
           value = if(disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers >0 && isInitialDisclosureMA) {
             taxPayerImplementingDate.length == relevantTaxPayers
            } else true

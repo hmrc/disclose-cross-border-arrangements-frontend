@@ -1443,7 +1443,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     val result = service.validateFile()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _ mustBe List(Validation("businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue", false))
+      _ mustBe List(Validation("businessrules.initialDisclosureMA.missingRelevantTaxPayerDates", false))
     }
   }
 
@@ -1649,7 +1649,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _ mustBe Validation("businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue", true)
+      _ mustBe Validation("businessrules.initialDisclosureMA.missingRelevantTaxPayerDates", true)
     }
   }
 
