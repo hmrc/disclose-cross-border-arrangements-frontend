@@ -84,8 +84,9 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
     }
   }
 
-  def requestUpload(uploadId: UploadId, fileReference: Reference)(implicit hc: HeaderCarrier): Future[HttpResponse] =
+  def requestUpload(uploadId: UploadId, fileReference: Reference)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     httpClient.POST[UpscanIdentifiers, HttpResponse](s"$baseUrl/upscan/upload", UpscanIdentifiers(uploadId, fileReference))
+  }
 
   def getUploadDetails(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadSessionDetails]] = {
     httpClient.GET[HttpResponse](s"$baseUrl/upscan/details/${uploadId.value}").map {

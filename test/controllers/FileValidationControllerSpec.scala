@@ -18,6 +18,7 @@ package controllers
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
+import helpers.FakeCrossBorderArrangementsConnector
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{Dac6MetaData, GenericError, UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
@@ -40,7 +41,6 @@ import scala.concurrent.Future
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
   val mockValidationEngine = mock[ValidationEngine]
   val mockXmlValidationService = mock[XMLValidationService]
   val mockSessionRepository = mock[SessionRepository]
@@ -49,15 +49,16 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
   override def beforeEach() = {
     reset(mockSessionRepository)
-    reset(mockCrossBorderArrangementsConnector)
   }
+
+  val fakeCrossBorderArrangementsConnector = app.injector.instanceOf[FakeCrossBorderArrangementsConnector]
 
   "FileValidationController" - {
     val uploadId = UploadId("123")
     val userAnswers = UserAnswers(userAnswersId).set(UploadIDPage, uploadId).success.value
     val application = applicationBuilder(userAnswers = Some(userAnswers))
       .overrides(
-        bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+        bind[CrossBorderArrangementsConnector].toInstance(fakeCrossBorderArrangementsConnector),
         bind[SessionRepository].toInstance(mockSessionRepository),
         bind[ValidationEngine].toInstance(mockValidationEngine),
         bind[XMLValidationService].toInstance(mockXmlValidationService)
@@ -81,7 +82,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(Some(uploadDetails)))
+      fakeCrossBorderArrangementsConnector.setDetails(uploadDetails)
 
       val request = FakeRequest(GET, routes.FileValidationController.onPageLoad().url)
       val result: Future[Result] = route(application, request).value
@@ -94,14 +95,14 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     }
 
 
-    /*"must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
+    "must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
 
       val uploadId = UploadId("123")
       val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"))
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(Some(uploadDetails)))
+      fakeCrossBorderArrangementsConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -123,7 +124,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
 
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(Some(uploadDetails)))
+      fakeCrossBorderArrangementsConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationFailure(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -142,7 +143,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("invalidXML"-> "afile")
 
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(Some(uploadDetails)))
+      fakeCrossBorderArrangementsConnector.setDetails(uploadDetails)
       //noinspection ScalaStyle
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(new SAXParseException("", null))))
@@ -160,8 +161,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       val uploadId = UploadId("123")
 
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(None))
-
       val controller = application.injector.instanceOf[FileValidationController]
 
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
@@ -173,7 +172,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       val uploadId = UploadId("123")
 
-      when(mockCrossBorderArrangementsConnector.getUploadDetails(any())(any())).thenReturn(Future.successful(Some(uploadDetails)))
+      fakeCrossBorderArrangementsConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, None))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -184,6 +183,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       a[RuntimeException] mustBe thrownBy {
         status(result) mustEqual OK
       }
-    }*/
+    }
   }
 }
