@@ -1655,6 +1655,35 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
+  "must correctly validate a DAC6DEL MA with Relevant Tax Payers that has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <ArrangementID>AAA000000000</ArrangementID>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List()
+    }
+  }
+
   "must correctly extract the hallmarks" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

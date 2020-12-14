@@ -248,7 +248,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 
         val value = if (disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers > 0 && isInitialDisclosureMA) {
           taxPayerImplementingDate.length == relevantTaxPayers
-        } else if (relevantTaxPayers > 0) {
+        } else if (disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers > 0) {
           taxPayerImplementingDate.isEmpty
         } else true
 
