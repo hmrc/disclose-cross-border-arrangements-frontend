@@ -204,7 +204,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
   }
 
   def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
-       (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+     (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
     for {
       disclosureImportInstruction <- disclosureImportInstruction
       relevantTaxPayers <- noOfRelevantTaxPayers
@@ -217,7 +217,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
         crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map {
           submissionDetails =>
             submissionDetails.initialDisclosureMA match {
-              case true =>  Validation(
+              case true => Validation(
                 key = "businessrules.initialDisclosureMA.firstDisclosureHasInitialDisclosureMAAsTrue",
                 value = if (submissionDetails.initialDisclosureMA && relevantTaxPayers > 0) {
                   relevantTaxPayers == taxPayerImplementingDate.length
@@ -228,12 +228,11 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
               )
               case false => Validation(
                 key = "businessrules.nonMA.cantHaveRelevantTaxPayer",
-                value = if(relevantTaxPayers >0) {
+                value = if (relevantTaxPayers > 0) {
                   taxPayerImplementingDate.isEmpty
                 } else true
               )
             }
-
 
         }.recover {
           case _ =>
@@ -243,11 +242,20 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
               value = true)
         }
       } else {
+        val key = if (isInitialDisclosureMA) {
+          "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates"
+        } else "businessrules.nonMA.cantHaveRelevantTaxPayer"
+
+        val value = if (disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers > 0 && isInitialDisclosureMA) {
+          taxPayerImplementingDate.length == relevantTaxPayers
+        } else if (relevantTaxPayers > 0) {
+          taxPayerImplementingDate.isEmpty
+        } else true
+
+
         Future(Validation(
-          key = "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates",
-          value = if(disclosureImportInstruction == "DAC6NEW" && relevantTaxPayers >0 && isInitialDisclosureMA) {
-            taxPayerImplementingDate.length == relevantTaxPayers
-           } else true
+          key = key,
+          value = value
         ))
       }
     }
