@@ -52,27 +52,49 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
       )
   }
 
-  def displaySummaryFromInstruction(importInstruction: String, arrangementID: String, disclosureID: String) : Seq[SummaryList.Row] = {
-
+  def displaySummaryFromInstruction(importInstruction: String,
+                                    arrangementID: String,
+                                    disclosureID: String,
+                                    messageRefID: String) : Seq[SummaryList.Row] = {
     importInstruction match {
-      case "DAC6NEW" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.new.text", classes = Seq("new-arrangement-text"))
+      case "DAC6NEW" => Seq(uploadedFile.get,
+        Row(
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.new.text", classes = Seq("new-arrangement-text"))
+        ),
+        Row(
+          key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
         )
       )
-      case "DAC6ADD" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID), classes = Seq("additional-disclosure-text"))
+      case "DAC6ADD" => Seq(uploadedFile.get,
+        Row(
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID), classes = Seq("additional-disclosure-text"))
+        ),
+        Row(
+          key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
         )
       )
-      case "DAC6REP" => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
+      case "DAC6REP" => Seq(uploadedFile.get,
+        Row(
+          key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID), classes = Seq("replacement-disclosure-text"))
+        ),
+        Row(
+          key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
         )
       )
-      case _ => Seq(uploadedFile.get, Row(
-        key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
-        value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID, arrangementID), classes = Seq("delete-disclosure-text"))
+      case _ => Seq(uploadedFile.get,
+        Row(
+          key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID, arrangementID), classes = Seq("delete-disclosure-text"))
+        ),
+        Row(
+          key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+          value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
         )
       )
     }

@@ -49,44 +49,63 @@ class CheckYourAnswersHelperSpec extends SpecBase {
       val helper: CheckYourAnswersHelper = new CheckYourAnswersHelper(userAnswers)
       val arrangementID = "GBA20200701AAA000"
       val disclosureID = "GBD20200701AAA001"
+      val messageRefID = "GBXADAC0001234567AAA00101"
 
       "must return new arrangement content when import instruction is DAC6NEW" in {
 
-        helper.displaySummaryFromInstruction("DAC6NEW", arrangementID, disclosureID) mustBe Seq(fileContent,
+        helper.displaySummaryFromInstruction("DAC6NEW", arrangementID, disclosureID, messageRefID) mustBe Seq(fileContent,
           Row(
             key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
             value = Value(msg"checkYourAnswers.new.text",
-              classes = Seq("new-arrangement-text")))
+              classes = Seq("new-arrangement-text"))),
+          Row(
+            key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
+          )
         )
       }
 
       "must return arrangement ID & additional information content when import instruction is DAC6ADD" in {
 
-        helper.displaySummaryFromInstruction("DAC6ADD", arrangementID, disclosureID) mustBe Seq(fileContent,
+        helper.displaySummaryFromInstruction("DAC6ADD", arrangementID, disclosureID, messageRefID) mustBe Seq(fileContent,
           Row(
             key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
             value = Value(msg"checkYourAnswers.additional.text".withArgs(arrangementID),
               classes = Seq("additional-disclosure-text"))
-          ))
+          ),
+          Row(
+            key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
+          )
+        )
       }
 
       "must return arrangement ID, Disclosure ID & replacement content when import instruction is DAC6REP" in {
 
-        helper.displaySummaryFromInstruction("DAC6REP", arrangementID, disclosureID) mustBe Seq(fileContent,
+        helper.displaySummaryFromInstruction("DAC6REP", arrangementID, disclosureID, messageRefID) mustBe Seq(fileContent,
           Row(
             key = Key(msg"checkYourAnswers.disclosure.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
             value = Value(msg"checkYourAnswers.replacement.text".withArgs(disclosureID, arrangementID),
               classes = Seq("replacement-disclosure-text"))
-          ))
+          ),
+          Row(
+            key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
+          )
+        )
       }
 
       "must return arrangement ID, Disclosure ID & deletion content when import instruction is DAC6DEL" in {
 
-        helper.displaySummaryFromInstruction("DAC6DEL", arrangementID, disclosureID) mustBe Seq(fileContent,
+        helper.displaySummaryFromInstruction("DAC6DEL", arrangementID, disclosureID, messageRefID) mustBe Seq(fileContent,
           Row(
             key = Key(msg"checkYourAnswers.deleteFile", classes = Seq("govuk-!-width-one-third disclosing-key")),
             value = Value(msg"checkYourAnswers.deleteDisclosure.text".withArgs(disclosureID, arrangementID),
               classes = Seq("delete-disclosure-text"))
+          ),
+          Row(
+            key = Key(msg"checkYourAnswers.messageRefID.text", classes = Seq("govuk-!-width-one-third disclosing-key")),
+            value = Value(lit"$messageRefID", classes = Seq("messageRefID"))
           )
         )
       }
