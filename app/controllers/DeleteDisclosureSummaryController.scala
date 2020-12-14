@@ -73,7 +73,7 @@ class DeleteDisclosureSummaryController @Inject()(
   private def sendMail(ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
     if (frontendAppConfig.sendEmailToggle) {
       val messageRefID = request.userAnswers.get(Dac6MetaDataPage) match {
-        case Some(metaData) => metaData.messageRefID
+        case Some(metaData) => metaData.messageRefId
         case None => ""
       }
 

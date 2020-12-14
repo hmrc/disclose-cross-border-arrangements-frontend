@@ -107,7 +107,8 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
     "when submitted the uploaded file must be submitted to the backend" in {
       val mockEmailService: EmailService = mock[EmailService]
       val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
-      val metaData: Dac6MetaData = Dac6MetaData("DAC6NEW", None, None, "GB0000000XXX")
+      val metaData: Dac6MetaData =
+        Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")

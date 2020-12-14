@@ -89,7 +89,7 @@ class CheckYourAnswersController @Inject()(
           val xml: Elem = xmlValidationService.loadXML(url)
 
           val (importInstruction, messageRefID) = request.userAnswers.get(Dac6MetaDataPage) match {
-            case Some(metaData) => (metaData.importInstruction, metaData.messageRefID)
+            case Some(metaData) => (metaData.importInstruction, metaData.messageRefId)
             case None => ("", "")
           }
 
