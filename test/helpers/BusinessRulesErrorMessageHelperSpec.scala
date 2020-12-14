@@ -110,7 +110,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
      "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
 
       val failedValidation = Validation(
-        key = "businessrules.initialDisclosureMA.allRelevantTaxPayersHaveTaxPayerImplementingDate",
+        key = "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates",
         value = false
       )
 

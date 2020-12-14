@@ -106,6 +106,214 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
+
+    "must fail validation if taxpayer implementing dates are provided for DAC6 new for non ma" in {
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <MessageRefId>GB0001122345006</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+            <Disclosing>
+              <ID>
+                <Organisation>
+                  <OrganisationName>Tyrell Corporation</OrganisationName>
+                  <TIN issuedBy="GB">AA000000D</TIN>
+                  <Address>
+                    <Street>Sesame</Street>
+                    <BuildingIdentifier>4</BuildingIdentifier>
+                    <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                    <FloorIdentifier>Second</FloorIdentifier>
+                    <DistrictName>Westminster</DistrictName>
+                    <POB>48</POB>
+                    <PostCode>SW1A 4GG</PostCode>
+                    <City>London</City>
+                    <Country>GB</Country>
+                  </Address>
+                  <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                  <ResCountryCode>VU</ResCountryCode>
+                </Organisation>
+              </ID>
+              <Liability>
+                <IntermediaryDiscloser>
+                  <IntermediaryNexus>FTNAE</IntermediaryNexus>
+                  <Capacity>DAC61107</Capacity>
+                  <Intermediary>
+                    <ID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>1945-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </ID>
+                    <Capacity>DAC61102</Capacity>
+                    <NationalExemption>
+                      <Exemption></Exemption>
+                      <CountryExemptions>
+                        <CountryExemption>VU</CountryExemption>
+                      </CountryExemptions>
+                    </NationalExemption>
+                  </Intermediary>
+                </IntermediaryDiscloser>
+              </Liability>
+            </Disclosing>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+              <RelevantTaxpayer>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>1994-04-25</BirthDate>
+                    <BirthPlace>Petrol Station</BirthPlace>
+                    <TIN issuedBy="GB">AA000000A</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
+                <AssociatedEnterprises>
+                  <AssociatedEnterprise>
+                    <AssociatedEnterpriseID>
+                      <Individual>
+                        <IndividualName>
+                          <FirstName>Larry</FirstName>
+                          <LastName>C</LastName>
+                          <Suffix>(Cat)</Suffix>
+                        </IndividualName>
+                        <BirthDate>2007-01-14</BirthDate>
+                        <BirthPlace>Hexham</BirthPlace>
+                        <TIN issuedBy="GB">AA000000D</TIN>
+                        <Address>
+                          <Street>Downing Street</Street>
+                          <BuildingIdentifier>No 10</BuildingIdentifier>
+                          <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                          <FloorIdentifier>Second</FloorIdentifier>
+                          <DistrictName>Westminster</DistrictName>
+                          <POB>48</POB>
+                          <PostCode>SW1A 4GG</PostCode>
+                          <City>London</City>
+                          <Country>GB</Country>
+                        </Address>
+                        <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                        <ResCountryCode>VU</ResCountryCode>
+                      </Individual>
+                    </AssociatedEnterpriseID>
+                    <AffectedPerson>true</AffectedPerson>
+                  </AssociatedEnterprise>
+                </AssociatedEnterprises>
+              </RelevantTaxpayer>
+            </RelevantTaxPayers>
+            <Intermediaries>
+              <Intermediary>
+                <ID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Larry</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2007-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AA000000D</TIN>
+                    <Address>
+                      <Street>Downing Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Sir Humphrey Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </ID>
+                <Capacity>DAC61102</Capacity>
+                <NationalExemption>
+                  <Exemption>true</Exemption>
+                  <CountryExemptions>
+                    <CountryExemption>VU</CountryExemption>
+                  </CountryExemptions>
+                </NationalExemption>
+              </Intermediary>
+            </Intermediaries>
+            <AffectedPersons>
+              <AffectedPerson>
+                <AffectedPersonID>
+                  <Individual>
+                    <IndividualName>
+                      <FirstName>Palmerston</FirstName>
+                      <LastName>C</LastName>
+                      <Suffix>(Cat)</Suffix>
+                    </IndividualName>
+                    <BirthDate>2012-01-14</BirthDate>
+                    <BirthPlace>Hexham</BirthPlace>
+                    <TIN issuedBy="GB">AB000000D</TIN>
+                    <Address>
+                      <Street>King Charles Street</Street>
+                      <BuildingIdentifier>No 10</BuildingIdentifier>
+                      <SuiteIdentifier>Lord Palmerston Suite</SuiteIdentifier>
+                      <FloorIdentifier>Second</FloorIdentifier>
+                      <DistrictName>Westminster</DistrictName>
+                      <POB>48</POB>
+                      <PostCode>SW1A 4GG</PostCode>
+                      <City>London</City>
+                      <Country>GB</Country>
+                    </Address>
+                    <EmailAddress>test@digital.hmrc.gov.uk</EmailAddress>
+                    <ResCountryCode>VU</ResCountryCode>
+                  </Individual>
+                </AffectedPersonID>
+              </AffectedPerson>
+            </AffectedPersons>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false))
+      }
+    }
+
     "must fail validation if disclosing date of births are before 01/01/1903" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
@@ -1378,14 +1586,12 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
         </Header>
         <DAC6Disclosures>
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
               <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
             </RelevantTaxpayer>
-            <RelevantTaxpayer>
-            </RelevantTaxpayer>
-          </RelevantTaxPayers>
+           </RelevantTaxPayers>
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
@@ -1393,7 +1599,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _.value mustBe true
+      _.value mustBe false
     }  }
 
   "must correctly validate an non initial disclosure MA with Relevant Tax Payers has a missing TaxPayer Implementation Date" in {
@@ -1421,6 +1627,62 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     whenReady(result.get) {
       _.value mustBe true
     }  }
+
+  "must correctly invalidate an initial disclosure MA with Relevant Tax Payers that has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List(Validation("businessrules.initialDisclosureMA.missingRelevantTaxPayerDates", false))
+    }
+  }
+
+  "must correctly validate a DAC6DEL MA with Relevant Tax Payers that has a missing TaxPayer Implementation Date" in {
+    val xml =
+      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+        <Header>
+          <MessageRefId>GB0000000XXX</MessageRefId>
+          <ArrangementID>AAA000000000</ArrangementID>
+          <Timestamp>2020-05-14T17:10:00</Timestamp>
+        </Header>
+        <DAC6Disclosures>
+          <DisclosureID>AAA000000000</DisclosureID>
+          <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <RelevantTaxPayers>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+            <RelevantTaxpayer>
+            </RelevantTaxpayer>
+          </RelevantTaxPayers>
+        </DAC6Disclosures>
+      </DAC6_Arrangement>
+
+    val service = app.injector.instanceOf[BusinessRuleValidationService]
+    val result = service.validateFile()(implicitly, implicitly)(xml)
+
+    whenReady(result.get) {
+      _ mustBe List()
+    }
+  }
 
   "must correctly extract the hallmarks" in {
     val xml =
@@ -1525,7 +1787,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       _.value mustBe true
     }  }
 
-  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is true, " +
+  "must correctly validate a file has TaxPayer Implementation Dates if initial disclosure MA is false, " +
     "first disclosure for arrangement ID is not found and Relevant Tax Payers exist" in {
 
     val xml =
@@ -1536,7 +1798,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
         </Header>
         <DAC6Disclosures>
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
-          <InitialDisclosureMA>true</InitialDisclosureMA>
+          <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
             <RelevantTaxpayer>
             </RelevantTaxpayer>
@@ -1593,7 +1855,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
-  "must correctly invalidate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
+  "must correctly validate a file that has TaxPayer Implementation Dates if initial disclosure MA is false for DAC6NEW" in {
 
     val replacedFirstDisclosure: SubmissionDetails = SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-05-14T17:10:00"),
       "fileName", Some("GBA20200904AAAAAA"), Some("GBD20200904AAAAAA"), "Replace",
@@ -1613,10 +1875,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
           <DisclosureImportInstruction>DAC6NEW</DisclosureImportInstruction>
           <InitialDisclosureMA>false</InitialDisclosureMA>
           <RelevantTaxPayers>
-            <RelevantTaxpayer>
-            </RelevantTaxpayer>
-            <RelevantTaxpayer>
-              <TaxpayerImplementingDate>2019-05-15</TaxpayerImplementingDate>
+                <RelevantTaxpayer>
             </RelevantTaxpayer>
           </RelevantTaxPayers>
         </DAC6Disclosures>
@@ -1626,7 +1885,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     val result = service.validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()(implicitly, implicitly)(xml)
 
     whenReady(result.get) {
-      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", false)
+      _ mustBe Validation("businessrules.nonMA.cantHaveRelevantTaxPayer", true)
     }
   }
 
@@ -2023,7 +2282,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                 </IntermediaryDiscloser>
               </Liability>
             </Disclosing>
-            <InitialDisclosureMA>true</InitialDisclosureMA>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
             <RelevantTaxPayers>
               <RelevantTaxpayer>
                 <ID>
@@ -2051,7 +2310,6 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                     <ResCountryCode>VU</ResCountryCode>
                   </Individual>
                 </ID>
-                <TaxpayerImplementingDate>2020-05-14</TaxpayerImplementingDate>
                 <AssociatedEnterprises>
                   <AssociatedEnterprise>
                     <AssociatedEnterpriseID>

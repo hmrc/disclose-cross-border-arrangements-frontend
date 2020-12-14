@@ -603,6 +603,19 @@ class MetaDataValidationServiceSpec extends SpecBase with MockitoSugar with Befo
         result mustBe Seq()
       }
 
+      "should return a ValidationSuccess for a file with blank messageRefId (as this will be covered by xsd error)" in {
+
+        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
+          initialDisclosureMA = true, messageRefId = ""))
+
+        val submissionHistory = SubmissionHistory(List())
+        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+        result mustBe Seq()
+      }
+
       "should return a ValidationFailure for a file with MessageRefId which does not start GB" in {
 
         val invalidMessageRefId = "123456XYZ789"

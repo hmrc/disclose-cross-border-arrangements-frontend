@@ -174,8 +174,10 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
     result match {
       case Success(Some(error)) => Seq(Validation(error, false))
       case Success(None) => Seq()
-      case _ => Seq(Validation("metaDataRules.messageRefId.wrongFormat", false))
-    }
+      case _ =>   if(dac6MetaData.isDefined && dac6MetaData.get.messageRefId.trim.isEmpty) {Seq()
+      }else Seq(Validation("metaDataRules.messageRefId.wrongFormat", false))
+      }
+
   }
 
   private def isMessageRefIdUnique(messageRefId: String, history: SubmissionHistory): Boolean = {

@@ -218,6 +218,14 @@ class XmlErrorMessageHelperSpec extends SpecBase{
         result mustBe List(GenericError(lineNumber, "Enter DisclosureID in the format CCDYYYYMMDDXXXXXX"))
       }
 
+      "must return correct error for missing MessageRefId" in {
+
+        val error1 =  SaxParseError(lineNumber,"cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '2' for type 'StringMin2Max200_Type'.")
+        val error2 = SaxParseError(lineNumber,"cvc-type.3.1.3: The value '' of element 'MessageRefId' is not valid.")
+        val result = helper.generateErrorMessages(ListBuffer(error1, error2))
+        result mustBe List(GenericError(lineNumber, "Enter a MessageRefId"))
+      }
+
     }
 
     "invalidCodeMessage" - {
