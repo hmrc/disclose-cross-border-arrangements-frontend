@@ -154,7 +154,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     }
 
     "must redirect to the creation confirmation page when user submits XML and the instructions is DAC6NEW" in {
-      val metaData: Dac6MetaData = Dac6MetaData("DAC6NEW", None, None, "GB0000000XXX")
+      val metaData: Dac6MetaData =
+        Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
       val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
       val xml =
@@ -192,7 +193,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     }
 
     "must redirect to the upload confirmation page when user submits XML and the instructions is DAC6ADD" in {
-      val metaData: Dac6MetaData = Dac6MetaData("DAC6ADD", None, None, "GB0000000XXX")
+      val metaData: Dac6MetaData =
+        Dac6MetaData("DAC6ADD", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
       val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
       val application = applicationBuilder(Some(updatedUserAnswers))
@@ -230,7 +232,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     }
 
     "must redirect to the replacement confirmation page when user submits XML and the instructions is DAC6REP" in {
-      val metaData: Dac6MetaData = Dac6MetaData("DAC6REP", None, None, "GB0000000XXX")
+      val metaData: Dac6MetaData =
+        Dac6MetaData("DAC6REP", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
       val updatedUserAnswers: UserAnswers = userAnswers.set(Dac6MetaDataPage, metaData).success.value
 
       val application = applicationBuilder(Some(updatedUserAnswers))
