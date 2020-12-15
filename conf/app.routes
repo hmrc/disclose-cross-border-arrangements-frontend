@@ -26,8 +26,6 @@ GET        /status                                      controllers.UploadFormCo
 
 GET        /upload                                      controllers.UploadFormController.onPageLoad
 
-POST       /callback                                    controllers.UploadCallbackController.callback
-
 GET        /error                                       controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String)
 
 GET        /validator                                   controllers.FileValidationController.onPageLoad
