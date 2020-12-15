@@ -58,8 +58,12 @@ class CheckYourAnswersController @Inject()(
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
           val fileInfo = helper.displaySummaryFromInstruction(
-            xmlData.importInstruction, xmlData.arrangementID.getOrElse(""), xmlData.disclosureID.getOrElse("")
+            xmlData.importInstruction,
+            xmlData.arrangementID.getOrElse(""),
+            xmlData.disclosureID.getOrElse(""),
+            xmlData.messageRefId
           )
+
           renderer.render(
             "check-your-answers.njk",
             Json.obj(

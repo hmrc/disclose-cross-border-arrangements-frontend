@@ -50,8 +50,12 @@ class DeleteDisclosureSummaryController @Inject()(
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
           val fileToDelete = helper.displaySummaryFromInstruction(
-            xmlData.importInstruction, xmlData.arrangementID.getOrElse(""), xmlData.disclosureID.getOrElse("")
+            xmlData.importInstruction,
+            xmlData.arrangementID.getOrElse(""),
+            xmlData.disclosureID.getOrElse(""),
+            xmlData.messageRefId
           )
+
           renderer.render(
             "deleteDisclosure.njk",
             Json.obj(
