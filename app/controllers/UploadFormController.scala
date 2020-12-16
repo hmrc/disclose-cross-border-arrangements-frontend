@@ -91,7 +91,7 @@ class UploadFormController @Inject()(
       case "EntityTooLarge" =>
         renderer.render(
           "fileTooLargeError.njk",
-          Json.obj("guidanceLink" -> Json.toJson(appConfig.xmlTechnicialGuidanceUrl))
+          Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
         ).map (Ok (_))
       case _ =>
           renderer.render (

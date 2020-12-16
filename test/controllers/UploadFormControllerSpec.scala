@@ -25,7 +25,7 @@ import models.UserAnswers
 import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UploadIDPage
@@ -38,8 +38,6 @@ import repositories.SessionRepository
 import services.UploadProgressTracker
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.viewmodels.NunjucksSupport
-import uk.gov.hmrc.http.{HttpClient, HttpResponse}
-import org.mockito.Mockito.{reset, times, verify, when}
 
 import scala.concurrent.Future
 
@@ -169,11 +167,11 @@ class UploadFormControllerSpec extends SpecBase
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       val expectedArgument = Json.obj(
+        "xmlTechnicalGuidanceUrl" -> "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents",
         "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
           "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
           "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
-          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements"),
-          "guidanceLink" -> "???"
+          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
       )
 
       val result = controller.showError("EntityTooLarge", "Your proposed upload exceeds the maximum allowed size", "errorReqId")(FakeRequest("", ""))

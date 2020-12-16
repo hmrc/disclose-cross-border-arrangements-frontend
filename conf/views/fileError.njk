@@ -14,7 +14,7 @@
       }) }}
 {% endblock %}
 
-{% block content %}
+{% block mainContent %}
 
   <div class="govuk-main-wrapper">
     <div class="govuk-grid-row">
@@ -32,7 +32,7 @@
 
           <p><a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" class="govuk-link"> {{ messages("fileError.li1") }}</a></p>
 
-          <p><a href="{{ guidanceLink }}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileError.li2") }}</a></p>
+          <p><a href="{{xmlTechnicalGuidanceUrl}}" class="govuk-link" rel="noreferrer noopener" target="_blank"> {{ messages("fileError.li2") }}</a></p>
 
         </div>
       </div>

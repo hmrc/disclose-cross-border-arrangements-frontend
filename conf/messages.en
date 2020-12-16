@@ -195,7 +195,7 @@ invalidXML.p2 = Your file does not meet our technical requirements.
 invalidXML.h2 = What you can do next
 invalidXML.li1 = Print or save this page
 invalidXML.li2 = View the errors in the table below
-invalidXML.li3 = Correct the errors by reading the technical guidance for XML files (opens in a new window or tab)
+invalidXML.li3 = Correct the errors by reading the technical guidance for XML files (opens in a new tab)
 invalidXML.li4 = Upload your corrected file
 invalidXML.h3 = Errors
 invalidXML.table.heading1 = Line number
@@ -206,7 +206,7 @@ fileError.heading = There is a problem with your file
 fileError.p1 = Your file {0} has not been formatted correctly.
 fileError.p2 = You can restructure the XML and upload it again.
 fileError.li1 = Upload a different file
-fileError.li2 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new window or tab)
+fileError.li2 = Read the technical guidance for XML files to make sure your XML is structured correctly (opens in a new tab)
 
 fileToLargeError.title = There is a problem with your file
 fileToLargeError.heading = There is a problem with your file

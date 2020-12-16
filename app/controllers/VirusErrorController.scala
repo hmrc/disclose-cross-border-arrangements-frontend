@@ -16,9 +16,11 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -30,11 +32,14 @@ class VirusErrorController @Inject()(
                                       identify: IdentifierAction,
                                       getData: DataRetrievalAction,
                                       val controllerComponents: MessagesControllerComponents,
-                                      renderer: Renderer
+                                      renderer: Renderer,
+                                      appConfig: FrontendAppConfig,
+
                                     )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async { implicit request =>
 
-    renderer.render("virusError.njk").map(Ok(_))
+    renderer.render("virusError.njk",
+      Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))).map(Ok(_))
   }
 }
