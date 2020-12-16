@@ -210,7 +210,7 @@ fileError.li2 = Read the technical guidance for XML files to make sure your XML 
 
 fileToLargeError.title = There is a problem with your file
 fileToLargeError.heading = There is a problem with your file
-fileToLargeError.instruction = Your file must be 100MB or less.
+fileToLargeError.instruction = Your file must be 20MB or less.
 fileToLargeError.uploadNewFileLink = Upload a different file
 fileToLargeError.guidanceLink = Read the technical guidance for XML files (opens in new tab)
 
