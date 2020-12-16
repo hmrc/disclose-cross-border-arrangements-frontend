@@ -53,6 +53,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
   val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
   val upscanRedirectBase: String = configuration.get[String]("microservice.services.upscan.redirect-base")
+  val upscanMaxFileSize: Int = configuration.get[Int]("microservice.services.upscan.max-file-size-in-mb")
 
   val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
 
