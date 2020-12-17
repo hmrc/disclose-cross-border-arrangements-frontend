@@ -1,5 +1,8 @@
 // initialise GovUK lib
 GOVUKFrontend.initAll();
+HMRCFrontend.initAll();
+
+timeoutDialog = HMRC.TimeoutDialog.init()
 
 // =====================================================
 // Back link mimics browser back functionality
