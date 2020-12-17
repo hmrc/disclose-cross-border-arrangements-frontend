@@ -56,7 +56,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
 
-  lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
+  lazy val xmlTechnicalGuidanceUrl: String = "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents"
 
   lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
 

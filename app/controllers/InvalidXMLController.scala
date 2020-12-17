@@ -16,6 +16,7 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
 import helpers.ViewHelper
@@ -38,7 +39,8 @@ class InvalidXMLController @Inject()(
   val controllerComponents: MessagesControllerComponents,
   renderer: Renderer,
   errorHandler: ErrorHandler,
-  viewHelper: ViewHelper
+  viewHelper: ViewHelper,
+  appConfig: FrontendAppConfig,
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -52,7 +54,8 @@ class InvalidXMLController @Inject()(
             "invalidXML.njk",
             Json.obj(
               "fileName" -> Json.toJson(fileName),
-              "tableWithErrors" -> tableWithErrors
+              "tableWithErrors" -> tableWithErrors,
+              "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl)
             )
           ).map(Ok(_))
 
