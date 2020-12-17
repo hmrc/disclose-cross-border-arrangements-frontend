@@ -79,7 +79,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       BusinessRuleValidationService.noOfRelevantTaxPayers(xml).value mustBe 0
     }
 
-    "must fail validation if RelevantTaxPayer date of births are before 01/01/1903" in {
+    "must fail validation if RelevantTaxPayer date of births are before 01/01/1900" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -91,7 +91,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
             <InitialDisclosureMA>false</InitialDisclosureMA>
             <RelevantTaxPayers>
               <RelevantTaxpayer>
-                <BirthDate>1902-12-31</BirthDate>
+                <BirthDate>1899-12-31</BirthDate>
               </RelevantTaxpayer>
               <RelevantTaxpayer></RelevantTaxpayer>
             </RelevantTaxPayers>
@@ -314,7 +314,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if disclosing date of births are before 01/01/1903" in {
+    "must fail validation if disclosing date of births are before 01/01/1900" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -329,7 +329,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                   <LastName>Charles</LastName>
                   <Suffix>Mr</Suffix>
                 </IndividualName>
-                <BirthDate>1902-12-31</BirthDate>
+                <BirthDate>1899-12-31</BirthDate>
                 <BirthPlace>Random Town</BirthPlace>
                 <TIN issuedBy="GB">AA000000D</TIN>
                 <Address>
@@ -374,7 +374,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if AssociatedEnterprise date of births are on or after 01/01/1903" in {
+    "must fail validation if AssociatedEnterprise date of births are on or after 01/01/1900" in {
 
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
@@ -401,7 +401,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                     <LastName>C</LastName>
                     <Suffix>(Cat)</Suffix>
                   </IndividualName>
-                  <BirthDate>1902-12-31</BirthDate>
+                  <BirthDate>1899-12-31</BirthDate>
                   <BirthPlace>BirthPlace</BirthPlace>
                   <TIN issuedBy="GB">AA000000D</TIN>
                   <Address>
@@ -432,7 +432,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if intermediary date of births are before 01/01/1903" in {
+    "must fail validation if intermediary date of births are before 01/01/1900" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -457,7 +457,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                        <LastName>C</LastName>
                        <Suffix>DDD</Suffix>
                      </IndividualName>
-                     <BirthDate>1902-12-31</BirthDate>
+                     <BirthDate>1899-12-31</BirthDate>
                      <BirthPlace>BirthPlace</BirthPlace>
                      <TIN issuedBy="GB">AA000000D</TIN>
                      <Address>
@@ -495,7 +495,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must fail validation if affected persons date of births are before 01/01/1903" in {
+    "must fail validation if affected persons date of births are before 01/01/1900" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -520,7 +520,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
                        <LastName>LastName</LastName>
                        <Suffix>Suffix</Suffix>
                      </IndividualName>
-                     <BirthDate>1902-12-31</BirthDate>
+                     <BirthDate>1899-12-31</BirthDate>
                      <BirthPlace>BirthPlace</BirthPlace>
                      <TIN issuedBy="GB">AB000000D</TIN>
                      <Address>
@@ -551,7 +551,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       }
     }
 
-    "must pass validation if date of births are on a after 01/01/1903" in {
+    "must pass validation if date of births are on a after 01/01/1900" in {
       val xml =
         <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
           <Header>
@@ -563,7 +563,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
             <InitialDisclosureMA>false</InitialDisclosureMA>
             <RelevantTaxPayers>
               <RelevantTaxpayer>
-                <BirthDate>1903-01-01</BirthDate>
+                <BirthDate>1900-01-01</BirthDate>
               </RelevantTaxpayer>
               <RelevantTaxpayer></RelevantTaxpayer>
             </RelevantTaxPayers>
