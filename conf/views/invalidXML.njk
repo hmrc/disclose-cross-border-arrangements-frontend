@@ -43,12 +43,12 @@
           </li>
           <li>{{ messages("invalidXML.li2") }}</li>
           <li>
-            <a href="#" id="helpLink" class="govuk-link" rel="noreferrer noopener" target="_blank">
+            <a href="{{xmlTechnicalGuidanceUrl}}" id="helpLink" class="govuk-link" rel="noreferrer noopener" target="_blank">
               {{ messages("invalidXML.li3") }}
             </a>
           </li>
           <li>
-            <a href="{{xmlTechnicalGuidanceUrl}}" class="govuk-link" rel="noreferrer noopener" target="_blank">
+            <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" id="uploadFileLink" class="govuk-link">
                 {{ messages("invalidXML.li4") }}
             </a>
           </li>
