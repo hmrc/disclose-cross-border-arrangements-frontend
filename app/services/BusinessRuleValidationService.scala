@@ -25,6 +25,7 @@ import connectors.CrossBorderArrangementsConnector
 import javax.inject.Inject
 import models.{Dac6MetaData, Validation}
 import org.slf4j.LoggerFactory
+import services.BusinessRuleValidationService.disclosureID
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,19 +33,46 @@ import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
 class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: CrossBorderArrangementsConnector) {
+
   import BusinessRuleValidationService._
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def validateInitialDisclosureHasRelevantTaxPayer(): ReaderT[Option, NodeSeq, Validation] = {
+    def validateInitialDisclosureHasRelevantTaxPayer()
+     (implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Validation]] = {
+
     for {
+      disclosureImportInstruction <- disclosureImportInstruction
       isInitialDisclosureMA <- isInitialDisclosureMA
       noOfRelevantTaxPayers <- noOfRelevantTaxPayers
-    } yield
-      Validation(
-        key = "businessrules.initialDisclosure.needRelevantTaxPayer",
-        value = if(isInitialDisclosureMA) noOfRelevantTaxPayers > 0 else true
-      )
+      arrangementID <- arrangementID
+      disclosureID <- disclosureID
+    } yield {
+
+      val initialDisclosureMaValue = if (disclosureImportInstruction.equals("DAC6REP")) {
+
+        crossBorderArrangementsConnector.retrieveFirstDisclosureForArrangementID(arrangementID).map(
+          submissionDetails => {
+
+            if(submissionDetails.disclosureID.contains(disclosureID)) {
+              submissionDetails.initialDisclosureMA
+            } else isInitialDisclosureMA
+          }
+        ).recover {
+          case _ => false
+        }
+      } else
+        if(disclosureImportInstruction.equals("DAC6DEL")){
+          Future(true)
+        }else Future(isInitialDisclosureMA)
+
+      initialDisclosureMaValue.map { shouldBeTreatedAsMa =>
+        Validation(
+          key = "businessrules.initialDisclosure.needRelevantTaxPayer",
+          value = if (!shouldBeTreatedAsMa) noOfRelevantTaxPayers > 0 else true
+        )
+      }
+    }
   }
 
   def validateRelevantTaxpayerDiscloserHasRelevantTaxPayer(): ReaderT[Option, NodeSeq, Validation] = {
@@ -54,7 +82,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     } yield
       Validation(
         key = "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer",
-        value = if(hasRelevantTaxpayerDiscloser) noOfRelevantTaxPayers > 0 else true
+        value = if (hasRelevantTaxpayerDiscloser) noOfRelevantTaxPayers > 0 else true
       )
   }
 
@@ -65,7 +93,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     } yield
       Validation(
         key = "businessrules.intermediaryDiscloser.needIntermediary",
-        value = if(hasIntermediaryDiscloser) noOfIntermediaries > 0 else true
+        value = if (hasIntermediaryDiscloser) noOfIntermediaries > 0 else true
       )
   }
 
@@ -96,23 +124,23 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       disclosureID <- disclosureID
       messageRefID <- messageRefID
     } yield
-        disclosureImportInstruction match {
-          case "DAC6NEW" => Validation(
-            key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
-            value = arrangementID.isEmpty && disclosureID.isEmpty)
-          case "DAC6ADD" => Validation(
-            key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
-            value = arrangementID.nonEmpty && disclosureID.isEmpty)
-          case "DAC6REP" => Validation(
-            key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-            value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-          case "DAC6DEL" => Validation(
-            key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
-            value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
-          case _ =>  Validation(
-            key = "businessrules.disclosure.notAValidDisclosureInstruction",
-            value = false) //TODO: This is because I haven't used an enum
-        }
+      disclosureImportInstruction match {
+        case "DAC6NEW" => Validation(
+          key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
+          value = arrangementID.isEmpty && disclosureID.isEmpty)
+        case "DAC6ADD" => Validation(
+          key = "businessrules.addDisclosure.mustHaveArrangementIDButNotDisclosureID",
+          value = arrangementID.nonEmpty && disclosureID.isEmpty)
+        case "DAC6REP" => Validation(
+          key = "businessrules.repDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+          value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
+        case "DAC6DEL" => Validation(
+          key = "businessrules.delDisclosure.mustHaveArrangementIDDisclosureIDAndMessageRefID",
+          value = arrangementID.nonEmpty && disclosureID.nonEmpty && messageRefID.nonEmpty)
+        case _ => Validation(
+          key = "businessrules.disclosure.notAValidDisclosureInstruction",
+          value = false) //TODO: This is because I haven't used an enum
+      }
   }
 
   def validateDisclosureImportInstructionAndInitialDisclosureFlag(): ReaderT[Option, NodeSeq, Validation] = {
@@ -130,15 +158,16 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 
       }
   }
+
   def validateMainBenefitTestHasASpecifiedHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       mainBenefitTest1 <- hasMainBenefitTest1
       hallmarks <- hallmarks
     } yield Validation(
       key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
-      value = if(!mainBenefitTest1)
-                hallmarks.toSet.intersect(hallmarksForMainBenefitTest).isEmpty
-              else true
+      value = if (!mainBenefitTest1)
+        hallmarks.toSet.intersect(hallmarksForMainBenefitTest).isEmpty
+      else true
     )
   }
 
@@ -148,7 +177,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       hallmarks <- hallmarks
     } yield Validation(
       key = "businessrules.dac6D10OtherInfo.needHallMarkToProvideInfo",
-      value = if(hasDAC6D1OtherInfo)
+      value = if (hasDAC6D1OtherInfo)
         hallmarks.contains("DAC6D1Other")
       else true
     )
@@ -159,9 +188,9 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       datesOfBirth <- relevantTaxPayerDatesOfBirth
     } yield
       Validation(
-      key = "businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded" ,
-      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
-    )
+        key = "businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded",
+        value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+      )
   }
 
   def validateDisclosingDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
@@ -169,9 +198,9 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       datesOfBirth <- disclosingDatesOfBirth
     } yield
       Validation(
-      key = "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded" ,
-      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
-    )
+        key = "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded",
+        value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+      )
   }
 
   def validateAssociatedEnterprisesDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
@@ -179,9 +208,9 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       datesOfBirth <- associatedEnterprisesDatesOfBirth
     } yield
       Validation(
-      key = "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" ,
-      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
-    )
+        key = "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded",
+        value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+      )
   }
 
   def validateIntermediaryDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
@@ -189,18 +218,19 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       datesOfBirth <- intermediaryDatesOfBirth
     } yield
       Validation(
-      key = "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" ,
-      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
-    )
+        key = "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded",
+        value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+      )
   }
+
   def validateAffectedPersonsDatesOfBirth(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       datesOfBirth <- affectedPersonsDatesOfBirth
     } yield
       Validation(
-      key = "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" ,
-      value = !datesOfBirth.exists(date => date.before(maxBirthDate))
-    )
+        key = "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded",
+        value = !datesOfBirth.exists(date => date.before(maxBirthDate))
+      )
   }
 
   def validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
@@ -282,31 +312,33 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       }
     }
   }
+
   def validateFile()(implicit hc: HeaderCarrier, ec: ExecutionContext): ReaderT[Option, NodeSeq, Future[Seq[Validation]]] = {
     for {
-       v1 <- validateInitialDisclosureHasRelevantTaxPayer()
-       v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()
-       v3 <- validateIntermediaryDiscloserHasIntermediary()
-       v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
-       v5 <- validateAllImplementingDatesAreAfterStart()
-       v6 <- validateDisclosureImportInstruction()
-       v7 <- validateMainBenefitTestHasASpecifiedHallmark()
-       v8 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
-       v9 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
-       v10 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
-       v11 <- validateRelevantTaxPayerDatesOfBirths()
-       v12 <- validateDisclosingDatesOfBirth()
-       v13 <- validateIntermediaryDatesOfBirth()
-       v14 <- validateAffectedPersonsDatesOfBirth()
-       v15 <- validateAssociatedEnterprisesDatesOfBirth()
+      v1 <- validateInitialDisclosureHasRelevantTaxPayer()
+      v2 <- validateRelevantTaxpayerDiscloserHasRelevantTaxPayer()
+      v3 <- validateIntermediaryDiscloserHasIntermediary()
+      v4 <- validateAllTaxpayerImplementingDatesAreAfterStart()
+      v5 <- validateAllImplementingDatesAreAfterStart()
+      v6 <- validateDisclosureImportInstruction()
+      v7 <- validateMainBenefitTestHasASpecifiedHallmark()
+      v8 <- validateDAC6D1OtherInfoHasNecessaryHallmark()
+      v9 <- validateDisclosureImportInstructionAndInitialDisclosureFlag()
+      v10 <- validateTaxPayerImplementingDateAgainstMarketableArrangementStatus()
+      v11 <- validateRelevantTaxPayerDatesOfBirths()
+      v12 <- validateDisclosingDatesOfBirth()
+      v13 <- validateIntermediaryDatesOfBirth()
+      v14 <- validateAffectedPersonsDatesOfBirth()
+      v15 <- validateAssociatedEnterprisesDatesOfBirth()
     } yield {
-      v10.map { v10Validation =>
-        Seq(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15).filterNot(_.value)
+      v1.flatMap { v1Validation =>
+        v10.map { v10Validation =>
+          Seq(v1Validation, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15).filterNot(_.value)
+        }
       }
     }
   }
 }
-
 object BusinessRuleValidationService {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
   val implementationStartDate: Date = new GregorianCalendar(2018, Calendar.JUNE, 25).getTime
