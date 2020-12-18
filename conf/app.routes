@@ -42,7 +42,7 @@ GET        /send-disclosure/addition-received           controllers.UploadConfir
 
 GET        /send-disclosure/disclosure-received         controllers.CreateConfirmationController.onPageLoad()
 
-GET        /send-disclosure/disclosure-has-been-deleted controllers.DeleteDisclosureConfirmationController.onPageLoad()
+GET        /send-disclosure/disclosure-deleted          controllers.DeleteDisclosureConfirmationController.onPageLoad()
 
 GET        /your-disclosures                            controllers.HistoryController.onPageLoad()
 POST       /your-disclosures                            controllers.HistoryController.onSearch()
