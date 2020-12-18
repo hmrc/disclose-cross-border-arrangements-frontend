@@ -16,7 +16,7 @@
       }) }}
 {% endblock %}
 
-{% block content %}
+{% block mainContent %}
 
   <div class="govuk-main-wrapper">
     <div class="govuk-grid-row">
@@ -48,7 +48,7 @@
             </a>
           </li>
           <li>
-            <a href="{{ routes.controllers.UploadFormController.onPageLoad().url }}" id="uploadFileLink" class="govuk-link">
+            <a href="{{xmlTechnicalGuidanceUrl}}" class="govuk-link" rel="noreferrer noopener" target="_blank">
                 {{ messages("invalidXML.li4") }}
             </a>
           </li>

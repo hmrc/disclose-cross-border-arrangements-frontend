@@ -34,13 +34,13 @@ GET        /problem/data-error                          controllers.InvalidXMLCo
 
 GET        /problem/file-error                          controllers.FileErrorController.onPageLoad()
 
-GET        /virus-error                                 controllers.VirusErrorController.onPageLoad()
+GET        /problem/virus-error                         controllers.VirusErrorController.onPageLoad()
 
-GET        /replaceConfirmation                         controllers.ReplaceConfirmationController.onPageLoad()
+GET        /send-disclosure/replacement-received        controllers.ReplaceConfirmationController.onPageLoad()
 
-GET        /send-disclosure/upload-confirmation         controllers.UploadConfirmationController.onPageLoad()
+GET        /send-disclosure/addition-received           controllers.UploadConfirmationController.onPageLoad()
 
-GET        /createConfirmation                          controllers.CreateConfirmationController.onPageLoad()
+GET         /send-disclosure/disclosure-received        controllers.CreateConfirmationController.onPageLoad()
 
 GET        /send-disclosure/disclosure-has-been-deleted controllers.DeleteDisclosureConfirmationController.onPageLoad()
 
