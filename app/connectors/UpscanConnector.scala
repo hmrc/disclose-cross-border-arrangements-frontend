@@ -37,7 +37,7 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
 
   def getUpscanFormData(body: UpscanInitiateRequest)
                        (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
-    httpClient.POST[UpscanInitiateRequest, PreparedUpload](upscanInitiateUrl, body, headers.toSeq).map {
+    httpClient.POST[UpscanInitiateRequest, PreparedUpload](upscanInitiateUrl, body.copy(maximumFileSize = Some(upscanMaxSize * 1048576)), headers.toSeq).map {
       _.toUpscanInitiateResponse
     }
   }
@@ -45,4 +45,5 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
   private val upscanInitiateHost: String = configuration.upscanInitiateHost
   private[connectors] val upscanInitiatePath: String = "/upscan/v2/initiate"
   private val upscanInitiateUrl: String = upscanInitiateHost + upscanInitiatePath
+  private val upscanMaxSize = configuration.upscanMaxFileSize
 }

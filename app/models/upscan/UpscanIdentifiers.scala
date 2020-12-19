@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package models.enrolments
+package models.upscan
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
 
-case class KnownFact(key: String, value: String)
+case class UpscanIdentifiers(uploadId: UploadId, fileReference: Reference)
 
-object KnownFact {
-  implicit val formats: OFormat[KnownFact] = Json.format[KnownFact]
+object UpscanIdentifiers {
+  implicit val format = Json.format[UpscanIdentifiers]
 }

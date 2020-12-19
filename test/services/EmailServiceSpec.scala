@@ -41,6 +41,10 @@ class EmailServiceSpec extends SpecBase with MockitoSugar
       mockEmailConnector
     )
 
+  val ids: GeneratedIDs = GeneratedIDs(Some("123"),Some("345"))
+  val importInstruction = "DAC6NEW"
+  val messageRefID = "GB0000000XXX"
+
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
   val emailService: EmailService = injector.instanceOf[EmailService]
 
@@ -53,13 +57,12 @@ class EmailServiceSpec extends SpecBase with MockitoSugar
   "Email Service" - {
     "must submit to the email connector when 1 set of contact details are provided" in {
       val contactDetails = ContactDetails(Some("Test Testing"), Some("test@test.com"), None, None)
-      val filename = "test.xml"
-      val ids = GeneratedIDs(Some("123"),Some("345"))
+
       when(mockEmailConnector.sendEmail(any())(any()))
         .thenReturn(
           Future.successful(HttpResponse(OK, ""))
         )
-      val result = emailService.sendEmail(Some(contactDetails), filename, ids)
+      val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
       whenReady(result) { result =>
         result.map(_.status) mustBe Some(OK)
@@ -70,15 +73,13 @@ class EmailServiceSpec extends SpecBase with MockitoSugar
 
     "must submit to the email connector twice when 2 sets of valid details provided" in {
       val contactDetails = ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))
-      val filename = "test.xml"
-      val ids = GeneratedIDs(Some("123"),Some("345"))
 
       when(mockEmailConnector.sendEmail(any())(any()))
         .thenReturn(
           Future.successful(HttpResponse(OK, ""))
         )
 
-      val result = emailService.sendEmail(Some(contactDetails), filename, ids)
+      val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
       whenReady(result) { result =>
         result.map(_.status) mustBe Some(OK)
@@ -89,15 +90,13 @@ class EmailServiceSpec extends SpecBase with MockitoSugar
 
     "must fail to submit to the email connector when invalid email address provided" in {
       val contactDetails = ContactDetails(Some("Test Testing"), Some("test"), None, None)
-      val filename = "test.xml"
-      val ids = GeneratedIDs(Some("123"),Some("345"))
 
       when(mockEmailConnector.sendEmail(any())(any()))
         .thenReturn(
           Future.successful(HttpResponse(OK, ""))
         )
 
-      val result = emailService.sendEmail(Some(contactDetails), filename, ids)
+      val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
       whenReady(result) { result =>
         result.map(_.status) mustBe None

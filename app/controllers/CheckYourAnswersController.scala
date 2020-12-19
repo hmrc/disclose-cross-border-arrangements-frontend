@@ -58,8 +58,12 @@ class CheckYourAnswersController @Inject()(
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
           val fileInfo = helper.displaySummaryFromInstruction(
-            xmlData.importInstruction, xmlData.arrangementID.getOrElse(""), xmlData.disclosureID.getOrElse("")
+            xmlData.importInstruction,
+            xmlData.arrangementID.getOrElse(""),
+            xmlData.disclosureID.getOrElse(""),
+            xmlData.messageRefId
           )
+
           renderer.render(
             "check-your-answers.njk",
             Json.obj(
@@ -71,13 +75,16 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  private def sendMail(ids: GeneratedIDs, fileName: String)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] =
-    if(frontendAppConfig.sendEmailToggle) {
-      emailService.sendEmail(request.contacts, fileName, ids)
+  private def sendMail(importInstruction: String,
+                       messageRefID: String,
+                       ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
+    if (frontendAppConfig.sendEmailToggle) {
+      emailService.sendEmail(request.contacts, ids, importInstruction, messageRefID)
     }
     else {
       Future.successful(None)
     }
+  }
 
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
@@ -85,25 +92,25 @@ class CheckYourAnswersController @Inject()(
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
 
-          for {
-            ids <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
-            userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
-            _              <- sessionRepository.set(userAnswersWithIDs)
-            _ =  auditService.submissionAudit(request.enrolmentID, fileName, ids.arrangementID, ids.disclosureID, xml)
-            //TODO: send confirmation emails when contact details retrieval is corrected
-            emailResult <- sendMail(ids, fileName)
-          } yield {
-            val importInstruction = xml \ "DAC6Disclosures" \ "DisclosureImportInstruction"
-            val instruction = if (importInstruction.isEmpty) "" else importInstruction.text
+          val (importInstruction, messageRefID) = request.userAnswers.get(Dac6MetaDataPage) match {
+            case Some(metaData) => (metaData.importInstruction, metaData.messageRefId)
+            case None => ("", "")
+          }
 
-            instruction match {
+          for {
+            ids                <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
+            userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
+            _                  <- sessionRepository.set(userAnswersWithIDs)
+            _                  <- sendMail(importInstruction, messageRefID, ids)
+            _                  = auditService.submissionAudit(request.enrolmentID, fileName, ids.arrangementID, ids.disclosureID, xml)
+          } yield {
+            importInstruction match {
               case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
               case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
               case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
               case _ => Redirect(routes.UploadFormController.onPageLoad().url)
             }
           }
-
         case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
 
