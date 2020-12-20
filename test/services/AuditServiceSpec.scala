@@ -34,17 +34,30 @@ package services
 
 import base.SpecBase
 import fixtures.XMLFixture
+import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import play.api.inject.bind
+import play.api.libs.json.Json
+import uk.gov.hmrc.play.audit.AuditExtensions
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import org.mockito.Mockito.{times, verify, when}
 
-class AuditServiceSpec extends SpecBase {
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
+class AuditServiceSpec extends SpecBase
+  with MockitoSugar {
   val auditConnector = mock[AuditConnector]
-  val auditService = new AuditService(auditConnector)(ec)
+
+  val application = applicationBuilder(None)
+    .overrides(bind[AuditConnector].toInstance(auditConnector))
+    .build()
+
+  val auditService = application.injector.instanceOf[AuditService]
 
   "AuditService.submissionAudit" - {
     "must generate correct payload for disclosure submission audit" in {
@@ -53,19 +66,40 @@ class AuditServiceSpec extends SpecBase {
       { ( enrolmentID, fileName,  arrangementID, disclosureID) =>
         reset(auditConnector)
 
+        when(auditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(AuditResult.Success))
+
         auditService.submissionAudit(enrolmentID, fileName, arrangementID, disclosureID, xml)
 
-        val expected = Map(
+        val arrangementAudit = arrangementID.getOrElse("None Provided")
+        val disclosureAudit = disclosureID.getOrElse("None Provided")
+
+        val expectedjson = Json.obj(
           "fileName" -> fileName,
           "enrolmentID" -> enrolmentID,
-          "arrangementID" -> arrangementID.getOrElse("None Provided"),
-          "disclosureID" -> disclosureID.getOrElse("None Provided"),
+          "arrangementID" -> arrangementAudit,
+          "disclosureID" -> disclosureAudit,
           "messageRefID" -> "GB0000000XXX",
           "disclosureImportInstruction" ->"DAC6NEW",
           "initialDisclosureMA" -> "false"
         )
 
-        verify(auditConnector, times(1)).sendExplicitAudit(eqTo("disclosureXMlSubmission"),eqTo(expected))(any(),any())
+        val expected = ExtendedDataEvent(
+          auditSource = "disclose-cross-border-arrangements-frontend",
+          auditType = "DisclosureFileSubmission",
+          detail = expectedjson,
+          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+            ++ AuditExtensions.auditHeaderCarrier(hc).toAuditTags(
+            "/disclose-cross-border-arrangements/submission",
+            "/disclose-cross-border-arrangements/submission"
+          )
+        )
+
+        val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
+
+        verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(),any())
+
+        eventCaptor.getValue.detail mustBe expectedjson
       }
     }
   }
