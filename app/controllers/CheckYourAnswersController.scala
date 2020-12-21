@@ -102,7 +102,13 @@ class CheckYourAnswersController @Inject()(
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _                  <- sessionRepository.set(userAnswersWithIDs)
             _                  <- sendMail(importInstruction, messageRefID, ids)
-            _                  = auditService.submissionAudit(request.enrolmentID, fileName, ids.arrangementID, ids.disclosureID, xml)
+            _ =  auditService.submissionAudit(
+                    request.enrolmentID,
+                    fileName,
+                    ids.arrangementID,
+                    ids.disclosureID,
+                    xml
+                  )
           } yield {
             importInstruction match {
               case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())

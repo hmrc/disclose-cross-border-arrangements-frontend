@@ -342,7 +342,7 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
 object BusinessRuleValidationService {
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
   val implementationStartDate: Date = new GregorianCalendar(2018, Calendar.JUNE, 25).getTime
-  val maxBirthDate: Date = new GregorianCalendar(1903, Calendar.JANUARY, 1).getTime
+  val maxBirthDate: Date = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime
   val hallmarksForMainBenefitTest: Set[String] = Set("DAC6A1","DAC6A2","DAC6A2b","DAC6A3","DAC6B1","DAC6B2","DAC6B3","DAC6C1bi","DAC6C1c","DAC6C1d")
 
   val isInitialDisclosureMA: ReaderT[Option, NodeSeq, Boolean] =

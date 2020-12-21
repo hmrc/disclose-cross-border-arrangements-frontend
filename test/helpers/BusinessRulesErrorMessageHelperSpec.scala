@@ -199,7 +199,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(15, "Remove the TaxpayerImplementingDate for any arrangements that are not marketable"))
       }
 
-      "must  return correct error message for relevant taxpayer date of birth before 01/01/1903" in {
+      "must  return correct error message for relevant taxpayer date of birth before 01/01/1900" in {
 
         val failedValidation = Validation(
           key = "businessrules.RelevantTaxPayersBirthDates.maxDateOfBirthExceeded",
@@ -207,10 +207,10 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(15, "Check BirthDate field is on or after 1 January 1903 for all RelevantTaxPayers"))
+        result mustBe List(GenericError(15, "Check BirthDate field is on or after 1 January 1900 for all RelevantTaxPayers"))
       }
 
-      "must  return correct error message for AssociatedEnterprises date of birth before 01/01/1903" in {
+      "must  return correct error message for AssociatedEnterprises date of birth before 01/01/1900" in {
 
         val failedValidation = Validation(
           key = "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded",
@@ -218,10 +218,10 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(28, "Check BirthDate field is on or after 1 January 1903 for all AssociatedEnterprises"))
+        result mustBe List(GenericError(28, "Check BirthDate field is on or after 1 January 1900 for all AssociatedEnterprises"))
       }
 
-      "must  return correct error message for disclosing date of birth before 01/01/1903" in {
+      "must  return correct error message for disclosing date of birth before 01/01/1900" in {
 
         val failedValidation = Validation(
           key = "businessrules.DisclosingBirthDates.maxDateOfBirthExceeded",
@@ -229,10 +229,10 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(8, "Check BirthDate field is on or after 1 January 1903 for Disclosing"))
+        result mustBe List(GenericError(8, "Check BirthDate field is on or after 1 January 1900 for Disclosing"))
       }
 
-      "must  return correct error message for intermediary date of birth before 01/01/1903" in {
+      "must  return correct error message for intermediary date of birth before 01/01/1900" in {
 
         val failedValidation = Validation(
           key = "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded",
@@ -240,10 +240,10 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(20, "Check BirthDate field is on or after 1 January 1903 for all intermediaries"))
+        result mustBe List(GenericError(20, "Check BirthDate field is on or after 1 January 1900 for all intermediaries"))
       }
 
-      "must  return correct error message for affectedPersons date of birth before 01/01/1903" in {
+      "must  return correct error message for affectedPersons date of birth before 01/01/1900" in {
 
         val failedValidation = Validation(
           key = "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded",
@@ -251,7 +251,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), invalidDatesOfBirthXml)
-        result mustBe List(GenericError(24, "Check BirthDate field is on or after 1 January 1903 for all AffectedPersons"))
+        result mustBe List(GenericError(24, "Check BirthDate field is on or after 1 January 1900 for all AffectedPersons"))
       }
 
       "must  return correct error message when ArrangementID does not match HMRC's records" in {

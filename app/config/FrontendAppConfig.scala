@@ -26,6 +26,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig: ServicesConfig) {
 
+  lazy val appName: String = configuration.get[String]("appName")
   private val contactHost = configuration.get[String]("contact-frontend.host")
   private val contactFormServiceIdentifier = "DAC6"
 
@@ -43,8 +44,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val loginUrl: String = configuration.get[String]("urls.login")
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
 
-
-
   lazy val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
   lazy val getEnrolmentsUrl: String = configuration.get[String]("microservice.services.enrolment-store-proxy.get-enrolments-url")
 
@@ -57,7 +56,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   val crossBorderArrangementsUrl: String = servicesConfig.baseUrl("cross-border-arrangements")
 
-  lazy val xmlTechnicialGuidanceUrl: String = "???" //ToDo link to govuk guidance when available
+  lazy val xmlTechnicalGuidanceUrl: String = "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents"
 
   lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
 
