@@ -22,6 +22,7 @@ import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import models.GeneratedIDs
 import models.requests.DataRequestWithContacts
+import org.slf4j.LoggerFactory
 import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -52,6 +53,8 @@ class CheckYourAnswersController @Inject()(
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       request.userAnswers.get(Dac6MetaDataPage) match {
@@ -71,17 +74,28 @@ class CheckYourAnswersController @Inject()(
             )
           ).map(Ok(_))
 
-        case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+        case _ =>
+          logger.warn("Dac6MetaData can't be retrieved. Redirecting to /upload page.")
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
   }
 
-  private def sendMail(importInstruction: String,
-                       messageRefID: String,
-                       ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
-    if (frontendAppConfig.sendEmailToggle) {
-      emailService.sendEmail(request.contacts, ids, importInstruction, messageRefID)
+  private def sendMail(ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
+
+    if (frontendAppConfig.sendEmailToggle && request.userAnswers.get(Dac6MetaDataPage).isDefined) {
+      val dac6MetaData = request.userAnswers.get(Dac6MetaDataPage).get
+
+      val generatedIDs =
+        (ids.arrangementID, ids.disclosureID) match {
+          case (Some(_), Some(_)) => ids //DAC6NEW
+          case (_, Some(disclosureID)) => GeneratedIDs(dac6MetaData.arrangementID, Some(disclosureID)) //DAC6ADD
+          case _ => GeneratedIDs(dac6MetaData.arrangementID, dac6MetaData.disclosureID) //DAC6REP and DAC6DEL
+        }
+
+      emailService.sendEmail(request.contacts, generatedIDs, dac6MetaData.importInstruction, dac6MetaData.messageRefId)
     }
     else {
+      logger.warn("Unable to send out email.")
       Future.successful(None)
     }
   }
@@ -92,16 +106,16 @@ class CheckYourAnswersController @Inject()(
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
 
-          val (importInstruction, messageRefID) = request.userAnswers.get(Dac6MetaDataPage) match {
-            case Some(metaData) => (metaData.importInstruction, metaData.messageRefId)
-            case None => ("", "")
+          val importInstruction= request.userAnswers.get(Dac6MetaDataPage) match {
+            case Some(metaData) => metaData.importInstruction
+            case None => ""
           }
 
           for {
             ids                <- crossBorderArrangementsConnector.submitDocument(fileName, request.enrolmentID, xml)
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _                  <- sessionRepository.set(userAnswersWithIDs)
-            _                  <- sendMail(importInstruction, messageRefID, ids)
+            _                  <- sendMail(ids)
             _ =  auditService.submissionAudit(
                     request.enrolmentID,
                     fileName,
@@ -117,7 +131,9 @@ class CheckYourAnswersController @Inject()(
               case _ => Redirect(routes.UploadFormController.onPageLoad().url)
             }
           }
-        case _ => Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+        case _ =>
+          logger.warn("XML url or XML is missing. Redirecting to /upload page.")
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
       }
 
   }
