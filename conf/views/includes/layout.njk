@@ -12,7 +12,7 @@
 
 {% block header %}
   {{ hmrcHeader({
-    homepageUrl: "/disclose-cross-border-arrangements",
+    homepageUrl: "https://www.gov.uk",
     serviceName: messages("site.service_name"),
     serviceUrl: "/disclose-cross-border-arrangements",
     containerClasses: "govuk-width-container",
@@ -37,4 +37,8 @@
   {% block scripts %}
     {% include "includes/scripts.njk" %}
   {% endblock %}
+{% endblock %}
+
+{% block footer %}
+  {% include "includes/footer.njk" %}
 {% endblock %}

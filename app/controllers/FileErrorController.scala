@@ -49,7 +49,7 @@ class FileErrorController @Inject()(
             "fileError.njk",
             Json.obj(
               "fileName" -> Json.toJson(fileName),
-              "guidanceLink" -> Json.toJson(appConfig.xmlTechnicialGuidanceUrl))
+              "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
           ).map(Ok(_))
         case None => errorHandler.onServerError(request, throw new RuntimeException("File name missing for file error page"))
       }
