@@ -19,7 +19,7 @@ package controllers
 import controllers.actions._
 import forms.ContactEmailAddressFormProvider
 import javax.inject.Inject
-import models.{Mode, NormalMode}
+import models.NormalMode
 import navigation.Navigator
 import pages.ContactEmailAddressPage
 import play.api.i18n.{I18nSupport, MessagesApi}

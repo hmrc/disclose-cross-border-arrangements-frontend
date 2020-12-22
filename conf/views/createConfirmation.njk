@@ -14,19 +14,19 @@
       <div class="govuk-grid-column-two-thirds">
 
         {{ govukPanel({
-          titleText: messages("createConfirmation.panel.title"),
+          titleText: messages("createConfirmation.panel.heading"),
           html: arrangementID
         }) }}
 
         <div class="govuk-body">
-            <p>{{ messages("createConfirmation.p1") }}</p>
 
-            <h2 class="govuk-heading-m">
-              {{ messages("uploadConfirmation.h2") }}
-            </h2>
+            {% if config.sendEmailToggle %}
+                <p>{{ messages("createConfirmation.p1", emailMessage) }}</p>
+           {% endif %}
 
             <p>{{ messages("createConfirmation.p2") }}</p>
             <p>{{ messages("createConfirmation.p3", disclosureID) }}</p>
+            <p>{{ messages("createConfirmation.p4", messageRefID) }}</p>
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>

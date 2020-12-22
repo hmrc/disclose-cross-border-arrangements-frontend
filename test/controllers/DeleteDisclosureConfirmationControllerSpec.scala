@@ -17,14 +17,15 @@
 package controllers
 
 import base.SpecBase
+import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
 import matchers.JsonMatchers
-import models.{Dac6MetaData, UserAnswers}
+import models.{ContactDetails, Dac6MetaData, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.Dac6MetaDataPage
-import play.api.libs.json.{JsObject, Json}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
@@ -37,35 +38,30 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSu
 
     "return OK and the correct view for a GET" in {
 
-      val metaData = Dac6MetaData("DAC6NEW", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"),
-                                   disclosureInformationPresent = true, initialDisclosureMA = false,
-                                    messageRefId = "GB0000000XXX")
-
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
-        .set(Dac6MetaDataPage, metaData)
+        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"), "GBD20200701AA0002"))
         .success
         .value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+
+      val application =
+        applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
       val request = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
       val result = route(application, request).value
 
       status(result) mustEqual OK
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
-
-      val expectedJson = Json.obj(
-        "arrangementID" -> "GBA20200701AAAB00",
-        "disclosureID" -> "GBD20200701AA0001"
-      )
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
 
       templateCaptor.getValue mustEqual "deleteDisclosureConfirmation.njk"
-      jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
     }
