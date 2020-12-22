@@ -34,6 +34,7 @@ package services
 
 import base.SpecBase
 import fixtures.XMLFixture
+import models.{Dac6MetaData, GenericError}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify}
@@ -102,5 +103,65 @@ class AuditServiceSpec extends SpecBase
         eventCaptor.getValue.detail mustBe expectedjson
       }
     }
-  }
+
+    "must generate correct payload for validationFailure audit" in {
+      val xml = XMLFixture.dac6NotInitialDisclosureMA
+      forAll(arbitrary[String],arbitrary[Option[String]], arbitrary[Option[String]], arbitrary[String])
+      { ( enrolmentID, arrangementID, disclosureID, messageRefID) =>
+        reset(auditConnector)
+
+        when(auditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(AuditResult.Success))
+
+        val metaData = Dac6MetaData(importInstruction = "DAC6NEW",
+                                    arrangementID = arrangementID,
+                                    disclosureID = disclosureID,
+                                    disclosureInformationPresent = true,
+                                    initialDisclosureMA = true,
+                                    messageRefId = messageRefID)
+
+        val errors = Seq(GenericError(1, "error-message"))
+
+        auditService.auditValidationFailure(enrolmentID, Some(metaData), errors, xml)
+
+        val arrangmentIdValue = arrangementID.getOrElse("None Provided")
+        val disclosureIdValue = disclosureID.getOrElse("None Provided")
+
+
+        val expectedjson = Json.obj(
+          "enrolmentID" -> enrolmentID,
+          "arrangementID" -> arrangmentIdValue,
+          "disclosureID" -> disclosureIdValue,
+          "messageRefID" -> metaData.messageRefId,
+          "disclosureImportInstruction" ->"DAC6NEW",
+          "initialDisclosureMA" -> "true",
+          "errors" -> errors.toString(),
+          "xml" -> xml.toString()
+        )
+
+        val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
+
+        verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(),any())
+
+        eventCaptor.getValue.detail mustBe expectedjson
+      }
+    }
+
+    "must generate correct payload for errorMessage audit" in {
+        reset(auditConnector)
+
+        when(auditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(AuditResult.Success))
+
+       auditService.auditErrorMessage(GenericError(1, "error-message"))
+
+       val expectedjson = Json.obj("errorMessage" -> "error-message")
+
+        val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
+
+        verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(),any())
+
+        eventCaptor.getValue.detail mustBe expectedjson
+      }
+    }
 }

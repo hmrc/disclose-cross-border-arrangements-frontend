@@ -36,6 +36,8 @@ import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import org.mockito.Matchers.any
+import org.mockito.Mockito._
 
 class ValidationEngineSpec  extends SpecBase with MockitoSugar {
 
@@ -98,6 +100,8 @@ val enrolmentId = "123456"
 
     val mockMetaDataValidationService: MetaDataValidationService = mock[MetaDataValidationService]
 
+    val mockAuditService: AuditService = mock[AuditService]
+
     val businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper = new BusinessRulesErrorMessageHelper
 
     val xmlErrorMessageHelper: XmlErrorMessageHelper = new XmlErrorMessageHelper
@@ -143,7 +147,8 @@ val enrolmentId = "123456"
                                                 mockBusinessRuleValidationService,
                                                 xmlErrorMessageHelper,
                                                 businessRulesErrorMessageHelper,
-                                                mockMetaDataValidationService)
+                                                mockMetaDataValidationService,
+                                                mockAuditService)
 
     val source = "src"
     val elem: Elem = <dummyElement>Test</dummyElement>
@@ -161,12 +166,14 @@ val enrolmentId = "123456"
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationSuccess(source, mockMetaData))
       }
 
-      "must return ValidationFailure for valid file which fails metaDataCheck" in new SetUp {
+      "must return ValidationFailure for valid file which fails metaDataCheck and audit outcome" in new SetUp {
         when(mockXmlValidationService.validateXml(any())).thenReturn((mockXML, noErrors))
         val expectedErrors = GenericError(0, "ArrangementID does not match HMRC's records")
         when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
           Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds) mustBe Right(ValidationFailure(List(expectedErrors)))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
       }
 
 
@@ -179,6 +186,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(27, "Enter a City"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds) mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(2)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file missing mandatory attributes" in new SetUp {
@@ -193,6 +203,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(175, "Enter an Amount currCode"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
 
@@ -206,6 +219,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(116, "BuildingIdentifier must be 400 characters or less"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
 
@@ -219,7 +235,10 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-      }
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
+       }
 
       "must return ValidationFailure for file with invalid country code" in new SetUp {
 
@@ -231,6 +250,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(123, "Country is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file with invalid countryMS code" in new SetUp {
@@ -242,6 +264,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(177, "ConcernedMS is not one of the ISO EU Member State country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file with invalid countryExemption code" in new SetUp {
@@ -254,6 +279,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(133, "CountryExemption is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
 
@@ -267,6 +295,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(169, "Reason is not one of the allowed values"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file with invalid Intermediary Capacity code" in new SetUp {
@@ -279,6 +310,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file with invalid RelevantTaxpayer Discloser Capacity code" in new SetUp {
@@ -291,6 +325,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file with invalid issuedBy code" in new SetUp {
@@ -303,6 +340,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(18, "TIN issuedBy is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
 
@@ -318,6 +358,9 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must return ValidationFailure for file which fails business rules validation" in new SetUp {
@@ -329,6 +372,9 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
 
@@ -341,6 +387,8 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(2)).auditErrorMessage(any())(any())
       }
 
       "must return a ValidationFailure with only xmlErrors if Business Rules check is not required" in new SetUp {
@@ -351,6 +399,9 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId, businessRulesCheckRequired = false), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       }
 
       "must throw an exception if XML parser throws an exception (e.g. missing closing tags)" in new SetUp {
