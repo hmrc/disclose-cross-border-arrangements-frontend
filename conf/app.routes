@@ -74,3 +74,5 @@ POST       /change-secondary-contact-telephone-number   controllers.SecondaryCon
 
 GET        /change-name                                 controllers.IndividualContactNameController.onPageLoad()
 POST       /change-name                                 controllers.IndividualContactNameController.onSubmit()
+
+GET        /keep-alive                                   controllers.KeepAliveController.keepAlive
