@@ -143,20 +143,15 @@ class UploadFormControllerSpec extends SpecBase
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      val expectedArgument = Json.obj("pageTitle" -> "Upload Error",
-        "heading"-> "errorMessage",
-        "message" -> s"Code: errorCode, RequestId: errorReqId",
-        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
-          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
-          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
-      )
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
       templateCaptor.getValue mustEqual "error.njk"
-      argumentCaptor.getValue mustEqual expectedArgument
+      val captured = argumentCaptor.getValue
+      (captured \\ "pageTitle").head.as[String] mustEqual "Upload Error"
+      (captured \\ "heading").head.as[String]   mustEqual "errorMessage"
+      (captured \\ "message").head.as[String] mustEqual "Code: errorCode, RequestId: errorReqId"
     }
 
     "must show File to large error when the errorCode is EntityTooLarge" in {
@@ -168,21 +163,13 @@ class UploadFormControllerSpec extends SpecBase
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val argumentCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-      val expectedArgument = Json.obj(
-        "xmlTechnicalGuidanceUrl" -> "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents",
-        "config" -> Json.obj("betaFeedbackUnauthenticatedUrl" -> "http://localhost:9250/contact/beta-feedback-unauthenticated?service=DAC6",
-          "reportAProblemPartialUrl" -> "http://localhost:9250/contact/problem_reports_ajax?service=DAC6",
-          "reportAProblemNonJSUrl" -> "http://localhost:9250/contact/problem_reports_nonjs?service=DAC6",
-          "signOutUrl" -> "http://localhost:9514/feedback/disclose-cross-border-arrangements")
-      )
-
       val result = controller.showError("EntityTooLarge", "Your proposed upload exceeds the maximum allowed size", "errorReqId")(FakeRequest("", ""))
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
       templateCaptor.getValue mustEqual "fileTooLargeError.njk"
-      argumentCaptor.getValue mustEqual expectedArgument
-
+      val captured = argumentCaptor.getValue
+      (captured \\ "xmlTechnicalGuidanceUrl").head.as[String] mustEqual "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents"
     }
 
     "must display result page while file is successfully updated " in {
