@@ -54,7 +54,7 @@ class CreateConfirmationController @Inject()(
 
       val emailMessage = request.contacts match {
         case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
-        case Some(contactDetails) => contactDetails.contactEmail.getOrElse("")
+        case Some(contactDetails) => contactDetails.contactEmail.get
         case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
 

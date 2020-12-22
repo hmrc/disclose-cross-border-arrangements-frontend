@@ -38,11 +38,15 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSu
 
     "return OK and the correct view for a GET" in {
 
+      val metaData = Dac6MetaData("DAC6NEW", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"),
+        disclosureInformationPresent = true, initialDisclosureMA = false,
+        messageRefId = "GB0000000XXX")
+
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
-        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"), "GBD20200701AA0002"))
+        .set(Dac6MetaDataPage, metaData)
         .success
         .value
 
@@ -77,7 +81,7 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSu
 
       val result = route(application, request).value
 
-      an[RuntimeException] mustBe thrownBy {
+      an[Exception] mustBe thrownBy {
         status(result) mustEqual OK
 
         verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
@@ -87,5 +91,6 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSu
 
       application.stop()
     }
+
   }
 }

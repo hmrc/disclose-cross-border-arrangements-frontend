@@ -20,7 +20,7 @@
 
         <div class="govuk-body">
              {% if config.sendEmailToggle %}
-                <p>{{ messages("uploadConfirmation.p1", email) }}</p>
+                <p>{{ messages("uploadConfirmation.p1", emailMessage) }}</p>
              {% endif %}
 
             <p>{{ messages("uploadConfirmation.p2", messageRefID) }}</p>
@@ -29,9 +29,7 @@
               {{ messages("uploadConfirmation.h2") }}
             </h2>
 
-            <p>{{ messages("uploadConfirmation.p2") }}</p>
             <p>{{ messages("uploadConfirmation.p3") }}</p>
-            <p>{{ messages("uploadConfirmation.p4") }}</p>
             <p>{{ homePageLink | safe }}</p>
             <p>{{ betaFeedbackSurvey | safe }}</p>
         </div>

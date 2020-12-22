@@ -21,7 +21,7 @@ import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
 import javax.inject.Inject
-import pages.GeneratedIDPage
+import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -40,10 +40,11 @@ class UploadConfirmationController @Inject()(
     renderer: Renderer,
     errorHandler: ErrorHandler,
     viewHelper: ViewHelper,
-    appConfig: FrontendAppConfig
+    appConfig: FrontendAppConfig,
+    contactRetrievalAction: ContactRetrievalAction
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
 
       val disclosureID = request.userAnswers.get(GeneratedIDPage) match {
@@ -51,10 +52,20 @@ class UploadConfirmationController @Inject()(
         case _ => ""
       }
 
+      val emailMessage = request.contacts match {
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails) => contactDetails.contactEmail.get
+        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+      }
+
+      val xmlData = request.userAnswers.get(Dac6MetaDataPage).get
+
       if (disclosureID.isEmpty) {
         errorHandler.onServerError(request, throw new Exception("Disclosure ID is missing"))
       } else {
         val json = Json.obj(
+          "messageRefID" -> xmlData.messageRefId,
+          "emailMessage" -> emailMessage.toString,
           "disclosureID" -> confirmationPanelText(disclosureID),
           "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
           "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))

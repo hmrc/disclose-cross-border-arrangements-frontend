@@ -17,7 +17,7 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions._
+import controllers.actions.{ContactRetrievalAction, _}
 import handlers.ErrorHandler
 import helpers.ViewHelper
 import javax.inject.Inject
@@ -27,9 +27,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
-import models.{ContactDetails, Dac6MetaData, UserAnswers}
-import play.api.inject.bind
 
 import scala.concurrent.ExecutionContext
 
@@ -51,7 +48,7 @@ class DeleteDisclosureConfirmationController @Inject()(
 
       val emailMessage = request.contacts match {
         case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
-        case Some(contactDetails) => contactDetails.contactEmail.getOrElse("")
+        case Some(contactDetails) => contactDetails.contactEmail.get
         case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
 

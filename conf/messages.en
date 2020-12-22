@@ -247,12 +247,12 @@ replaceConfirmation.p2 = Your message reference ID for this replacement is {0}.
 replaceConfirmation.p3 = If we have any questions about the disclosure, we will contact you.
 
 uploadConfirmation.title = Disclosure received
-uploadConfirmation.panel.title = Disclosure received
+uploadConfirmation.panel.heading = Disclosure received
 uploadConfirmation.panel.html = Your disclosure ID
+uploadConfirmation.h2 = What happens next
 uploadConfirmation.p1 = We have sent a confirmation email to {0}.
 uploadConfirmation.p2 = Your message reference ID for this update is {0}.
 uploadConfirmation.p3 = You will need the disclosure ID if you need to make any changes to the disclosure.
-uploadConfirmation.p4 = If we have any questions about the disclosure, we will contact you.
 
 deleteDisclosureConfirmation.title = Disclosure has been deleted
 deleteDisclosureConfirmation.heading = Your disclosure has been deleted
@@ -265,7 +265,7 @@ confirmation.survey.link = What did you think of this service?
 confirmation.survey.text = (takes 30 seconds)
 
 createConfirmation.title = Disclosure received
-createConfirmation.panel.title = Disclosure received
+createConfirmation.panel.heading = Disclosure received
 createConfirmation.panel.html = Your arrangement ID
 createConfirmation.h2 = What happens next
 createConfirmation.p1 = We have sent a confirmation email to {0}.
