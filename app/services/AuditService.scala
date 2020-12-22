@@ -89,8 +89,8 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       "arrangementID" -> metaData.fold(noneProvided)(data => data.arrangementID.getOrElse(noneProvided)),
       "disclosureID" ->metaData.fold(noneProvided)(data => data.disclosureID.getOrElse(noneProvided)),
       "messageRefID" -> metaData.fold(noneProvided)(data => data.messageRefId),
-      "disclosureImportInstruction" ->"DAC6NEW",
-      "initialDisclosureMA" -> "true",
+      "disclosureImportInstruction" -> metaData.fold("Unknown Import Instruction")(data => data.importInstruction),
+      "initialDisclosureMA" -> metaData.fold("InitialDisclosureMA value not supplied")(data => data.initialDisclosureMA.toString),
       "errors" -> errors.toString(),
       "xml" -> xml.toString()
     )
