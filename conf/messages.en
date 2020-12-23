@@ -230,7 +230,7 @@ checkYourAnswers.messageRefID.text = MessageRefID
 
 checkYourAnswers.new.text= A new arrangement
 checkYourAnswers.additional.text= New information about arrangement {0}
-checkYourAnswers.replacement.text= A replacement disclosure {0}, arrangement {1}
+checkYourAnswers.replacement.text= A replacement for disclosure {0}, arrangement {1}
 
 checkYourAnswers.deleteDisclosure.title = Are you sure you want to delete this disclosure?
 checkYourAnswers.deleteDisclosure.heading = Are you sure you want to delete this disclosure?
