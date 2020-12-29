@@ -47,6 +47,9 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
   lazy val getEnrolmentsUrl: String = configuration.get[String]("microservice.services.enrolment-store-proxy.get-enrolments-url")
 
+  lazy val timeoutSeconds: String = configuration.get[String]("session.timeoutSeconds")
+  lazy val countdownSeconds: String = configuration.get[String]("session.countdownSeconds")
+
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
   //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
