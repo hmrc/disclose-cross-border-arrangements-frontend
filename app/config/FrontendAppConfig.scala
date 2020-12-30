@@ -65,6 +65,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
   lazy val contactDetailsToggle: Boolean = configuration.get[Boolean]("contactDetailsToggle")
+  lazy val validationAuditToggle: Boolean = configuration.get[Boolean]("validationAuditToggle")
 
   val upscanUseSSL: Boolean = upscanProtocol == "https"
 
