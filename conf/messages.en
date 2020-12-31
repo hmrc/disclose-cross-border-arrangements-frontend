@@ -154,6 +154,9 @@ error.summary.title = There is a problem
 index.title = Disclose cross-border arrangements for DAC6
 index.heading = Disclose cross-border arrangements for DAC6
 index.guidance = Upload an XML file to tell us about an arrangement.
+index.submission.paragraph.1 = If you prefer, you can
+index.submission.paragraph.link = use our manual form to disclose an arrangement, or to continue or remove one
+index.submission.paragraph.2 = you’ve already started.
 index.continue = Disclose a cross-border arrangement
 
 history.link = View uploaded files

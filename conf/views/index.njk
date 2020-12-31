@@ -25,6 +25,14 @@
                           attributes: {id:"submit"}
                         }) }}
 
+        {% if manualJourneyToggle %}
+        <p class="govuk-body">
+            {{messages("index.submission.paragraph.1")}}
+            <a href={{enterUrl}}>{{messages("index.submission.paragraph.link")}}</a>
+            {{messages("index.submission.paragraph.2")}}
+        </p>
+        {% endif %}
+
         {% if hasSubmissions %}
          <p class="govuk-body">
             <a href="{{routes.controllers.HistoryController.onPageLoad().url}}">{{messages("history.link")}}</a>
