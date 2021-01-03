@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,12 +28,13 @@ import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
+import utils.TestXml
 
 import scala.collection.mutable.ListBuffer
 
 
 
-class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
+class XMLValidationServiceSpec extends SpecBase with MockitoSugar with TestXml {
 
   val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
   val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
@@ -109,6 +110,22 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
       result.length mustBe 2
 
       result.head.lineNumber mustBe 20
+      result.head.errorMessage mustBe "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'."
+      result(1).lineNumber mustBe 20
+      result(1).errorMessage mustBe "cvc-type.3.1.3: The value '' of element 'Street' is not valid."
+    }
+
+    "must return a ValidationSuccess with no errors for valid manual submission" in new SitemapParserSetup {
+
+      sut.validateManualSubmission(validXml) mustBe noErrors
+    }
+
+    "must return a ValidationFailure with errors for invalid manual submission" in new SitemapParserSetup {
+
+      val result = sut.validateManualSubmission(mainBenefitTestErrorXml)
+
+//      result.length mustBe 2
+//      result.head.lineNumber mustBe 20
       result.head.errorMessage mustBe "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'."
       result(1).lineNumber mustBe 20
       result(1).errorMessage mustBe "cvc-type.3.1.3: The value '' of element 'Street' is not valid."

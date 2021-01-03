@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package services
 
+import java.io.StringReader
 import java.net.URL
 
 import com.google.inject.ImplementedBy
@@ -29,9 +30,10 @@ import org.xml.sax.SAXParseException
 import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.mutable.ListBuffer
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
+
   def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
@@ -61,6 +63,30 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
     }.load(new URL(downloadSrc))
   }
 
+
+  def validateManualSubmission(xml: Elem): ListBuffer[SaxParseError] ={
+
+    val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
+
+    trait AccumulatorState extends DefaultHandler {
+      override def warning(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+
+      override def error(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+
+      override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+    }
+
+    new scala.xml.factory.XMLLoader[scala.xml.Elem] {
+      override def parser: SAXParser = xmlValidationParser.validatingParser
+
+      override def adapter =
+        new scala.xml.parsing.NoBindingFactoryAdapter
+          with AccumulatorState
+
+
+    }.load(new StringReader(xml.mkString))
+   list
+  }
 }
 
 @ImplementedBy(classOf[XMLDacXSDValidationParser])

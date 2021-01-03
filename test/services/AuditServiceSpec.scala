@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ package services
 
 import base.SpecBase
 import fixtures.XMLFixture
-import models.{Dac6MetaData, GenericError}
+import models.{Dac6MetaData, GenericError, SaxParseError}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, times, verify}
@@ -48,6 +48,7 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import org.mockito.Mockito.{times, verify, when}
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 
 class AuditServiceSpec extends SpecBase
@@ -156,6 +157,26 @@ class AuditServiceSpec extends SpecBase
        auditService.auditErrorMessage(GenericError(1, "error-message"))
 
        val expectedjson = Json.obj("errorMessage" -> "error-message")
+
+        val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
+
+        verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(),any())
+
+        eventCaptor.getValue.detail mustBe expectedjson
+      }
+
+    "must generate correct payload for failed Manual Submission parsing" in {
+        reset(auditConnector)
+
+        when(auditConnector.sendExtendedEvent(any())(any(), any()))
+          .thenReturn(Future.successful(AuditResult.Success))
+
+      val xml = <dummyTag></dummyTag>
+      val parseErrors = ListBuffer(SaxParseError(1, "errorMessage"))
+       auditService.auditManualSubmissionParseFailure(xml, parseErrors)
+
+       val expectedjson = Json.obj("xml" -> xml.toString(),
+                                           "errors" -> parseErrors.toString())
 
         val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
 

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package viewmodels
+package models
 
-case class RepeaterAnswerSection (headingKey: String,
-                                  relevanceRow: AnswerRow,
-                                  rows: Seq[RepeaterAnswerRow],
-                                  addLinkKey: String,
-                                  addLinkUrl: String) extends Section
+import play.api.libs.json.{Json, OFormat}
+
+case class ManualSubmissionValidationResult(errors: Seq[String])
+
+object ManualSubmissionValidationResult {
+  implicit val format: OFormat[ManualSubmissionValidationResult] = Json.format[ManualSubmissionValidationResult]
+}

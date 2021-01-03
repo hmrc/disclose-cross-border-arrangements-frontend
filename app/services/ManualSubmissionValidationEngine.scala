@@ -18,23 +18,39 @@ package services
 
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
-import models.{Dac6MetaData, GenericError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.Elem
 
 
-class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
-                                 businessRuleValidationService: BusinessRuleValidationService,
-                                 xmlErrorMessageHelper: XmlErrorMessageHelper,
-                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
-                                 metaDataValidationService: MetaDataValidationService,
-                                 auditService: AuditService) {
+class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValidationService,
+                                                 businessRuleValidationService: BusinessRuleValidationService,
+                                                 xmlErrorMessageHelper: XmlErrorMessageHelper,
+                                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
+                                                 metaDataValidationService: MetaDataValidationService,
+                                                 auditService: AuditService) {
 
   private val logger = LoggerFactory.getLogger(getClass)
+
+//  def validateManualSubmission(xml : NodeSeq)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[String]]] = {
+//
+//    val elem = xml.asInstanceOf[Elem]
+//
+//    xmlValidationService.validateManualSubmission(elem) match {
+//      case ListBuffer() => businessRuleValidationService.validateFile () (hc, ec) (elem) match {
+//                case Some (value) => value.map (seqValidation =>
+//
+//                  Some (seqValidation.map (_.key)))
+//                case None => Future (Some(Seq()))
+//               }
+//      case ListBuffer(parseErrors) =>  auditService.auditManualSubmissionParseFailure(elem, ListBuffer(parseErrors))
+//                                      Future(None)
+//
+//    }
+//  }
 
   def validateFile(downloadUrl: String, enrolmentId: String,businessRulesCheckRequired: Boolean = true)
                   (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Either[Exception, XMLValidationStatus]] = {
@@ -122,6 +138,24 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
     } else {
       Future.successful(ValidationSuccess(source))
     }
+  }
+
+  def performBusinessRulesValidationForMan(elem: Elem)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[String]] = {
+
+      businessRuleValidationService.validateFile()(hc, ec)(elem) match {
+        case Some(value) => value.map {
+          seqValidation =>
+            if (seqValidation.isEmpty) {
+              Seq()
+            }
+            else {
+             seqValidation.map(_.key) //ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
+            }
+        }
+        case None => Future(Seq())
+      }
+
   }
 
   def performMetaDataValidation(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)

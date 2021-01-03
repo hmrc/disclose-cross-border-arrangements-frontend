@@ -76,3 +76,6 @@ GET        /change-name                                 controllers.IndividualCo
 POST       /change-name                                 controllers.IndividualContactNameController.onSubmit()
 
 GET        /keep-alive                                   controllers.KeepAliveController.keepAlive
+
+POST       /validate-manual-submission                   controllers.ManualSubmissionValidationController.validateManualSubmission
+

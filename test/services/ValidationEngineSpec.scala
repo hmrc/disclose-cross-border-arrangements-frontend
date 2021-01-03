@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -355,7 +355,7 @@ val enrolmentId = "123456"
 
         when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
 
-        val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
+        val expectedErrors = Seq(GenericError(lineNumber, defaultError))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
         verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
@@ -412,6 +412,62 @@ val enrolmentId = "123456"
       }
 
    }
+
+    "ValidateManualSubmission" - {
+      "must return no errors when xml with no business errors received" in new SetUp {
+
+        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
+
+        val xml = <dummyTag></dummyTag>
+
+        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq())
+
+        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
+
+      }
+
+      "must return errors when xml with businessErrors received" in new SetUp {
+
+        override val doesFileHaveBusinessErrors = true
+
+        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
+
+        val xml = <dummyTag></dummyTag>
+
+        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq(defaultError))
+        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
+
+      }
+
+      "must return errors when xml with metaData errors received" in new SetUp {
+
+        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
+
+        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
+          Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
+
+        val xml = <dummyTag></dummyTag>
+
+        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords"))
+        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
+
+      }
+
+      "must return none when xml parsing fails and audit failure" in new SetUp {
+
+        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(ListBuffer(addressError1))
+
+        val xml = <dummyTag></dummyTag>
+
+        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe None
+
+        verify(mockAuditService, times(1)).auditManualSubmissionParseFailure(any(), any())(any())
+
+
+      }
+
+
+    }
 
   }
 }

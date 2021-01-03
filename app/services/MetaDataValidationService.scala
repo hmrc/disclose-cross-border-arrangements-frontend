@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
     }
   }
 
-  def verifyIds(dac6MetaData: Dac6MetaData, history: SubmissionHistory)
+  private def verifyIds(dac6MetaData: Dac6MetaData, history: SubmissionHistory)
                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Validation]] = {
     dac6MetaData match {
       case Dac6MetaData("DAC6ADD", Some(arrangementId), None, _, _, _) => verifyDAC6ADD(dac6MetaData, arrangementId, history)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import javax.inject.Inject
-import models.{Dac6MetaData, GenericError}
+import models.{Dac6MetaData, GenericError, SaxParseError}
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext
 import scala.xml.{Elem, NodeSeq}
 
@@ -145,6 +146,40 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
           case Disabled =>
             logger.warn(s"The attempt to issue audit event $errorMessageType was unsuccessful, as auditing is currently disabled in config"); ar
           case _ => logger.debug(s"Audit event $errorMessageType issued successfully."); ar
+        }
+      }
+    } else {
+      logger.warn(s"Validation has failed and auditing currently disabled for this event type")
+    }
+  }
+
+
+  def auditManualSubmissionParseFailure(xml: Elem, errors: ListBuffer[SaxParseError])(implicit hc: HeaderCarrier): Unit = {
+
+    val auditType = "ManualSubmissionParseFailure"
+
+    val auditMap: JsObject = Json.obj("xml" -> xml.toString(),
+                                       "errors" -> errors.toString())
+
+    if(appConfig.validationAuditToggle) {
+      auditConnector.sendExtendedEvent(ExtendedDataEvent(
+        auditSource = appConfig.appName,
+        auditType = auditType,
+        detail = auditMap,
+        tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+      )) map { ar: AuditResult =>
+        ar match {
+          case Failure(msg, ex) =>
+            ex match {
+              case Some(throwable) =>
+                logger.warn(s"The attempt to issue audit event $auditType failed with message : $msg", throwable)
+              case None =>
+                logger.warn(s"The attempt to issue audit event $auditType failed with message : $msg")
+            }
+            ar
+          case Disabled =>
+            logger.warn(s"The attempt to issue audit event $auditType was unsuccessful, as auditing is currently disabled in config"); ar
+          case _ => logger.debug(s"Audit event $auditType issued successfully."); ar
         }
       }
     } else {
