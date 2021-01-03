@@ -42,8 +42,8 @@ class ViewHelperSpec extends SpecBase
 
     "must return the correct go to home page content" in {
 
-      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"Go to <a id='homepage-link' href=$mockURL>" +
-        s"disclose cross-border arrangements</a>.")
+      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"<a id='homepage-link' href=$mockURL>" +
+        s"Disclose a cross-border arrangement</a>.")
 
     }
   }

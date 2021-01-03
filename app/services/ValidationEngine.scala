@@ -30,7 +30,8 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                  businessRuleValidationService: BusinessRuleValidationService,
                                  xmlErrorMessageHelper: XmlErrorMessageHelper,
                                  businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
-                                 metaDataValidationService: MetaDataValidationService) {
+                                 metaDataValidationService: MetaDataValidationService,
+                                 auditService: AuditService) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -47,7 +48,10 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
         businessRulesResult <- performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
       } yield {
         combineResults(xmlAndXmlValidationStatus._2, businessRulesResult, metaDateResult) match {
-          case ValidationFailure(errors) => Right(ValidationFailure(errors))
+          case ValidationFailure(errors) =>
+            auditService.auditValidationFailure(enrolmentId, metaData, errors, xmlAndXmlValidationStatus._1)
+            errors.foreach(auditService.auditErrorMessage(_))
+            Right(ValidationFailure(errors))
 
           case ValidationSuccess(_,_)=> Right(ValidationSuccess(downloadUrl, metaData))
         }
