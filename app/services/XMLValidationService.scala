@@ -37,7 +37,7 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
   def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
     val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
 
-    trait AccumulatorState extends DefaultHandler {
+     trait AccumulatorState extends DefaultHandler {
       override def warning(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
       override def error(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
       override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)

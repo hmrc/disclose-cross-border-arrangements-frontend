@@ -115,17 +115,17 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar with TestXml {
       result(1).errorMessage mustBe "cvc-type.3.1.3: The value '' of element 'Street' is not valid."
     }
 
-    "must return a ValidationSuccess with no errors for valid manual submission" in new SitemapParserSetup {
-
+    "must return a ValidationSuccess with no errors for valid manual submission" in new ActualSetup {
       sut.validateManualSubmission(validXml) mustBe noErrors
     }
 
-    "must return a ValidationFailure with errors for invalid manual submission" in new SitemapParserSetup {
+    "must return a ValidationFailure with errors for invalid manual submission" in new ActualSetup {
 
-      val result = sut.validateManualSubmission(mainBenefitTestErrorXml)
+      val result = sut.validateManualSubmission(invalidXml)
 
-//      result.length mustBe 2
-//      result.head.lineNumber mustBe 20
+      result.length mustBe 2
+
+      result.head.lineNumber mustBe 20
       result.head.errorMessage mustBe "cvc-minLength-valid: Value '' with length = '0' is not facet-valid with respect to minLength '1' for type 'StringMin1Max400_Type'."
       result(1).lineNumber mustBe 20
       result(1).errorMessage mustBe "cvc-type.3.1.3: The value '' of element 'Street' is not valid."

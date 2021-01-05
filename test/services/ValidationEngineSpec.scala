@@ -413,61 +413,7 @@ val enrolmentId = "123456"
 
    }
 
-    "ValidateManualSubmission" - {
-      "must return no errors when xml with no business errors received" in new SetUp {
 
-        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
-
-        val xml = <dummyTag></dummyTag>
-
-        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq())
-
-        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
-
-      }
-
-      "must return errors when xml with businessErrors received" in new SetUp {
-
-        override val doesFileHaveBusinessErrors = true
-
-        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
-
-        val xml = <dummyTag></dummyTag>
-
-        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq(defaultError))
-        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
-
-      }
-
-      "must return errors when xml with metaData errors received" in new SetUp {
-
-        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
-
-        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
-          Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
-
-        val xml = <dummyTag></dummyTag>
-
-        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe Some(Seq("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords"))
-        verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
-
-      }
-
-      "must return none when xml parsing fails and audit failure" in new SetUp {
-
-        when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(ListBuffer(addressError1))
-
-        val xml = <dummyTag></dummyTag>
-
-        Await.result(validationEngine.validateManualSubmission(xml), 10 seconds) mustBe None
-
-        verify(mockAuditService, times(1)).auditManualSubmissionParseFailure(any(), any())(any())
-
-
-      }
-
-
-    }
 
   }
 }

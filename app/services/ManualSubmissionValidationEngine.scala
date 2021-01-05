@@ -18,12 +18,14 @@ package services
 
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
-import models.{Dac6MetaData, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{Dac6MetaData, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
+import collection.immutable.IndexedSeq
 
 
 class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValidationService,
@@ -34,110 +36,62 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
                                                  auditService: AuditService) {
 
   private val logger = LoggerFactory.getLogger(getClass)
+  private val noErrors: Seq[String] = Seq()
 
-//  def validateManualSubmission(xml : NodeSeq)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Seq[String]]] = {
-//
-//    val elem = xml.asInstanceOf[Elem]
-//
-//    xmlValidationService.validateManualSubmission(elem) match {
-//      case ListBuffer() => businessRuleValidationService.validateFile () (hc, ec) (elem) match {
-//                case Some (value) => value.map (seqValidation =>
-//
-//                  Some (seqValidation.map (_.key)))
-//                case None => Future (Some(Seq()))
-//               }
-//      case ListBuffer(parseErrors) =>  auditService.auditManualSubmissionParseFailure(elem, ListBuffer(parseErrors))
-//                                      Future(None)
-//
-//    }
-//  }
 
-  def validateFile(downloadUrl: String, enrolmentId: String,businessRulesCheckRequired: Boolean = true)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Either[Exception, XMLValidationStatus]] = {
+  def validateManualSubmission(xml: NodeSeq, enrolmentId: String)
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Option[Seq[String]]] = {
+
+    val elem = xml.asInstanceOf[Elem]
 
     try {
-      val xmlAndXmlValidationStatus: (Elem, XMLValidationStatus) = performXmlValidation(downloadUrl)
-      val metaData = businessRuleValidationService.extractDac6MetaData()(xmlAndXmlValidationStatus._1)
+      val xmlAndXmlValidationStatus: ListBuffer[SaxParseError] = performXmlValidation(elem)
+      val metaData = businessRuleValidationService.extractDac6MetaData()(elem)
 
       for {
-        metaDateResult <- performMetaDataValidation(downloadUrl, xmlAndXmlValidationStatus._1, metaData, enrolmentId)
-        businessRulesResult <- performBusinessRulesValidation(downloadUrl, xmlAndXmlValidationStatus._1, businessRulesCheckRequired)
+        metaDateResult <- performMetaDataValidation(metaData, enrolmentId)
+        businessRulesResult <- performBusinessRulesValidation(elem)
       } yield {
-        combineResults(xmlAndXmlValidationStatus._2, businessRulesResult, metaDateResult) match {
-          case ValidationFailure(errors) =>
-            auditService.auditValidationFailure(enrolmentId, metaData, errors, xmlAndXmlValidationStatus._1)
-            errors.foreach(auditService.auditErrorMessage(_))
-            Right(ValidationFailure(errors))
+        combineResults(xmlAndXmlValidationStatus, businessRulesResult, metaDateResult) match {
 
-          case ValidationSuccess(_,_)=> Right(ValidationSuccess(downloadUrl, metaData))
+          case None =>  auditService.auditManualSubmissionParseFailure(elem, xmlAndXmlValidationStatus)
+                         None
+          case result => result
         }
       }
     } catch {
       case e: Exception =>
         logger.warn(s"XML validation failed. The XML parser has thrown the exception: $e")
-        Future.successful(Left(e))
+        Future.successful(None)
     }
   }
 
-  private def combineResults(xmlResult: XMLValidationStatus, businessRulesResult: XMLValidationStatus,
-                             metaDataResult: XMLValidationStatus): XMLValidationStatus = {
+  private def combineResults(xmlResult: ListBuffer[SaxParseError], businessRulesResult: Seq[String],
+                             metaDataResult:  Seq[String]):  Option[Seq[String]] = {
 
-    val xmlErrors = xmlResult match {
-      case ValidationSuccess(_, _) => List()
-      case ValidationFailure(errors) => errors
-    }
-
-    val businessRulesErrors = businessRulesResult match {
-        case ValidationSuccess(_, _) => List()
-        case ValidationFailure(errors) => errors
-      }
-
-    val idErrors = metaDataResult match {
-      case ValidationSuccess(_, _) => List()
-      case ValidationFailure(errors) => errors
-    }
-
-    val combinedErrors = (xmlErrors ++ businessRulesErrors ++ idErrors).sortBy(_.lineNumber)
-
-    if (combinedErrors.isEmpty){
-      ValidationSuccess("", None)
-    } else {
-      ValidationFailure(combinedErrors)
-    }
+     if(xmlResult.isEmpty){
+       Some(businessRulesResult ++ metaDataResult)
+       }else None
  }
 
-  def performXmlValidation(source: String): (Elem, XMLValidationStatus) = {
+  def performXmlValidation(elem: Elem): ListBuffer[SaxParseError] = {
 
-    val xmlErrors = xmlValidationService.validateXml(source)
-    if(xmlErrors._2.isEmpty) {
-      (xmlErrors._1, ValidationSuccess(source))
-    } else {
+    xmlValidationService.validateManualSubmission(elem)
 
-      val filteredErrors = xmlErrorMessageHelper.generateErrorMessages(xmlErrors._2)
-
-      (xmlErrors._1,  ValidationFailure(filteredErrors))
-    }
   }
 
-  def performBusinessRulesValidation(source: String, elem: Elem, businessRulesCheckRequired: Boolean)
-                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
+  def performBusinessRulesValidation(elem: Elem)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[String]] = {
 
-    if (businessRulesCheckRequired) {
       businessRuleValidationService.validateFile()(hc, ec)(elem) match {
         case Some(value) => value.map {
           seqValidation =>
-            if (seqValidation.isEmpty) {
-              ValidationSuccess(source)
-            }
-            else {
-              ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
-            }
+             seqValidation.map(_.key)
+
         }
-        case None => Future.successful(ValidationSuccess(source))
+        case None => Future.successful(noErrors)
       }
-    } else {
-      Future.successful(ValidationSuccess(source))
-    }
+
   }
 
   def performBusinessRulesValidationForMan(elem: Elem)
@@ -146,34 +100,22 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
       businessRuleValidationService.validateFile()(hc, ec)(elem) match {
         case Some(value) => value.map {
           seqValidation =>
-            if (seqValidation.isEmpty) {
-              Seq()
-            }
-            else {
-             seqValidation.map(_.key) //ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
-            }
+             seqValidation.map(_.key)
+
         }
         case None => Future(Seq())
       }
 
   }
 
-  def performMetaDataValidation(source: String, elem: Elem, dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
-                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[XMLValidationStatus] = {
+  def performMetaDataValidation(dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
+                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[String]] = {
 
-      val result = metaDataValidationService.verifyMetaData(dac6MetaData, enrolmentId)
-
-      result.map {
+     metaDataValidationService.verifyMetaData(dac6MetaData, enrolmentId).map {
           seqValidation =>
-            if (seqValidation.isEmpty) {
-              ValidationSuccess(source)
-            }
-            else {
-              ValidationFailure(businessRulesErrorMessageHelper.convertToGenericErrors(seqValidation, elem))
-            }
+              seqValidation.map(_.key)
+
         }
-
-    }
-
+ }
 
 }

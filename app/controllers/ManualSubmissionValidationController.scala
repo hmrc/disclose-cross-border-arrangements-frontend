@@ -29,7 +29,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.{JsSuccess, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, MessagesControllerComponents, Result}
 import repositories.SessionRepository
-import services.ValidationEngine
+import services.{ManualSubmissionValidationEngine, ValidationEngine}
 import uk.gov.hmrc.http.HeaderNames.xSessionId
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
@@ -46,7 +46,7 @@ class ManualSubmissionValidationController @Inject()(
                                                       val controllerComponents: MessagesControllerComponents,
                                                   //    connector: CrossBorderArrangementsConnector,
                                                   //    requireData: DataRequiredAction,
-                                                        validationEngine: ManuaValidationEngine ,
+                                                        validationEngine: ManualSubmissionValidationEngine ,
                                                   //    errorHandler: ErrorHandler,
                                                   //    navigator: Navigator
                                     )(implicit ec: ExecutionContext)
@@ -57,7 +57,7 @@ class ManualSubmissionValidationController @Inject()(
   def validateManualSubmission: Action[NodeSeq] =  (identify /*andThen getData*/).async(parse.xml) {
     implicit request => {
 
-      validationEngine.validateManualSubmission(request.body) map {
+      validationEngine.validateManualSubmission(request.body, request.enrolmentID) map {
 
         case Some(result) => Ok(Json.toJson(ManualSubmissionValidationResult(result)))
         case None => BadRequest("Invalid_XML")

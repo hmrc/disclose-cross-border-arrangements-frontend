@@ -35,7 +35,7 @@ import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.http.{HeaderNames, HttpResponse, UpstreamErrorResponse}
 import org.mockito.Matchers.{eq => meq}
 import play.api.libs.json.{JsValue, Json}
-import services.ValidationEngine
+import services.{ManualSubmissionValidationEngine, ValidationEngine}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -53,11 +53,11 @@ class ManualSubmissionValidationControllerSpec extends SpecBase
 
   val xml = <dummyTag></dummyTag>
 
-  val mockValidationEngine = mock[ValidationEngine]
+  val mockValidationEngine = mock[ManualSubmissionValidationEngine]
 
   val application = applicationBuilder()
          .overrides(
-            bind[ValidationEngine].toInstance(mockValidationEngine),
+            bind[ManualSubmissionValidationEngine].toInstance(mockValidationEngine),
         )
     .build()
 
@@ -65,7 +65,7 @@ class ManualSubmissionValidationControllerSpec extends SpecBase
 
     "return ok with no errors when passes validation" in {
 
-      when(mockValidationEngine.validateManualSubmission(any())(any(), any())).thenReturn(Future.successful(Some(Seq())))
+      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(Seq())))
       val request = FakeRequest(POST, routes.ManualSubmissionValidationController.validateManualSubmission().url).withXmlBody(xml)
       val result: Future[Result] = route(application, request).value
 
@@ -75,7 +75,7 @@ class ManualSubmissionValidationControllerSpec extends SpecBase
 
     "return ok with errors when fails business rule validation" in {
 
-      when(mockValidationEngine.validateManualSubmission(any())(any(), any())).thenReturn(Future.successful(Some(Seq("random-error"))))
+      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(Seq("random-error"))))
       val request = FakeRequest(POST, routes.ManualSubmissionValidationController.validateManualSubmission().url).withXmlBody(xml)
       val result: Future[Result] = route(application, request).value
 
@@ -85,7 +85,7 @@ class ManualSubmissionValidationControllerSpec extends SpecBase
 
     "return badRequest when xml parsing fails" in {
 
-      when(mockValidationEngine.validateManualSubmission(any())(any(), any())).thenReturn(Future.successful(None))
+      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(None))
       val request = FakeRequest(POST, routes.ManualSubmissionValidationController.validateManualSubmission().url).withXmlBody(xml)
       val result: Future[Result] = route(application, request).value
 
