@@ -35,7 +35,7 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
   def displaySubscriptionDetails(enrolmentID: String)
                                 (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[DisplaySubscriptionForDACResponse]] = {
 
-    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/display-subscription"
+    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/retrieve-subscription"
 
     http.POST[DisplaySubscriptionForDACRequest, HttpResponse](
       submissionUrl,

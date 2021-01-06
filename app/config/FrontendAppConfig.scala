@@ -43,6 +43,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val authUrl: String = configuration.get[Service]("auth").baseUrl
   lazy val loginUrl: String = configuration.get[String]("urls.login")
   lazy val loginContinueUrl: String = configuration.get[String]("urls.loginContinue")
+  lazy val dacManualUrl: String = s"${configuration.get[String]("urls.dac-enter.host")}${configuration.get[String]("urls.dac-enter.startUrl")}"
 
   lazy val enrolmentStoreProxyBaseUrl: String = servicesConfig.baseUrl("enrolment-store-proxy")
   lazy val getEnrolmentsUrl: String = configuration.get[String]("microservice.services.enrolment-store-proxy.get-enrolments-url")
@@ -65,6 +66,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
 
   lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
   lazy val contactDetailsToggle: Boolean = configuration.get[Boolean]("contactDetailsToggle")
+  lazy val manualJourneyToggle: Boolean = configuration.get[Boolean]("manualJourneyToggle")
   lazy val validationAuditToggle: Boolean = configuration.get[Boolean]("validationAuditToggle")
 
   val upscanUseSSL: Boolean = upscanProtocol == "https"
