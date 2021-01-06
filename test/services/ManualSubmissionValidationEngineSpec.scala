@@ -20,8 +20,7 @@ import base.SpecBase
 import cats.data.ReaderT
 import cats.implicits._
 import connectors.CrossBorderArrangementsConnector
-import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
-import models.{Dac6MetaData, GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, ManualSubmissionValidationFailure, ManualSubmissionValidationSuccess, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, _}
 import org.scalatestplus.mockito.MockitoSugar
@@ -97,10 +96,6 @@ val enrolmentId = "123456"
 
     val mockAuditService: AuditService = mock[AuditService]
 
-    val businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper = new BusinessRulesErrorMessageHelper
-
-    val xmlErrorMessageHelper: XmlErrorMessageHelper = new XmlErrorMessageHelper
-
     val mockBusinessRuleValidationService: BusinessRuleValidationService =
       new BusinessRuleValidationService(mockCrossBorderArrangementsConnector) {
 
@@ -140,8 +135,6 @@ val enrolmentId = "123456"
 
     val validationEngine = new ManualSubmissionValidationEngine(mockXmlValidationService,
                                                 mockBusinessRuleValidationService,
-                                                xmlErrorMessageHelper,
-                                                businessRulesErrorMessageHelper,
                                                 mockMetaDataValidationService,
                                                 mockAuditService)
 
@@ -153,14 +146,14 @@ val enrolmentId = "123456"
 
   }
     "ValidateManualSubmission" - {
-      "must return no errors when xml with no business errors received" in new SetUp {
+      "must return ManualSubmissionValidationSuccess when xml with no errors received" in new SetUp {
 
         when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
-        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
+        when(mockMetaDataValidationService.verifyMetaDataForManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Right("id")))
 
         val xml = <dummyTag></dummyTag>
 
-        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe Some(Seq())
+        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe Some(ManualSubmissionValidationSuccess("id"))
 
         verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
 
@@ -171,11 +164,12 @@ val enrolmentId = "123456"
         override val doesFileHaveBusinessErrors = true
 
         when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
-        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
+        when(mockMetaDataValidationService.verifyMetaDataForManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Right("id")))
 
         val xml = <dummyTag></dummyTag>
 
-        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe Some(Seq(defaultError))
+        val expectedResult = Some(ManualSubmissionValidationFailure(Seq(defaultError)))
+        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe expectedResult
         verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
 
       }
@@ -184,12 +178,13 @@ val enrolmentId = "123456"
 
         when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(noErrors)
 
-        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
-          Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
+        when(mockMetaDataValidationService.verifyMetaDataForManualSubmission(any(), any())(any(), any())).thenReturn(
+          Future.successful(Left(Seq("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords"))))
 
         val xml = <dummyTag></dummyTag>
 
-        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe Some(Seq("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords"))
+        val expectedResult = Some(ManualSubmissionValidationFailure(Seq("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords")))
+        Await.result(validationEngine.validateManualSubmission(xml, enrolmentId), 10 seconds) mustBe expectedResult
         verify(mockAuditService, times(0)).auditManualSubmissionParseFailure(any(), any())(any())
 
       }
@@ -197,7 +192,7 @@ val enrolmentId = "123456"
       "must return none when xml parsing fails and audit failure" in new SetUp {
 
         when(mockXmlValidationService.validateManualSubmission(any())).thenReturn(ListBuffer(addressError1))
-        when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(Future.successful(Seq()))
+        when(mockMetaDataValidationService.verifyMetaDataForManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Right("id")))
 
         val xml = <dummyTag></dummyTag>
 

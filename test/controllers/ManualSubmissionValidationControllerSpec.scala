@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import base.SpecBase
-import models.{GenericError, ManualSubmissionValidationResult, Validation}
+import models.{GenericError, ManualSubmissionValidationFailure, ManualSubmissionValidationSuccess, Validation}
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.mockito.{ArgumentCaptor, Matchers}
@@ -63,24 +63,24 @@ class ManualSubmissionValidationControllerSpec extends SpecBase
 
   "manualSubmissionValidationController" - {
 
-    "return ok with no errors when passes validation" in {
+    "return ok with ManualSubmissionValidationSuccess when passes validation" in {
 
-      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(Seq())))
+      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(ManualSubmissionValidationSuccess("id"))))
       val request = FakeRequest(POST, routes.ManualSubmissionValidationController.validateManualSubmission().url).withXmlBody(xml)
       val result: Future[Result] = route(application, request).value
 
       status(result) mustBe 200
-      contentAsJson(result) mustBe(Json.toJson(ManualSubmissionValidationResult(List())))
+      contentAsJson(result) mustBe Json.toJson(ManualSubmissionValidationSuccess("id"))
     }
 
-    "return ok with errors when fails business rule validation" in {
+    "return ok with ManualSubmissionValidationFailure when fails business rule validation" in {
 
-      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(Seq("random-error"))))
+      when(mockValidationEngine.validateManualSubmission(any(), any())(any(), any())).thenReturn(Future.successful(Some(ManualSubmissionValidationFailure(Seq("random-error")))))
       val request = FakeRequest(POST, routes.ManualSubmissionValidationController.validateManualSubmission().url).withXmlBody(xml)
       val result: Future[Result] = route(application, request).value
 
       status(result) mustBe 200
-      contentAsJson(result) mustBe(Json.toJson(ManualSubmissionValidationResult(List("random-error"))))
+      contentAsJson(result) mustBe Json.toJson(ManualSubmissionValidationFailure(List("random-error")))
     }
 
     "return badRequest when xml parsing fails" in {

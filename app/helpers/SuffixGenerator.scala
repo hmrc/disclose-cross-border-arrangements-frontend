@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package models
+package helpers
 
-import play.api.libs.json.{Json, OFormat}
+import scala.util.Random
 
-case class ManualSubmissionValidationResult(errors: Seq[String])
+class SuffixGenerator {
 
-object ManualSubmissionValidationResult {
-  implicit val format: OFormat[ManualSubmissionValidationResult] = Json.format[ManualSubmissionValidationResult]
+  def generateSuffix(suffixLength: Int = 10) : String = {
+    Random.alphanumeric.take(suffixLength).mkString("").toUpperCase
+  }
+
 }

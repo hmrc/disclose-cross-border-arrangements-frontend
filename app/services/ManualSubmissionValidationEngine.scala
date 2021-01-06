@@ -16,22 +16,18 @@
 
 package services
 
-import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import javax.inject.Inject
-import models.{Dac6MetaData, SaxParseError, ValidationFailure, ValidationSuccess, XMLValidationStatus}
+import models.{ManualSubmissionValidationFailure, ManualSubmissionValidationResult, ManualSubmissionValidationSuccess, SaxParseError}
 import org.slf4j.LoggerFactory
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
-import collection.immutable.IndexedSeq
 
 
 class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValidationService,
                                                  businessRuleValidationService: BusinessRuleValidationService,
-                                                 xmlErrorMessageHelper: XmlErrorMessageHelper,
-                                                 businessRulesErrorMessageHelper: BusinessRulesErrorMessageHelper,
                                                  metaDataValidationService: MetaDataValidationService,
                                                  auditService: AuditService) {
 
@@ -40,7 +36,7 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
 
 
   def validateManualSubmission(xml: NodeSeq, enrolmentId: String)
-                  (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Option[Seq[String]]] = {
+                  (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Option[ManualSubmissionValidationResult]] = {
 
     val elem = xml.asInstanceOf[Elem]
 
@@ -49,14 +45,15 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
       val metaData = businessRuleValidationService.extractDac6MetaData()(elem)
 
       for {
-        metaDateResult <- performMetaDataValidation(metaData, enrolmentId)
+        metaDateResult <- metaDataValidationService.verifyMetaDataForManualSubmission(metaData, enrolmentId)
         businessRulesResult <- performBusinessRulesValidation(elem)
       } yield {
         combineResults(xmlAndXmlValidationStatus, businessRulesResult, metaDateResult) match {
 
           case None =>  auditService.auditManualSubmissionParseFailure(elem, xmlAndXmlValidationStatus)
                          None
-          case result => result
+          case Some(Seq()) => Some(ManualSubmissionValidationSuccess("id"))
+          case Some(Seq(errors)) => Some(ManualSubmissionValidationFailure(Seq(errors)))
         }
       }
     } catch {
@@ -67,11 +64,13 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
   }
 
   private def combineResults(xmlResult: ListBuffer[SaxParseError], businessRulesResult: Seq[String],
-                             metaDataResult:  Seq[String]):  Option[Seq[String]] = {
+                             metaDataResult:  Either[Seq[String], String]):  Option[Seq[String]] = {
 
      if(xmlResult.isEmpty){
-       Some(businessRulesResult ++ metaDataResult)
-       }else None
+       if(metaDataResult.isLeft) {
+         Some(businessRulesResult ++ metaDataResult.left.get)
+       }else Some(businessRulesResult)
+     }else None
  }
 
   def performXmlValidation(elem: Elem): ListBuffer[SaxParseError] = {
@@ -107,15 +106,4 @@ class ManualSubmissionValidationEngine @Inject()(xmlValidationService: XMLValida
       }
 
   }
-
-  def performMetaDataValidation(dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
-                                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[String]] = {
-
-     metaDataValidationService.verifyMetaData(dac6MetaData, enrolmentId).map {
-          seqValidation =>
-              seqValidation.map(_.key)
-
-        }
- }
-
 }

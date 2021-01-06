@@ -16,75 +16,37 @@
 
 package controllers
 
-import java.util.UUID
 
-import connectors.CrossBorderArrangementsConnector
-import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import handlers.ErrorHandler
+import controllers.actions.IdentifierAction
 import javax.inject.Inject
-import models.ManualSubmissionValidationResult
-import navigation.Navigator
-import org.slf4j.LoggerFactory
-import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, MessagesControllerComponents, Result}
-import repositories.SessionRepository
-import services.{ManualSubmissionValidationEngine, ValidationEngine}
-import uk.gov.hmrc.http.HeaderNames.xSessionId
-import uk.gov.hmrc.http.HttpResponse
+import models.{ManualSubmissionValidationFailure, ManualSubmissionValidationSuccess}
+
+import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
+import play.api.mvc.{Action, MessagesControllerComponents}
+import services.ManualSubmissionValidationEngine
+
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Try}
-import scala.xml.{Elem, NodeSeq}
+import scala.concurrent.ExecutionContext
+import scala.xml.NodeSeq
 
-class ManualSubmissionValidationController @Inject()(
-                                                  //    messagesApi: MessagesApi,
-                                                     identify: IdentifierAction,
-                                                  //   getData: DataRetrievalAction,
-                                                   //   val sessionRepository: SessionRepository,
-                                                      val controllerComponents: MessagesControllerComponents,
-                                                  //    connector: CrossBorderArrangementsConnector,
-                                                  //    requireData: DataRequiredAction,
-                                                        validationEngine: ManualSubmissionValidationEngine ,
-                                                  //    errorHandler: ErrorHandler,
-                                                  //    navigator: Navigator
+class ManualSubmissionValidationController @Inject()(identify: IdentifierAction,
+                                                     val controllerComponents: MessagesControllerComponents,
+                                                     validationEngine: ManualSubmissionValidationEngine ,
                                     )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport {
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
-  def validateManualSubmission: Action[NodeSeq] =  (identify /*andThen getData*/).async(parse.xml) {
+  def validateManualSubmission: Action[NodeSeq] =  identify.async(parse.xml) {
     implicit request => {
 
       validationEngine.validateManualSubmission(request.body, request.enrolmentID) map {
 
-        case Some(result) => Ok(Json.toJson(ManualSubmissionValidationResult(result)))
+        case Some(ManualSubmissionValidationSuccess(messageRefId)) => Ok(Json.toJson(ManualSubmissionValidationSuccess(messageRefId)))
+        case Some(ManualSubmissionValidationFailure(Seq(errors))) => Ok(Json.toJson(ManualSubmissionValidationFailure(Seq(errors))))
         case None => BadRequest("Invalid_XML")
       }
     }
 
   }
-  private def convertToResult(httpResponse: HttpResponse): Result = {
-    httpResponse.status match {
-      case OK => Ok(httpResponse.body)
-
-      case NOT_FOUND => NotFound(httpResponse.body)
-
-      case BAD_REQUEST => BadRequest(httpResponse.body)
-
-      case FORBIDDEN => Forbidden(httpResponse.body)
-
-      case METHOD_NOT_ALLOWED => MethodNotAllowed(httpResponse.body)
-
-      case CONFLICT => Conflict(httpResponse.body)
-
-      case INTERNAL_SERVER_ERROR => InternalServerError(httpResponse.body)
-
-      case _ => ServiceUnavailable(httpResponse.body)
-    }
-  }
-
-
-
 }

@@ -19,6 +19,7 @@ package services
 import java.time.LocalDateTime
 
 import connectors.CrossBorderArrangementsConnector
+import helpers.SuffixGenerator
 import javax.inject.Inject
 import models.{Dac6MetaData, SubmissionHistory, Validation}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -26,11 +27,29 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 
-class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector) {
+class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConnector,
+                                          suffixGenerator: SuffixGenerator) {
 
   implicit val localDateOrdering: Ordering[LocalDateTime] = Ordering.by(_.toLocalTime)
 
   val replaceOrDelete = List("DAC6REP", "DAC6DEL")
+
+  def verifyMetaDataForManualSubmission(dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
+                    (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[String], String]] = {
+
+    val metaDataWithEnhancedMessageRefId : Option[Dac6MetaData] = dac6MetaData match {
+      case Some(Dac6MetaData(_, _, _, _, _, messageRefId)) =>  Some(dac6MetaData.get.copy(messageRefId = messageRefId + suffixGenerator.generateSuffix()))
+      case _ =>  dac6MetaData
+    }
+
+      verifyMetaData(metaDataWithEnhancedMessageRefId, enrolmentId).flatMap{
+
+      case Seq() if metaDataWithEnhancedMessageRefId.isDefined => Future(Right(metaDataWithEnhancedMessageRefId.get.messageRefId))
+      case Seq(Validation("metaDataRules.messageRefId.notUnique", false, _))  => verifyMetaDataForManualSubmission(dac6MetaData, enrolmentId)
+      case Seq(errors)  => Future(Left(Seq(errors).map(_.key)))
+
+    }
+  }
 
   def verifyMetaData(dac6MetaData: Option[Dac6MetaData], enrolmentId: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Seq[Validation]] = {
@@ -71,7 +90,7 @@ class MetaDataValidationService @Inject()(connector: CrossBorderArrangementsConn
 
     verifyArrangementId(arrangementId, history) map { r1 =>
 
-      val results = (r1, disclosureInformationResult)
+    val results = (r1, disclosureInformationResult)
 
       results match {
         case (true, Seq()) => Seq()
