@@ -398,7 +398,7 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
-        result mustBe List(GenericError(11, "Enter a category D hallmark"))
+        result mustBe List(GenericError(11, "Enter a category D hallmark only"))
       }
 
       "must  return correct error message when non D hallmark is provided along witha hallmark d" in {

@@ -47,7 +47,7 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all intermediaries"
        case "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all AffectedPersons"
        case "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all AssociatedEnterprises"
-       case "businessrules.hallmarks.dHallmarkNotProvided" => "Enter a category D hallmark"
+       case "businessrules.hallmarks.dHallmarkNotProvided" => "Enter a category D hallmark only"
        case "businessrules.hallmarks.dHallmarkWithOtherHallmarks" => "Enter a category D hallmark only"
 
        case "metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords" => "ArrangementID does not match HMRC's records"
