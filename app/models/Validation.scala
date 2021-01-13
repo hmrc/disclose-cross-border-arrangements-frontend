@@ -47,6 +47,8 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
        case "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all intermediaries"
        case "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all AffectedPersons"
        case "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" => "Check BirthDate field is on or after 1 January 1900 for all AssociatedEnterprises"
+       case "businessrules.hallmarks.dHallmarkNotProvided" => "Enter a category D hallmark"
+       case "businessrules.hallmarks.dHallmarkWithOtherHallmarks" => "Enter a category D hallmark only"
 
        case "metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords" => "ArrangementID does not match HMRC's records"
        case "metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW" => "Provide DisclosureInformation in this DAC6REP file, to replace the original arrangement details"
@@ -84,6 +86,9 @@ case class Validation(key: String, value: Boolean, lineNumber: Option[Int] = Non
       case "businessrules.IntermediaryBirthDates.maxDateOfBirthExceeded" => "Intermediaries"
       case "businessrules.AffectedPersonsBirthDates.maxDateOfBirthExceeded" => "AffectedPersons"
       case "businessrules.AssociatedEnterprisesBirthDates.maxDateOfBirthExceeded" => "AssociatedEnterprises"
+      case "businessrules.hallmarks.dHallmarkNotProvided" => "Hallmarks"
+      case "businessrules.hallmarks.dHallmarkWithOtherHallmarks" => "Hallmarks"
+
 
 
       case "metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords" => "ArrangementID"

@@ -171,6 +171,29 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
     )
   }
 
+  def validateHallmarks(): ReaderT[Option, NodeSeq, Validation] = {
+
+    val valuesForHallmarkD = Set("DAC6D1Other", "DAC6D1a", "DAC6D1b", "DAC6D1c",
+      "DAC6D1d", "DAC6D1e", "DAC6D1f", "DAC6D2")
+
+    for {
+      hallmarks <- hallmarks
+    } yield {
+      val nonHallMarkDExists = hallmarks.exists(value => !valuesForHallmarkD.contains(value))
+      val hallmarkDValues = hallmarks.toSet.intersect(valuesForHallmarkD)
+      if (nonHallMarkDExists && hallmarkDValues.nonEmpty) {
+        Validation(key = "businessrules.hallmarks.dHallmarkWithOtherHallmarks",
+          value = false)
+      }
+      else {
+        Validation(
+          key = "businessrules.hallmarks.dHallmarkNotProvided",
+          value = if (hallmarks.nonEmpty) {
+            hallmarkDValues.nonEmpty
+          } else true)
+      }
+    }
+  }
   def validateDAC6D1OtherInfoHasNecessaryHallmark(): ReaderT[Option, NodeSeq, Validation] = {
     for {
       hasDAC6D1OtherInfo <- hasDAC6D1OtherInfo
@@ -330,10 +353,11 @@ class BusinessRuleValidationService @Inject()(crossBorderArrangementsConnector: 
       v13 <- validateIntermediaryDatesOfBirth()
       v14 <- validateAffectedPersonsDatesOfBirth()
       v15 <- validateAssociatedEnterprisesDatesOfBirth()
+      v16 <- validateHallmarks()
     } yield {
       v1.flatMap { v1Validation =>
         v10.map { v10Validation =>
-          Seq(v1Validation, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15).filterNot(_.value)
+          Seq(v1Validation, v2, v3, v4, v5, v6, v7, v8, v9, v10Validation, v11, v12, v13, v14, v15, v16).filterNot(_.value)
         }
       }
     }

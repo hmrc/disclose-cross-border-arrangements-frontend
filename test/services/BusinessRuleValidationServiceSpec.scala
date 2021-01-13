@@ -45,6 +45,9 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
       bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
     ).build()
 
+  val valuesForHallmarkD = List("DAC6D1Other", "DAC6D1a", "DAC6D1b", "DAC6D1c",
+    "DAC6D1d", "DAC6D1e", "DAC6D1f", "DAC6D2")
+
   "BusinessRuleValidationService" - {
     "must be able to extract the initial disclosure when set" in {
       val xml = XMLFixture.dac6NotInitialDisclosureMA
@@ -2641,7 +2644,7 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
           <InitialDisclosureMA>false</InitialDisclosureMA>
           <Hallmarks>
             <ListHallmarks>
-              <Hallmark>DAC6C4</Hallmark>
+              <Hallmark>DAC6D1a</Hallmark>
             </ListHallmarks>
             <DAC6D1OtherInfo>Some Text</DAC6D1OtherInfo>
           </Hallmarks>
@@ -2696,6 +2699,108 @@ class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with 
     }
   }
 
+  "must pass validation for all allowed hallmark D values" in {
+
+    valuesForHallmarkD.foreach { value =>
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureID>AAA000000000</DisclosureID>
+            <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+            </RelevantTaxPayers>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>{value}</Hallmark>
+              </ListHallmarks>
+            </Hallmarks>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List()
+      }
+    }
+  }
+
+  "must fail validation for non hallmark D value" in {
+
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureID>AAA000000000</DisclosureID>
+            <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+            </RelevantTaxPayers>
+            <MainBenefitTest1>true</MainBenefitTest1>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6A1</Hallmark>
+              </ListHallmarks>
+            </Hallmarks>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.hallmarks.dHallmarkNotProvided", false))
+      }
+    }
+
+  "must fail validation when non hallmark D value supplied along with hallmarkD value" in {
+
+    valuesForHallmarkD.foreach { value =>
+      val xml =
+        <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+          <Header>
+            <ArrangementID>GBA20200904AAAAAA</ArrangementID>
+            <MessageRefId>GB0000000XXX</MessageRefId>
+            <Timestamp>2020-05-14T17:10:00</Timestamp>
+          </Header>
+          <DAC6Disclosures>
+            <DisclosureID>AAA000000000</DisclosureID>
+            <DisclosureImportInstruction>DAC6DEL</DisclosureImportInstruction>
+            <InitialDisclosureMA>false</InitialDisclosureMA>
+            <RelevantTaxPayers>
+            </RelevantTaxPayers>
+            <MainBenefitTest1>true</MainBenefitTest1>
+            <Hallmarks>
+              <ListHallmarks>
+                <Hallmark>DAC6A1</Hallmark>
+                <Hallmark>{value}</Hallmark>
+              </ListHallmarks>
+            </Hallmarks>
+          </DAC6Disclosures>
+        </DAC6_Arrangement>
+
+
+      val service = app.injector.instanceOf[BusinessRuleValidationService]
+      val result = service.validateFile()(implicitly, implicitly)(xml)
+
+      whenReady(result.get) {
+        _ mustBe List(Validation("businessrules.hallmarks.dHallmarkWithOtherHallmarks", false))
+      }
+    }
+  }
   "must return correct metadata for import instruction DAC6NEW when disclosure info is present" in {
     val xml =
       <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
