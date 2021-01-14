@@ -390,16 +390,27 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(3, "Check your MessageRefID is unique. It should start with GB, then your User ID, followed by unique identifying characters of your choice. It must be 200 characters or less"))
       }
 
+      "must  return correct error message when non D hallmark is provided" in {
 
+        val failedValidation = Validation(
+          key = "businessrules.hallmarks.dHallmarkNotProvided",
+          value = false
+        )
 
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
+        result mustBe List(GenericError(11, "Enter a category D hallmark only"))
+      }
 
+      "must  return correct error message when non D hallmark is provided along witha hallmark d" in {
 
+        val failedValidation = Validation(
+          key = "businessrules.hallmarks.dHallmarkWithOtherHallmarks",
+          value = false
+        )
 
-
-
-
-
-
+        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
+        result mustBe List(GenericError(11, "Enter a category D hallmark only"))
+      }
 
 
       "must  return correct default message for unexpected error key" in {
