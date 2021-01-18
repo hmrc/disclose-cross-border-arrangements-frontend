@@ -172,7 +172,7 @@ val enrolmentId = "123456"
         when(mockMetaDataValidationService.verifyMetaData(any(), any())(any(), any())).thenReturn(
           Future.successful(Seq(Validation("metaDataRules.arrangementId.arrangementIdDoesNotMatchRecords", false))))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds) mustBe Right(ValidationFailure(List(expectedErrors)))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
       }
 
@@ -186,7 +186,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(20, "Enter a Street"), GenericError(27, "Enter a City"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds) mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(2)).auditErrorMessage(any())(any())
 
       }
@@ -203,7 +203,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(175, "Enter an Amount currCode"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -219,7 +219,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(116, "BuildingIdentifier must be 400 characters or less"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -235,7 +235,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(116, "NationalProvision must be 4000 characters or less"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+         verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
        }
@@ -250,7 +250,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(123, "Country is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -264,7 +264,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(177, "ConcernedMS is not one of the ISO EU Member State country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -279,7 +279,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(133, "CountryExemption is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -295,7 +295,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(169, "Reason is not one of the allowed values"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -310,7 +310,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(129, "Capacity is not one of the allowed values (DAC61101, DAC61102) for Intermediary"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -325,7 +325,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(37, "Capacity is not one of the allowed values (DAC61104, DAC61105, DAC61106) for Taxpayer"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -340,7 +340,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(18, "TIN issuedBy is not one of the ISO country codes"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -358,7 +358,7 @@ val enrolmentId = "123456"
         val expectedErrors = Seq(GenericError(lineNumber, "There is a problem with this line number"))
 
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -372,7 +372,7 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }
@@ -387,7 +387,7 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(lineNumber, defaultError), GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(2)).auditErrorMessage(any())(any())
       }
 
@@ -399,7 +399,7 @@ val enrolmentId = "123456"
 
         val expectedErrors = Seq(GenericError(20, "Enter a Street"))
         Await.result(validationEngine.validateFile(source, enrolmentId, businessRulesCheckRequired = false), 10 seconds)  mustBe Right(ValidationFailure(expectedErrors))
-        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any(), any())(any())
+        verify(mockAuditService, times(1)).auditValidationFailure(any(), any(), any())(any())
         verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
 
       }

@@ -105,7 +105,6 @@ class AuditServiceSpec extends SpecBase
     }
 
     "must generate correct payload for validationFailure audit" in {
-      val xml = XMLFixture.dac6NotInitialDisclosureMA
       forAll(arbitrary[String],arbitrary[Option[String]], arbitrary[Option[String]], arbitrary[String])
       { ( enrolmentID, arrangementID, disclosureID, messageRefID) =>
         reset(auditConnector)
@@ -122,7 +121,7 @@ class AuditServiceSpec extends SpecBase
 
         val errors = Seq(GenericError(1, "error-message"))
 
-        auditService.auditValidationFailure(enrolmentID, Some(metaData), errors, xml)
+        auditService.auditValidationFailure(enrolmentID, Some(metaData), errors)
 
         val arrangmentIdValue = arrangementID.getOrElse("None Provided")
         val disclosureIdValue = disclosureID.getOrElse("None Provided")
@@ -135,8 +134,7 @@ class AuditServiceSpec extends SpecBase
           "messageRefID" -> metaData.messageRefId,
           "disclosureImportInstruction" ->"DAC6NEW",
           "initialDisclosureMA" -> "true",
-          "errors" -> errors.toString(),
-          "xml" -> xml.toString()
+          "errors" -> errors.toString()
         )
 
         val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])

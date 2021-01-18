@@ -79,8 +79,8 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
     }}
   }
 
-  def auditValidationFailure(enrolmentId: String, metaData: Option[Dac6MetaData], errors: Seq[GenericError],
-                             xml: Elem)(implicit hc: HeaderCarrier): Unit = {
+  def auditValidationFailure(enrolmentId: String, metaData: Option[Dac6MetaData], errors: Seq[GenericError])
+                            (implicit hc: HeaderCarrier): Unit = {
 
     val validationFailureType = "ValidationFailure"
 
@@ -91,8 +91,7 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       "messageRefID" -> metaData.fold(noneProvided)(data => data.messageRefId),
       "disclosureImportInstruction" -> metaData.fold("Unknown Import Instruction")(data => data.importInstruction),
       "initialDisclosureMA" -> metaData.fold("InitialDisclosureMA value not supplied")(data => data.initialDisclosureMA.toString),
-      "errors" -> errors.toString(),
-      "xml" -> xml.toString()
+      "errors" -> errors.toString()
     )
 
     if(appConfig.validationAuditToggle) {

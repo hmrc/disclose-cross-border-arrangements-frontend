@@ -49,7 +49,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
       } yield {
         combineResults(xmlAndXmlValidationStatus._2, businessRulesResult, metaDateResult) match {
           case ValidationFailure(errors) =>
-            auditService.auditValidationFailure(enrolmentId, metaData, errors, xmlAndXmlValidationStatus._1)
+            auditService.auditValidationFailure(enrolmentId, metaData, errors)
             errors.foreach(auditService.auditErrorMessage(_))
             Right(ValidationFailure(errors))
 
