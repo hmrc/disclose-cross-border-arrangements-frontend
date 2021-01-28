@@ -49,10 +49,17 @@ class IndexController @Inject()(
         noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
         _                       <- sessionRepository.set(userAnswers)
       } yield {
+
+        val enterUrl = if (frontendAppConfig.contactUsToggle) {
+          routes.ContactUsToUseManualServiceController.onPageLoad().url
+        } else {
+          frontendAppConfig.dacManualUrl
+        }
+
         val context = Json.obj(
           "hasSubmissions" -> (noOfPreviousSubmissions > 0),
           "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle,
-          "enterUrl" -> frontendAppConfig.dacManualUrl,
+          "enterUrl" -> enterUrl,
           "manualJourneyToggle" -> frontendAppConfig.manualJourneyToggle
         )
         renderer.render("index.njk", context).map(Ok(_))
