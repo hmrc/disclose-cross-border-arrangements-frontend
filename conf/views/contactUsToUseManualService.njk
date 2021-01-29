@@ -1,0 +1,44 @@
+{% extends "includes/layout.njk" %}
+
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+{% from "macros/title.njk"                         import title %}
+
+{% block pageTitle %}
+  {{ title(messages("contactUsToUseManualService.title")) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: messages("site.back")
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("contactUsToUseManualService.heading") }}
+        </h1>
+
+        <p class="govuk-body">
+          {{ messages("contactUsToUseManualService.p1a") }}
+          <a class="govuk-link" href="mailto:{{ messages('contactUsToUseManualService.p1.email') }}">{{ messages("contactUsToUseManualService.p1.email") }}</a>
+          {{ messages("contactUsToUseManualService.p1b") }}
+        </p>
+
+        <p class="govuk-body">{{ messages("contactUsToUseManualService.p2") }}</p>
+
+        <p class="govuk-body">{{ messages("contactUsToUseManualService.p3") }}</p>
+
+        <p class="govuk-body govuk-!-padding-top-4">
+          <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("contactUsToUseManualService.homePageLink.text") }}</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

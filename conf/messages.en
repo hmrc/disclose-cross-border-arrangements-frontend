@@ -356,3 +356,12 @@ individualContactName.error.firstName.length = First name must be 35 characters 
 individualContactName.error.lastName.required = Enter your last name
 individualContactName.error.lastName.invalid = Last name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
 individualContactName.error.lastName.length = Last name must be 35 characters or less
+
+contactUsToUseManualService.title = Contact us to use the manual form
+contactUsToUseManualService.heading = Contact us to use the manual form
+contactUsToUseManualService.p1a = Email us at
+contactUsToUseManualService.p1.email = dac6digital@hmrc.gov.uk
+contactUsToUseManualService.p1b = so we can arrange a time for you to access this new service.
+contactUsToUseManualService.p2 = If your disclosure is due soon, and you need to use the manual service to disclose, please email us ahead of the reporting deadline.
+contactUsToUseManualService.p3 = If we cannot arrange a time for you to access the service before the deadline, we won’t charge a late filing penalty as long as you disclose as soon as possible after the deadline.
+contactUsToUseManualService.homePageLink.text = Back to disclose cross-border arrangements
