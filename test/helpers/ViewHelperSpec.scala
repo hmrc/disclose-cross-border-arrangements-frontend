@@ -129,20 +129,21 @@ class ViewHelperSpec extends SpecBase
   "buildDisclosuresTable" - {
     "must return a table of the submission history" in {
       val head: Seq[Cell] = Seq(
-        Cell(msg"submissionHistory.arn.label", classes = Seq("govuk-!-width-one-quarter")),
-        Cell(msg"submissionHistory.disclosureID.label", classes = Seq("govuk-!-width-one-quarter")),
-        Cell(msg"submissionHistory.submissionDate.label", classes = Seq("govuk-table__header")),
-        Cell(msg"submissionHistory.fileName.label", classes = Seq("govuk-!-width-one-quarter"))
+        Cell(msg"submissionHistory.arn.label"),
+        Cell(msg"submissionHistory.disclosureID.label"),
+        Cell(msg"submissionHistory.submissionDate.label"),
+        Cell(msg"submissionHistory.messageRef.label", classes = Seq("govuk-!-width-one-third")),
+        Cell(msg"submissionHistory.disclosureType.label")
       )
 
       val mockSubmissionHistory = SubmissionHistory(
         List(
           SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-01T10:23:30"),
             "fileName", Some("arrangementID"), Some("disclosureID"), "New",
-            initialDisclosureMA = false, messageRefId = "GB0000000XXX"),
-          SubmissionDetails("enrolmentI2", LocalDateTime.parse("2020-07-02T20:23:30"),
+            initialDisclosureMA = false, messageRefId = "GBXADAC0001234567AAA00101"),
+          SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-02T20:23:30"),
             "fileName2", Some("arrangementID2"), Some("disclosureID2"), "Add",
-             initialDisclosureMA = false, messageRefId = "GB0000000XXX"),
+             initialDisclosureMA = false, messageRefId = "GBXADAC0001234567AAA00102"),
         )
       )
 
@@ -152,14 +153,16 @@ class ViewHelperSpec extends SpecBase
           Seq(
             Cell(msg"arrangementID", attributes = Map("id" -> s"arrangementID_0")),
             Cell(msg"disclosureID", attributes = Map("id" -> s"disclosureID_0")),
-            Cell(msg"10:23am on 1 July 2020", attributes = Map("id" -> s"submissionTime_0")),
-            Cell(msg"fileName", attributes = Map("id" -> s"fileName_0"))
+            Cell(msg"10.23am on 1 July 2020", attributes = Map("id" -> s"submissionTime_0")),
+            Cell(msg"GBXADAC0001234567AAA00101", attributes = Map("id" -> s"messageRef_0")),
+            Cell(msg"New", attributes = Map("id" -> s"disclosureType_0"))
           ),
           Seq(
             Cell(msg"arrangementID2", attributes = Map("id" -> s"arrangementID_1")),
             Cell(msg"disclosureID2", attributes = Map("id" -> s"disclosureID_1")),
-            Cell(msg"08:23pm on 2 July 2020", attributes = Map("id" -> s"submissionTime_1")),
-            Cell(msg"fileName2", attributes = Map("id" -> s"fileName_1"))
+            Cell(msg"08.23pm on 2 July 2020", attributes = Map("id" -> s"submissionTime_1")),
+            Cell(msg"GBXADAC0001234567AAA00102", attributes = Map("id" -> s"messageRef_1")),
+            Cell(msg"Add", attributes = Map("id" -> s"disclosureType_1"))
           )
         ),
         caption = Some(msg"submissionHistory.caption"),
