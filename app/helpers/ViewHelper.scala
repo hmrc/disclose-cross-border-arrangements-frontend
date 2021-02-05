@@ -63,7 +63,7 @@ class ViewHelper @Inject()() {
 
   def buildDisclosuresTable(retrievedHistory: SubmissionHistory)(implicit messages: Messages) : Table = {
 
-    val submissionDateFormat = DateTimeFormatter.ofPattern("hh:mma 'on' d MMMM yyyy")
+    val submissionDateFormat = DateTimeFormatter.ofPattern("hh.mma 'on' d MMMM yyyy")
 
     val rows = retrievedHistory.details.zipWithIndex.map {
       case (submission, count) =>
@@ -73,16 +73,18 @@ class ViewHelper @Inject()() {
           Cell(msg"${submission.submissionTime.format(submissionDateFormat)
                     .replace("AM", "am")
                     .replace("PM","pm")}", attributes = Map("id" -> s"submissionTime_$count")),
-          Cell(msg"${submission.fileName}", attributes = Map("id" -> s"fileName_$count"))
+          Cell(msg"${submission.messageRefId}", attributes = Map("id" -> s"messageRef_$count"), classes = Seq("govuk-!-width-one-third", "breakString")),
+          Cell(msg"${submission.importInstruction}", attributes = Map("id" -> s"disclosureType_$count"))
         )
     }
 
     Table(
       head = Seq(
-        Cell(msg"submissionHistory.arn.label", classes = Seq("govuk-!-width-one-quarter")),
-        Cell(msg"submissionHistory.disclosureID.label", classes = Seq("govuk-!-width-one-quarter")),
-        Cell(msg"submissionHistory.submissionDate.label", classes = Seq("govuk-table__header")),
-        Cell(msg"submissionHistory.fileName.label", classes = Seq("govuk-!-width-one-quarter"))
+        Cell(msg"submissionHistory.arn.label"),
+        Cell(msg"submissionHistory.disclosureID.label"),
+        Cell(msg"submissionHistory.submissionDate.label"),
+        Cell(msg"submissionHistory.messageRef.label", classes = Seq("govuk-!-width-one-third")),
+        Cell(msg"submissionHistory.disclosureType.label")
       ),
       rows = rows,
       caption = Some(msg"submissionHistory.caption"),
