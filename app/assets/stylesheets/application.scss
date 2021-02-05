@@ -7,3 +7,8 @@ $hmrc-assets-path: "/disclose-cross-border-arrangements/assets/lib/hmrc-frontend
 @import "language-toggles.scss";
 @import "partials/spinner";
 @import "_timeout-dialog.scss";
+
+
+.breakString {
+  word-break: break-all;
+}
