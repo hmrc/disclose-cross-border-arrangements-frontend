@@ -44,7 +44,6 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
 
     val arrangementAudit: String = arrangementID.getOrElse(noneProvided)
     val disclosureAudit: String = disclosureID.getOrElse(noneProvided)
-
     val auditMap: JsObject = Json.obj(
       "fileName" -> filename,
       "enrolmentID" -> enrolmentId,
@@ -91,7 +90,8 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       "messageRefID" -> metaData.fold(noneProvided)(data => data.messageRefId),
       "disclosureImportInstruction" -> metaData.fold("Unknown Import Instruction")(data => data.importInstruction),
       "initialDisclosureMA" -> metaData.fold("InitialDisclosureMA value not supplied")(data => data.initialDisclosureMA.toString),
-      "errors" -> errors.toString()
+      "errors" -> buildErrorMessagePayload(errors),
+     // "errors" -> buildErrorMessagePayload(errors)
     )
 
     if(appConfig.validationAuditToggle) {
@@ -119,6 +119,45 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       logger.warn(s"Validation has failed and auditing currently disabled for this event type")
     }
   }
+
+//  private def buildErrorMessagePayload(errors: Seq[GenericError]):String = {
+//    errors
+//      .map(error => s"lineNumber = ${error.lineNumber} " +
+//                    s"errorMessage = ${error.messageKey}")
+//      .mkString(", ")
+//  }
+
+  private def buildErrorMessagePayload(errors: Seq[GenericError]): String = {
+
+  val vvv = errors.map {error =>
+
+
+    s"""|{
+        |"lineNumber" : ${error.lineNumber},
+        |"errorMessage" : ${error.messageKey}
+        |}""".stripMargin
+      }.mkString(",")
+
+
+    s"""|[
+        |$vvv
+        |]""".stripMargin.mkString
+
+  }
+
+//  private def buildErrorMessagePayload(errors: Seq[GenericError]):String = {
+//    errors.map { error =>
+//      s"""
+//         |[{
+//         |  "lineNumber" : "${error.lineNumber}",
+//         |  "errorMessage" : ${error.messageKey}"
+//         |}]
+//
+//      """.stripMargin
+//
+//    }.mkString
+//  }
+
   def auditErrorMessage(error: GenericError)(implicit hc: HeaderCarrier): Unit = {
 
     val errorMessageType = "ErrorMessage"
