@@ -120,16 +120,9 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
     }
   }
 
-//  private def buildErrorMessagePayload(errors: Seq[GenericError]):String = {
-//    errors
-//      .map(error => s"lineNumber = ${error.lineNumber} " +
-//                    s"errorMessage = ${error.messageKey}")
-//      .mkString(", ")
-//  }
-
   private def buildErrorMessagePayload(errors: Seq[GenericError]): String = {
 
-  val vvv = errors.map {error =>
+  val formattedErrors = errors.map {error =>
 
 
     s"""|{
@@ -140,23 +133,10 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
 
 
     s"""|[
-        |$vvv
+        |$formattedErrors
         |]""".stripMargin.mkString
 
   }
-
-//  private def buildErrorMessagePayload(errors: Seq[GenericError]):String = {
-//    errors.map { error =>
-//      s"""
-//         |[{
-//         |  "lineNumber" : "${error.lineNumber}",
-//         |  "errorMessage" : ${error.messageKey}"
-//         |}]
-//
-//      """.stripMargin
-//
-//    }.mkString
-//  }
 
   def auditErrorMessage(error: GenericError)(implicit hc: HeaderCarrier): Unit = {
 
