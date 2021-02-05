@@ -91,7 +91,6 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       "disclosureImportInstruction" -> metaData.fold("Unknown Import Instruction")(data => data.importInstruction),
       "initialDisclosureMA" -> metaData.fold("InitialDisclosureMA value not supplied")(data => data.initialDisclosureMA.toString),
       "errors" -> buildErrorMessagePayload(errors),
-     // "errors" -> buildErrorMessagePayload(errors)
     )
 
     if(appConfig.validationAuditToggle) {
