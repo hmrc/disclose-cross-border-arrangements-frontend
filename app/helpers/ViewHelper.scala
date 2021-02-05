@@ -73,7 +73,7 @@ class ViewHelper @Inject()() {
           Cell(msg"${submission.submissionTime.format(submissionDateFormat)
                     .replace("AM", "am")
                     .replace("PM","pm")}", attributes = Map("id" -> s"submissionTime_$count")),
-          Cell(msg"${submission.messageRefId}", attributes = Map("id" -> s"messageRef_$count")),
+          Cell(msg"${submission.messageRefId}", attributes = Map("id" -> s"messageRef_$count"), classes = Seq("govuk-!-width-one-third", "breakString")),
           Cell(msg"${submission.importInstruction}", attributes = Map("id" -> s"disclosureType_$count"))
         )
     }
