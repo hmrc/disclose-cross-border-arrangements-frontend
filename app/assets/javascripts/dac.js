@@ -49,7 +49,7 @@ function recruitmentBanner(){
         } else {
             recruitmentBannerDismiss.addEventListener('click', function(e){
                 event.preventDefault()
-                setCookie(recruitmentCookieName, 'suppress_for_all_services', { days: 30 })
+                setCookie(recruitmentCookieName, 'suppress_for_all_services', { days: 90 })
                 recruitmentBanner.remove()
             })
             recruitmentBanner.classList.remove('js-hidden');
