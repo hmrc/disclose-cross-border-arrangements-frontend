@@ -60,7 +60,8 @@ class IndexController @Inject()(
           "hasSubmissions" -> (noOfPreviousSubmissions > 0),
           "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle,
           "enterUrl" -> enterUrl,
-          "manualJourneyToggle" -> frontendAppConfig.manualJourneyToggle
+          "manualJourneyToggle" -> frontendAppConfig.manualJourneyToggle,
+          "recruitmentBannerToggle" -> frontendAppConfig.recruitmentBannerToggle
         )
         renderer.render("index.njk", context).map(Ok(_))
       }
