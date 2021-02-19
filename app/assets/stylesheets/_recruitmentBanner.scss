@@ -1,0 +1,34 @@
+.full-width-banner__container {
+  background-color: #1d70b8;
+  padding: 20px 30px 10px;
+  color:#fff
+}
+
+.full-width-banner a, .full-width-banner a:visited {
+  color: #fff;
+  &:focus {
+    color: #0b0c0c;
+  }
+}
+
+.full-width-banner__close {
+  font-size: 14px;
+  float: right;
+}
+
+.full-width-banner__title {
+  font-weight: bold;
+}
+
+
+@media (max-width: 641px) {
+  .full-width-banner__container {
+    padding: 20px 12px;
+  }
+
+  .full-width-banner__close {
+    display: block;
+    float: none;
+    text-align: right;
+  }
+}

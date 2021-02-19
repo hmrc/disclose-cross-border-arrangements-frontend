@@ -69,6 +69,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val manualJourneyToggle: Boolean = configuration.get[Boolean]("manualJourneyToggle")
   lazy val validationAuditToggle: Boolean = configuration.get[Boolean]("validationAuditToggle")
   lazy val contactUsToggle: Boolean = configuration.get[Boolean]("contactUsToggle")
+  lazy val recruitmentBannerToggle: Boolean = configuration.get[Boolean]("recruitmentBannerToggle")
 
   val upscanUseSSL: Boolean = upscanProtocol == "https"
 
