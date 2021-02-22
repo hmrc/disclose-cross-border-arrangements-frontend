@@ -17,7 +17,7 @@
 package models.subscription
 
 import models.UserAnswers
-import pages._
+import pages.contactdetails._
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 

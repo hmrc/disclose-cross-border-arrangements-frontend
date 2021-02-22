@@ -25,7 +25,6 @@ import models.{Name, UserAnswers}
 import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.Matchers.any
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import pages.IndividualContactNamePage
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.bind
@@ -37,6 +36,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
+import pages.contactdetails.IndividualContactNamePage
 
 class SubscriptionConnectorSpec extends SpecBase
   with ScalaCheckPropertyChecks

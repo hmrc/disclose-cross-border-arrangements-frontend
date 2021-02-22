@@ -274,7 +274,7 @@ class ViewHelperSpec extends SpecBase
             actions = List(
               Action(
                 content = msg"site.edit",
-                href = routes.IndividualContactNameController.onPageLoad().url,
+                href = controllers.contactdetails.routes.IndividualContactNameController.onPageLoad().url,
                 visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
                 attributes = Map("id" -> "change-primary-contact-name")
               )
@@ -303,7 +303,7 @@ class ViewHelperSpec extends SpecBase
               actions = List(
                 Action(
                   content = msg"site.edit",
-                  href = routes.ContactEmailAddressController.onPageLoad().url,
+                  href = controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad().url,
                   visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
                   attributes = Map("id" -> "change-primary-contact-email")
                 )
@@ -332,7 +332,7 @@ class ViewHelperSpec extends SpecBase
               actions = List(
                 Action(
                   content = msg"site.edit",
-                  href = routes.ContactTelephoneNumberController.onPageLoad().url,
+                  href = controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad().url,
                   visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
                   attributes = Map("id" -> "change-primary-phone-number")
                 )
@@ -361,7 +361,7 @@ class ViewHelperSpec extends SpecBase
               actions = List(
                 Action(
                   content = msg"site.edit",
-                  href = routes.SecondaryContactNameController.onPageLoad().url,
+                  href = controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad().url,
                   visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
                   attributes = Map("id" -> "change-secondary-contact-name")
                 )
@@ -390,7 +390,7 @@ class ViewHelperSpec extends SpecBase
               actions = List(
                 Action(
                   content = msg"site.edit",
-                  href = routes.SecondaryContactEmailAddressController.onPageLoad().url,
+                  href = controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad().url,
                   visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel")),
                   attributes = Map("id" -> "change-secondary-contact-email")
                 )
@@ -419,7 +419,7 @@ class ViewHelperSpec extends SpecBase
               actions = List(
                 Action(
                   content = msg"site.edit",
-                  href = routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
+                  href = controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
                   visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
                   attributes = Map("id" -> "change-secondary-phone-number")
                 )

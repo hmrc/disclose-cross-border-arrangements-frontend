@@ -16,18 +16,18 @@
 
 package helpers
 
-import java.time.format.DateTimeFormatter
-
 import com.google.inject.Inject
 import controllers.routes
 import models.subscription.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
 import models.{GenericError, SubmissionHistory, UserAnswers}
-import pages._
+import pages.contactdetails._
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
+
+import java.time.format.DateTimeFormatter
 
 
 class ViewHelper @Inject()() {
@@ -196,9 +196,9 @@ class ViewHelper @Inject()() {
 
     val changeLink = responseDetail.primaryContact.contactInformation.head match {
       case ContactInformationForIndividual(_, _, _, _) =>
-        routes.IndividualContactNameController.onPageLoad().url
+        controllers.contactdetails.routes.IndividualContactNameController.onPageLoad().url
       case ContactInformationForOrganisation(_, _, _, _) =>
-        routes.ContactNameController.onPageLoad().url
+        controllers.contactdetails.routes.ContactNameController.onPageLoad().url
     }
 
     Row(
@@ -231,7 +231,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.ContactEmailAddressController.onPageLoad().url,
+          href = controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-primary-contact-email")
         )
@@ -255,7 +255,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.ContactTelephoneNumberController.onPageLoad().url,
+          href = controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-primary-phone-number")
         )
@@ -284,7 +284,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactNameController.onPageLoad().url,
+          href = controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-contact-name")
         )
@@ -310,7 +310,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactEmailAddressController.onPageLoad().url,
+          href = controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-contact-email")
         )
@@ -336,7 +336,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
+          href = controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-phone-number")
         )

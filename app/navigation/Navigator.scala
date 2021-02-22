@@ -17,9 +17,11 @@
 package navigation
 
 import controllers.routes
+
 import javax.inject.{Inject, Singleton}
 import models._
 import pages._
+import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
 import play.api.mvc.Call
 
 @Singleton

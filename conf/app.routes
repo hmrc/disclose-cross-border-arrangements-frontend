@@ -54,26 +54,26 @@ GET        /display-subscription                        controllers.DisplaySubsc
 GET        /contact-details                             controllers.ContactDetailsController.onPageLoad()
 POST       /contact-details                             controllers.ContactDetailsController.onSubmit()
 
-GET        /change-contact-name                         controllers.ContactNameController.onPageLoad()
-POST       /change-contact-name                         controllers.ContactNameController.onSubmit()
+GET        /change-contact-name                         controllers.contactdetails.ContactNameController.onPageLoad()
+POST       /change-contact-name                         controllers.contactdetails.ContactNameController.onSubmit()
 
-GET        /change-contact-email                        controllers.ContactEmailAddressController.onPageLoad()
-POST       /change-contact-email                        controllers.ContactEmailAddressController.onSubmit()
+GET        /change-contact-email                        controllers.contactdetails.ContactEmailAddressController.onPageLoad()
+POST       /change-contact-email                        controllers.contactdetails.ContactEmailAddressController.onSubmit()
 
-GET        /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onPageLoad()
-POST       /change-contact-telephone-number             controllers.ContactTelephoneNumberController.onSubmit()
+GET        /change-contact-telephone-number             controllers.contactdetails.ContactTelephoneNumberController.onPageLoad()
+POST       /change-contact-telephone-number             controllers.contactdetails.ContactTelephoneNumberController.onSubmit()
 
-GET        /change-secondary-contact-name               controllers.SecondaryContactNameController.onPageLoad()
-POST       /change-secondary-contact-name               controllers.SecondaryContactNameController.onSubmit()
+GET        /change-secondary-contact-name               controllers.contactdetails.SecondaryContactNameController.onPageLoad()
+POST       /change-secondary-contact-name               controllers.contactdetails.SecondaryContactNameController.onSubmit()
 
-GET        /change-secondary-contact-email              controllers.SecondaryContactEmailAddressController.onPageLoad()
-POST       /change-secondary-contact-email              controllers.SecondaryContactEmailAddressController.onSubmit()
+GET        /change-secondary-contact-email              controllers.contactdetails.SecondaryContactEmailAddressController.onPageLoad()
+POST       /change-secondary-contact-email              controllers.contactdetails.SecondaryContactEmailAddressController.onSubmit()
 
-GET        /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onPageLoad()
-POST       /change-secondary-contact-telephone-number   controllers.SecondaryContactTelephoneNumberController.onSubmit()
+GET        /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onPageLoad()
+POST       /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onSubmit()
 
-GET        /change-name                                 controllers.IndividualContactNameController.onPageLoad()
-POST       /change-name                                 controllers.IndividualContactNameController.onSubmit()
+GET        /change-name                                 controllers.contactdetails.IndividualContactNameController.onPageLoad()
+POST       /change-name                                 controllers.contactdetails.IndividualContactNameController.onSubmit()
 
 GET        /keep-alive                                  controllers.KeepAliveController.keepAlive
 
