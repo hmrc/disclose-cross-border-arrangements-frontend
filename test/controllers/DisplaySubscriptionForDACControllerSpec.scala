@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.SubscriptionConnector
 import generators.Generators
 import helpers.JsonFixtures._
-import models.subscription.DisplaySubscriptionForDACResponse
+import models.subscription.{DisplaySubscriptionDetailsAndStatus, DisplaySubscriptionForDACResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -60,7 +60,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
             .thenReturn(Future.successful(Html("")))
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
             .overrides(
@@ -88,7 +88,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
         .overrides(

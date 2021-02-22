@@ -20,13 +20,13 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ContactDetailsController @Inject()(
@@ -47,8 +47,8 @@ class ContactDetailsController @Inject()(
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
 
-          if (details.isDefined) {
-            val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
+          if (details.subscriptionDetails.isDefined) {
+            val responseDetail = details.subscriptionDetails.get.displaySubscriptionForDACResponse.responseDetail
 
             val contactDetailsList =
               if (responseDetail.secondaryContact.isDefined) {
@@ -83,9 +83,9 @@ class ContactDetailsController @Inject()(
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          if (details.isDefined) {
-            subscriptionConnector.updateSubscription(details.get.displaySubscriptionForDACResponse, request.userAnswers).map {
-              _ =>
+          if (details.subscriptionDetails.isDefined) {
+            subscriptionConnector.updateSubscription(details.subscriptionDetails.get.displaySubscriptionForDACResponse, request.userAnswers)
+              .map { _ =>
                 Redirect(routes.IndexController.onPageLoad())
               }
           } else {

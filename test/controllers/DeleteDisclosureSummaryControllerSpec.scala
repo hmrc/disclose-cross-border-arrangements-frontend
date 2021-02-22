@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -141,7 +142,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
 

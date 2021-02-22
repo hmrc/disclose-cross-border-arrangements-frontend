@@ -21,7 +21,7 @@ import connectors.SubscriptionConnector
 import helpers.JsonFixtures.displaySubscriptionPayloadNoSecondary
 import models.ContactDetails
 import models.requests.{DataRequest, DataRequestWithContacts}
-import models.subscription.DisplaySubscriptionForDACResponse
+import models.subscription.{DisplaySubscriptionDetailsAndStatus, DisplaySubscriptionForDACResponse}
 import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import play.api.libs.json.{JsString, Json}
@@ -44,7 +44,7 @@ class ContactRetrievalActionImplSpec extends SpecBase {
 
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
       val action = new Harness(mockSubscriptionConnector)
 

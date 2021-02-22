@@ -24,14 +24,13 @@ import models.subscription._
 import models.{Name, UserAnswers}
 import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.Matchers.any
-import org.mockito.Mockito.when
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.IndividualContactNamePage
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.{JsString, JsValue}
 import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -108,7 +107,7 @@ class SubscriptionConnectorSpec extends SpecBase
 
 
             val result = connector.displaySubscriptionDetails(enrolmentID)
-            result.futureValue mustBe Some(displaySubscriptionForDACResponse)
+            result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionForDACResponse))
         }
       }
 
@@ -143,16 +142,51 @@ class SubscriptionConnectorSpec extends SpecBase
               .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
 
             val result = connector.displaySubscriptionDetails(enrolmentID)
-            result.futureValue mustBe None
+            result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
         }
       }
 
       "must return None if status is not OK" in {
+        val errorDetail =
+          """{
+            |"errorDetail": {
+            |  "timestamp": "2016-10-10T13:52:16Z",
+            |  "correlationId": "d60de98c-f499-47f5-b2d6-e80966e8d19e",
+            |  "errorCode": "503",
+            |  "errorMessage": "Request could not be processed",
+            |  "source": "Back End",
+            |  "sourceFaultDetail": {
+            |    "detail": [
+            |      "001 - Request could not be processed"
+            |    ]
+            |  }
+            |}
+            |}""".stripMargin
+
         when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
+          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
-        result.futureValue mustBe None
+        result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
+      }
+
+      "must return None if status is not OK and deserialisation failed" in {
+        val errorDetail =
+          """{
+            |"errorDetail": {
+            |  "timestamp": "2016-10-10T13:52:16Z",
+            |  "correlationId": "d60de98c-f499-47f5-b2d6-e80966e8d19e",
+            |  "errorCode": "503",
+            |  "errorMessage": "Request could not be processed",
+            |  "source": "Back End"
+            |}
+            |}""".stripMargin
+
+        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
+
+        val result = connector.displaySubscriptionDetails(enrolmentID)
+        result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
       }
     }
 

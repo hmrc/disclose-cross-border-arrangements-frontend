@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -53,7 +54,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
    override def beforeEach: Unit = {
      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-       .thenReturn(Future.successful(None))
+       .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
      reset(mockEmailService)
    }

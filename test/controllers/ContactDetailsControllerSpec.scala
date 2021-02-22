@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.SubscriptionConnector
 import generators.Generators
 import helpers.JsonFixtures.{displaySubscriptionPayload, displaySubscriptionPayloadNoSecondary, updateSubscriptionResponsePayload}
-import models.subscription.{DisplaySubscriptionForDACResponse, UpdateSubscriptionForDACResponse}
+import models.subscription.{DisplaySubscriptionDetailsAndStatus, DisplaySubscriptionForDACResponse, UpdateSubscriptionForDACResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -59,7 +59,7 @@ class ContactDetailsControllerSpec extends SpecBase
             .thenReturn(Future.successful(Html("")))
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -107,7 +107,7 @@ class ContactDetailsControllerSpec extends SpecBase
             .thenReturn(Future.successful(Html("")))
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -144,7 +144,7 @@ class ContactDetailsControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -175,7 +175,7 @@ class ContactDetailsControllerSpec extends SpecBase
             Json.parse(updateSubscriptionResponsePayload(JsString(safeID))).as[UpdateSubscriptionForDACResponse]
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
             .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
@@ -201,7 +201,7 @@ class ContactDetailsControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)

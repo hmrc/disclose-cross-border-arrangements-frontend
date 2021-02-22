@@ -41,9 +41,9 @@ class ContactRetrievalActionImpl @Inject()(frontendAppConfig: FrontendAppConfig,
     }
     else {
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).map {
-        subscriptionDetails =>
+        details =>
 
-          val contacts = subscriptionDetails.map {
+          val contacts = details.subscriptionDetails.map {
             details =>
               buildContactDetails(details)
           }

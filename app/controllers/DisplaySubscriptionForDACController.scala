@@ -43,8 +43,8 @@ class DisplaySubscriptionForDACController @Inject()(
 
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-          if (details.isDefined) {
-            val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
+          if (details.subscriptionDetails.isDefined) {
+            val responseDetail = details.subscriptionDetails.get.displaySubscriptionForDACResponse.responseDetail
 
             val buildDisplaySubscription = if (responseDetail.secondaryContact.isDefined) {
               viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = true)

@@ -43,23 +43,25 @@
                         }) }}
 
         {% if manualJourneyToggle %}
-        <p class="govuk-body">
+          <p class="govuk-body">
             {{messages("index.submission.paragraph.1")}}
-            <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
-            {{messages("index.submission.paragraph.2")}}
-        </p>
-        {% endif %}
-
-        {% if hasSubmissions %}
-         <p class="govuk-body">
-            <a href="{{routes.controllers.HistoryController.onPageLoad().url}}" class="govuk-link">{{messages("history.link")}}</a>
-         </p>
-        {% endif %}
-
-        {% if contactDetailsToggle %}
-          <p class="govuk-body" id="contactDetails">
-            <a href="{{routes.controllers.ContactDetailsController.onPageLoad().url}}" class="govuk-link">{{messages("contactDetails.link")}}</a>
           </p>
+
+          <ul class="govuk-list govuk-list--bullet">
+            <li>
+              <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
+            </li>
+            {% if hasSubmissions %}
+              <li>
+                <a href="{{routes.controllers.HistoryController.onPageLoad().url}}" class="govuk-link">{{messages("history.link")}}</a>
+              </li>
+            {% endif %}
+            {% if contactDetailsToggle %}
+              <li id="contactDetails">
+                <a href="{{routes.controllers.ContactDetailsController.onPageLoad().url}}" class="govuk-link">{{messages("contactDetails.link")}}</a>
+              </li>
+            {% endif %}
+          </ul>
         {% endif %}
 
       </div>

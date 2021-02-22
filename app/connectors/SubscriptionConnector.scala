@@ -33,7 +33,8 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
   private val logger = LoggerFactory.getLogger(getClass)
 
   def displaySubscriptionDetails(enrolmentID: String)
-                                (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[DisplaySubscriptionForDACResponse]] = {
+                                (implicit hc: HeaderCarrier,
+                                 ec: ExecutionContext): Future[DisplaySubscriptionDetailsAndStatus] = {
 
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/retrieve-subscription"
 
@@ -42,16 +43,25 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
       DisplaySubscriptionForDACRequest(DisplaySubscriptionDetails.createRequest(enrolmentID))
     ).map {
       response =>
+        val errorMessage = "Create/Amend request is in progress"
+
         response.status match {
           case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
-            case JsSuccess(response, _) => Some(response)
+            case JsSuccess(response, _) => DisplaySubscriptionDetailsAndStatus(Some(response))
             case JsError(errors) =>
               logger.warn("Validation of display subscription payload failed", errors)
-              None
+              DisplaySubscriptionDetailsAndStatus(None)
           }
-          case errorStatus: Int =>
-            logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
-            None
+          case errorStatus: Int => response.json.validate[DisplaySubscriptionErrorResponse] match {
+            case JsSuccess(errorResponse, _) if errorResponse.errorDetail.errorMessage == errorMessage =>
+              DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
+            case JsSuccess(errorResponse, _) =>
+              logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
+              DisplaySubscriptionDetailsAndStatus(None)
+            case JsError(errors) =>
+              logger.warn("Validation of display subscription error response payload failed", errors)
+              DisplaySubscriptionDetailsAndStatus(None)
+          }
         }
     }
   }
