@@ -138,6 +138,27 @@ class ContactDetailsControllerSpec extends SpecBase
       }
     }
 
+    "must redirect to the /details-already-updated page if update lock is true" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None, isLocked = true)))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      ).build()
+      val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DetailsAlreadyUpdatedController.onPageLoad().url
+
+      application.stop()
+    }
+
     "must display the InternalServerError page if display subscription details isn't available" in {
 
       when(mockRenderer.render(any(), any())(any()))

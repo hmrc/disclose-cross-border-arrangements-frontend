@@ -1,0 +1,34 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
+
+{% block pageTitle %}
+  {{ title(messages("detailsAlreadyUpdated.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  {{ govukBackLink({
+    text: messages("site.back")
+  }) }}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("detailsAlreadyUpdated.heading") }}
+        </h1>
+
+        <p class="govuk-body">{{ messages("detailsAlreadyUpdated.p") }}</p>
+
+        <p class="govuk-body govuk-!-padding-top-4">
+          <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("site.homePageLink.text") }}</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

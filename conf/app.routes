@@ -78,3 +78,5 @@ POST       /change-name                                 controllers.IndividualCo
 GET        /keep-alive                                  controllers.KeepAliveController.keepAlive
 
 GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()
+
+GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
