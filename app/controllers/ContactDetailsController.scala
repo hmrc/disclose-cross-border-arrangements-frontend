@@ -83,6 +83,7 @@ class ContactDetailsController @Inject()(
                       viewHelper.haveSecondaryContact(responseDetail, request.userAnswers),
                       viewHelper.secondaryContactName(responseDetail, request.userAnswers),
                       viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
+                      viewHelper.haveSecondaryContactPhone(responseDetail, request.userAnswers),
                       viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers)
                     )
                   )

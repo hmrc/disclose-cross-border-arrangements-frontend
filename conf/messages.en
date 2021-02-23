@@ -308,6 +308,7 @@ contactDetails.haveSecondContact.checkYourAnswersLabel = Do you have an addition
 contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact name
 contactDetails.secondaryContactEmail.checkYourAnswersLabel = Additional contact email address
 contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Additional contact telephone number
+contactDetails.haveSecondContactPhone.checkYourAnswersLabel = Does the additional contact have a telephone number?
 contactDetails.button = Confirm and send
 
 contactName.title = Who should we contact if we have any questions about your disclosures?
@@ -379,5 +380,8 @@ detailsAlreadyUpdated.p = You must wait until your recent changes have been acce
 
 haveSecondContact.title = Is there someone else we can contact if your first contact is not available?
 haveSecondContact.heading = Is there someone else we can contact if your first contact is not available?
-haveSecondContact.checkYourAnswersLabel = haveSecondContact
 haveSecondContact.error.required = Select yes if haveSecondContact
+
+haveSecondaryContactPhone.title = Do they have a telephone number?
+haveSecondaryContactPhone.heading = Do they have a telephone number?
+haveSecondaryContactPhone.error.required = Select yes if haveSecondaryContactPhone

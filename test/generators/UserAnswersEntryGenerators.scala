@@ -20,10 +20,18 @@ import models.Name
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import pages._
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveSecondContactPage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveSecondContactPage, HaveSecondaryContactPhonePage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersEntryGenerators extends PageGenerators with ModelGenerators {
+
+  implicit lazy val arbitraryHaveSecondaryContactPhoneUserAnswersEntry: Arbitrary[(HaveSecondaryContactPhonePage.type, JsValue)] =
+    Arbitrary {
+      for {
+        page  <- arbitrary[HaveSecondaryContactPhonePage.type]
+        value <- arbitrary[Boolean].map(Json.toJson(_))
+      } yield (page, value)
+    }
 
   implicit lazy val arbitraryHaveSecondContactUserAnswersEntry: Arbitrary[(HaveSecondContactPage.type, JsValue)] =
     Arbitrary {

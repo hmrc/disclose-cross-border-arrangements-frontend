@@ -125,14 +125,15 @@ class ContactDetailsControllerSpec extends SpecBase
 
           val json = jsonCaptor.getValue
           val contactDetails = (json \ "contactDetails").toString
+          val secondaryContactDetails = (json \ "secondaryContactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
           contactDetails.contains("Contact name") mustBe true
           contactDetails.contains("Email address") mustBe true
           contactDetails.contains("Telephone") mustBe true
-          contactDetails.contains("Additional contact name") mustBe true
-          contactDetails.contains("Additional contact email address") mustBe true
-          contactDetails.contains("Additional contact telephone number") mustBe true
+          secondaryContactDetails.contains("Additional contact name") mustBe true
+          secondaryContactDetails.contains("Additional contact email address") mustBe true
+          secondaryContactDetails.contains("Additional contact telephone number") mustBe true
 
           application.stop()
       }

@@ -83,3 +83,6 @@ GET        /change-contact/details-already-updated      controllers.DetailsAlrea
 
 GET        /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onPageLoad()
 POST       /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onSubmit()
+
+GET        /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onPageLoad()
+POST       /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onSubmit()

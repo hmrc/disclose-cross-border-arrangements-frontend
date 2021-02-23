@@ -366,4 +366,28 @@ class ViewHelper @Inject()() {
       )
     )
   }
+
+  def haveSecondaryContactPhone(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+    val haveSecondaryContactPhone = userAnswers.get(HaveSecondaryContactPhonePage) match {
+      case Some(true) => "site.yes"
+      case Some(false) => "site.no"
+      case None if contactInformationList.nonEmpty => "site.yes"
+      case None => "site.no"
+    }
+
+    Row(
+      key = Key(msg"contactDetails.haveSecondContactPhone.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveSecondaryContactPhone"),
+      actions = List(
+        Action(
+          content = msg"site.edit",
+          href = controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveSecondContactPhone.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-second-contact-phone")
+        )
+      )
+    )
+  }
 }

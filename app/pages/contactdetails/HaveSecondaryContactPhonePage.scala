@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package pages
+package pages.contactdetails
 
-import pages.behaviours.PageBehaviours
-import pages.contactdetails.HaveSecondContactPage
+import pages.QuestionPage
+import play.api.libs.json.JsPath
 
-class HaveSecondContactPageSpec extends PageBehaviours {
+case object HaveSecondaryContactPhonePage extends QuestionPage[Boolean] {
 
-  "HaveSecondContactPage" - {
+  override def path: JsPath = JsPath \ toString
 
-    beRetrievable[Boolean](HaveSecondContactPage)
-
-    beSettable[Boolean](HaveSecondContactPage)
-
-    beRemovable[Boolean](HaveSecondContactPage)
-  }
+  override def toString: String = "haveSecondaryContactPhone"
 }
