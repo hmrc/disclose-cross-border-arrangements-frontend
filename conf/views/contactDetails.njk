@@ -6,7 +6,7 @@
 {% from "govuk/components/button/macro.njk"        import govukButton %}
 
 {% block pageTitle %}
-  {{ title(messages("contactDetails.title")) }}
+  {{ title(messages("contactDetails.organisation.title") if isOrganisation else messages("contactDetails.individual.title")) }}
 {% endblock %}
 
 {% block mainContent %}
@@ -20,26 +20,42 @@
       <div class="govuk-grid-column-two-thirds">
 
         <h1 class="govuk-heading-xl">
-          {{ messages("contactDetails.heading") }}
+          {{ messages("contactDetails.organisation.heading") if isOrganisation else messages("contactDetails.individual.heading")}}
         </h1>
 
-        <h2 class="govuk-heading-m">
-          {{ messages("contactDetails.h2") }}
-        </h2>
+        {% if isOrganisation %}
+          <h2 class="govuk-heading-m">
+            {{ messages("contactDetails.organisation.h2") }}
+          </h2>
+        {% endif %}
 
         {{ govukSummaryList({
           rows: contactDetails
         }) }}
 
-        <form action="{{ routes.controllers.ContactDetailsController.onSubmit().url }}" method="post">
-          {{ csrf() | safe }}
+        {% if additionalContact  %}
+          <h2 class="govuk-heading-m govuk-!-padding-top-5">
+            {{ messages("contactDetails.organisation.additional.h2") }}
+          </h2>
 
-          {{ govukButton({
-             text: messages("contactDetails.button"),
-             preventDoubleClick: true,
-             attributes: {id:"submit"}
+          {{ govukSummaryList({
+            rows: secondaryContactDetails
           }) }}
-        </form>
+        {% endif %}
+
+        {% if changeProvided %}
+          <form action="{{ routes.controllers.ContactDetailsController.onSubmit().url }}" method="post">
+            {{ csrf() | safe }}
+
+             {{ govukButton({
+               text: messages("contactDetails.button"),
+               preventDoubleClick: true,
+               attributes: {id:"submit"}
+             }) }}
+          </form>
+        {% endif %}
+
+        <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("site.homePageLink.text") }}</a>
 
       </div>
     </div>

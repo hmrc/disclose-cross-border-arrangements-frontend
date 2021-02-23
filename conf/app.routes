@@ -80,3 +80,6 @@ GET        /keep-alive                                  controllers.KeepAliveCon
 GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()
 
 GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
+
+GET        /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onPageLoad()
+POST       /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onSubmit()

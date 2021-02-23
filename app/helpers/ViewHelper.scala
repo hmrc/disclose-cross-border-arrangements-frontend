@@ -17,7 +17,6 @@
 package helpers
 
 import com.google.inject.Inject
-import controllers.routes
 import models.subscription.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
 import models.{GenericError, SubmissionHistory, UserAnswers}
 import pages.contactdetails._
@@ -258,6 +257,30 @@ class ViewHelper @Inject()() {
           href = controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-primary-phone-number")
+        )
+      )
+    )
+  }
+
+  def haveSecondaryContact(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+    val haveSecondaryContact = userAnswers.get(HaveSecondContactPage) match {
+      case Some(true) => "site.yes"
+      case Some(false) => "site.no"
+      case None if contactInformationList.nonEmpty => "site.yes"
+      case None => "site.no"
+    }
+
+    Row(
+      key = Key(msg"contactDetails.haveSecondContact.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveSecondaryContact"),
+      actions = List(
+        Action(
+          content = msg"site.edit",
+          href = controllers.contactdetails.routes.HaveSecondContactController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveSecondContact.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-second-contact")
         )
       )
     )
