@@ -42,7 +42,7 @@ class ViewHelperSpec extends SpecBase
 
     "must return the correct go to home page content" in {
 
-      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"<a id='homepage-link' href=$mockURL>" +
+      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"<a id='homepage-link' href=$mockURL class='govuk-link'>" +
         s"Disclose a cross-border arrangement</a>.")
 
     }
@@ -52,7 +52,7 @@ class ViewHelperSpec extends SpecBase
 
     "must return the correct beta feedback content" in {
 
-      viewHelper.surveyLinkText(mockURL) mustBe Html(s"<a id='feedback-link' href=$mockURL>" +
+      viewHelper.surveyLinkText(mockURL) mustBe Html(s"<a id='feedback-link' href=$mockURL class='govuk-link'>" +
         s"What did you think of this service?</a> (takes 30 seconds)")
 
     }
