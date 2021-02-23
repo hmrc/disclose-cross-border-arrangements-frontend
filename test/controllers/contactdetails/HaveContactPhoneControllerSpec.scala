@@ -17,17 +17,15 @@
 package controllers.contactdetails
 
 import base.SpecBase
-import forms.contactdetails.ContactTelephoneNumberFormProvider
-import generators.Generators
+import forms.contactdetails.HaveContactPhoneFormProvider
 import matchers.JsonMatchers
 import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import pages.contactdetails.ContactTelephoneNumberPage
+import pages.contactdetails.HaveContactPhonePage
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Call
@@ -35,25 +33,20 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
 import repositories.SessionRepository
-import uk.gov.hmrc.viewmodels.NunjucksSupport
+import uk.gov.hmrc.viewmodels.{NunjucksSupport, Radios}
 
 import scala.concurrent.Future
 
-class ContactTelephoneNumberControllerSpec extends SpecBase
-  with MockitoSugar
-  with NunjucksSupport
-  with JsonMatchers
-  with ScalaCheckPropertyChecks
-  with Generators {
+class HaveContactPhoneControllerSpec extends SpecBase with MockitoSugar with NunjucksSupport with JsonMatchers {
 
   def onwardRoute = Call("GET", "/foo")
 
-  val formProvider = new ContactTelephoneNumberFormProvider()
+  val formProvider = new HaveContactPhoneFormProvider()
   val form = formProvider()
 
-  lazy val contactTelephoneNumberRoute = routes.ContactTelephoneNumberController.onPageLoad().url
+  lazy val haveContactPhoneRoute = routes.HaveContactPhoneController.onPageLoad().url
 
-  "ContactTelephoneNumber Controller" - {
+  "HaveContactPhone Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
@@ -61,7 +54,7 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(GET, contactTelephoneNumberRoute)
+      val request = FakeRequest(GET, haveContactPhoneRoute)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
@@ -72,10 +65,11 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "form" -> form
+        "form"   -> form,
+        "radios" -> Radios.yesNo(form("value"))
       )
 
-      templateCaptor.getValue mustEqual "contactdetails/contactTelephoneNumber.njk"
+      templateCaptor.getValue mustEqual "contactdetails/haveContactPhone.njk"
       jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
@@ -83,64 +77,59 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      forAll(validPhoneNumber) {
-        phone =>
-          reset(mockRenderer)
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
 
-          when(mockRenderer.render(any(), any())(any()))
-            .thenReturn(Future.successful(Html("")))
+      val userAnswers = UserAnswers(userAnswersId).set(HaveContactPhonePage, true).success.value
+      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request = FakeRequest(GET, haveContactPhoneRoute)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
-          val userAnswers = UserAnswers(userAnswersId).set(ContactTelephoneNumberPage, phone).success.value
-          val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-          val request = FakeRequest(GET, contactTelephoneNumberRoute)
-          val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val result = route(application, request).value
 
-          val result = route(application, request).value
+      status(result) mustEqual OK
 
-          status(result) mustEqual OK
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-          verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
+      val filledForm = form.bind(Map("value" -> "true"))
 
-          val filledForm = form.bind(Map("telephoneNumber" -> phone))
+      val expectedJson = Json.obj(
+        "form"   -> filledForm,
+        "radios" -> Radios.yesNo(filledForm("value"))
+      )
 
-          val expectedJson = Json.obj(
-            "form" -> filledForm
-          )
+      templateCaptor.getValue mustEqual "contactdetails/haveContactPhone.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
 
-          templateCaptor.getValue mustEqual "contactdetails/contactTelephoneNumber.njk"
-          jsonCaptor.getValue must containJson(expectedJson)
-
-          application.stop()
-      }
+      application.stop()
     }
 
     "must redirect to the next page when valid data is submitted" in {
+
       val mockSessionRepository = mock[SessionRepository]
 
-      forAll(validPhoneNumber) {
-        phone =>
-          when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
+      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
-          val application =
-            applicationBuilder(userAnswers = Some(emptyUserAnswers))
-              .overrides(
-                bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
-                bind[SessionRepository].toInstance(mockSessionRepository)
-              )
-              .build()
+      val application =
+        applicationBuilder(userAnswers = Some(emptyUserAnswers))
+          .overrides(
+            bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
+            bind[SessionRepository].toInstance(mockSessionRepository)
+          )
+          .build()
 
-          val request =
-            FakeRequest(POST, contactTelephoneNumberRoute)
-              .withFormUrlEncodedBody(("telephoneNumber", phone))
+      val request =
+        FakeRequest(POST, haveContactPhoneRoute)
+          .withFormUrlEncodedBody(("value", "true"))
 
-          val result = route(application, request).value
+      val result = route(application, request).value
 
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual onwardRoute.url
+      status(result) mustEqual SEE_OTHER
 
-          application.stop()
-      }
+      redirectLocation(result).value mustEqual onwardRoute.url
+
+      application.stop()
     }
 
     "must return a Bad Request and errors when invalid data is submitted" in {
@@ -149,8 +138,8 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(POST, contactTelephoneNumberRoute).withFormUrlEncodedBody(("telephoneNumber", ""))
-      val boundForm = form.bind(Map("telephoneNumber" -> ""))
+      val request = FakeRequest(POST, haveContactPhoneRoute).withFormUrlEncodedBody(("value", ""))
+      val boundForm = form.bind(Map("value" -> ""))
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
@@ -161,10 +150,11 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "form" -> boundForm
+        "form"   -> boundForm,
+        "radios" -> Radios.yesNo(boundForm("value"))
       )
 
-      templateCaptor.getValue mustEqual "contactdetails/contactTelephoneNumber.njk"
+      templateCaptor.getValue mustEqual "contactdetails/haveContactPhone.njk"
       jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
@@ -174,7 +164,7 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
 
       val application = applicationBuilder(userAnswers = None).build()
 
-      val request = FakeRequest(GET, contactTelephoneNumberRoute)
+      val request = FakeRequest(GET, haveContactPhoneRoute)
 
       val result = route(application, request).value
 
@@ -190,8 +180,8 @@ class ContactTelephoneNumberControllerSpec extends SpecBase
       val application = applicationBuilder(userAnswers = None).build()
 
       val request =
-        FakeRequest(POST, contactTelephoneNumberRoute)
-          .withFormUrlEncodedBody(("telephoneNumber", "answer"))
+        FakeRequest(POST, haveContactPhoneRoute)
+          .withFormUrlEncodedBody(("value", "true"))
 
       val result = route(application, request).value
 

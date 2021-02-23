@@ -17,10 +17,12 @@
 package generators
 
 import org.scalacheck.Arbitrary
-import pages._
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveSecondContactPage, HaveSecondaryContactPhonePage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import pages.contactdetails._
 
 trait PageGenerators {
+
+  implicit lazy val arbitraryHaveContactPhonePage: Arbitrary[HaveContactPhonePage.type] =
+    Arbitrary(HaveContactPhonePage)
 
   implicit lazy val arbitraryHaveSecondaryContactPhonePage: Arbitrary[HaveSecondaryContactPhonePage.type] =
     Arbitrary(HaveSecondaryContactPhonePage)

@@ -60,14 +60,23 @@ POST       /change-contact-name                         controllers.contactdetai
 GET        /change-contact-email                        controllers.contactdetails.ContactEmailAddressController.onPageLoad()
 POST       /change-contact-email                        controllers.contactdetails.ContactEmailAddressController.onSubmit()
 
+GET        /change-contact/have-phone                   controllers.contactdetails.HaveContactPhoneController.onPageLoad()
+POST       /change-contact/have-phone                   controllers.contactdetails.HaveContactPhoneController.onSubmit()
+
 GET        /change-contact-telephone-number             controllers.contactdetails.ContactTelephoneNumberController.onPageLoad()
 POST       /change-contact-telephone-number             controllers.contactdetails.ContactTelephoneNumberController.onSubmit()
+
+GET        /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onPageLoad()
+POST       /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onSubmit()
 
 GET        /change-secondary-contact-name               controllers.contactdetails.SecondaryContactNameController.onPageLoad()
 POST       /change-secondary-contact-name               controllers.contactdetails.SecondaryContactNameController.onSubmit()
 
 GET        /change-secondary-contact-email              controllers.contactdetails.SecondaryContactEmailAddressController.onPageLoad()
 POST       /change-secondary-contact-email              controllers.contactdetails.SecondaryContactEmailAddressController.onSubmit()
+
+GET        /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onPageLoad()
+POST       /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onSubmit()
 
 GET        /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onPageLoad()
 POST       /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onSubmit()
@@ -80,9 +89,3 @@ GET        /keep-alive                                  controllers.KeepAliveCon
 GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()
 
 GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
-
-GET        /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onPageLoad()
-POST       /change-contact/have-second-contact          controllers.contactdetails.HaveSecondContactController.onSubmit()
-
-GET        /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onPageLoad()
-POST       /change-contact/second-contact-have-phone    controllers.contactdetails.HaveSecondaryContactPhoneController.onSubmit()

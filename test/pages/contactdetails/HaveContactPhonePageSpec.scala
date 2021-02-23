@@ -14,32 +14,18 @@
  * limitations under the License.
  */
 
-package forms.contactdetails
+package pages.contactdetails
 
-import forms.behaviours.BooleanFieldBehaviours
-import play.api.data.FormError
+import pages.behaviours.PageBehaviours
 
-class HaveSecondContactFormProviderSpec extends BooleanFieldBehaviours {
+class HaveContactPhonePageSpec extends PageBehaviours {
 
-  val requiredKey = "haveSecondContact.error.required"
-  val invalidKey = "error.boolean"
+  "HaveContactPhonePage" - {
 
-  val form = new HaveSecondContactFormProvider()()
+    beRetrievable[Boolean](HaveContactPhonePage)
 
-  ".value" - {
+    beSettable[Boolean](HaveContactPhonePage)
 
-    val fieldName = "value"
-
-    behave like booleanField(
-      form,
-      fieldName,
-      invalidError = FormError(fieldName, invalidKey)
-    )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, requiredKey)
-    )
+    beRemovable[Boolean](HaveContactPhonePage)
   }
 }

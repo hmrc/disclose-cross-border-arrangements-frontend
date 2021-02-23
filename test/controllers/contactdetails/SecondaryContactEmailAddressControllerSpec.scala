@@ -17,7 +17,6 @@
 package controllers.contactdetails
 
 import base.SpecBase
-import controllers.routes
 import forms.contactdetails.SecondaryContactEmailAddressFormProvider
 import generators.Generators
 import matchers.JsonMatchers

@@ -238,6 +238,32 @@ class ViewHelper @Inject()() {
     )
   }
 
+  def haveContactPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+    val haveContactPhoneNumber = userAnswers.get(HaveContactPhonePage) match {
+      case Some(true) => "site.yes"
+      case Some(false) => "site.no"
+      case None =>
+        responseDetail.primaryContact.contactInformation.head match {
+          case ContactInformationForIndividual(_, _, phone, _) if phone.isDefined => "site.yes"
+          case ContactInformationForOrganisation(_, _, phone, _) if phone.isDefined => "site.yes"
+          case _ => "site.no"
+        }
+    }
+
+    Row(
+      key = Key(msg"contactDetails.haveContactPhone.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveContactPhoneNumber"),
+      actions = List(
+        Action(
+          content = msg"site.edit",
+          href = controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveContactPhone.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-contact-phone-number")
+        )
+      )
+    )
+  }
+
   def primaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val phoneNumber = userAnswers.get(ContactTelephoneNumberPage) match {
       case Some(telephone) => telephone

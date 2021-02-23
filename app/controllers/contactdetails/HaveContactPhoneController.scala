@@ -17,10 +17,10 @@
 package controllers.contactdetails
 
 import controllers.actions._
-import forms.contactdetails.HaveSecondContactFormProvider
+import forms.contactdetails.HaveContactPhoneFormProvider
 import models.NormalMode
 import navigation.Navigator
-import pages.contactdetails.HaveSecondContactPage
+import pages.contactdetails.HaveContactPhonePage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -32,14 +32,14 @@ import uk.gov.hmrc.viewmodels.{NunjucksSupport, Radios}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HaveSecondContactController @Inject()(
+class HaveContactPhoneController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
-    formProvider: HaveSecondContactFormProvider,
+    formProvider: HaveContactPhoneFormProvider,
     val controllerComponents: MessagesControllerComponents,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
@@ -49,7 +49,7 @@ class HaveSecondContactController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(HaveSecondContactPage) match {
+      val preparedForm = request.userAnswers.get(HaveContactPhonePage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -59,7 +59,7 @@ class HaveSecondContactController @Inject()(
         "radios" -> Radios.yesNo(preparedForm("value"))
       )
 
-      renderer.render("contactdetails/haveSecondContact.njk", json).map(Ok(_))
+      renderer.render("contactdetails/haveContactPhone.njk", json).map(Ok(_))
   }
 
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
@@ -73,13 +73,13 @@ class HaveSecondContactController @Inject()(
             "radios" -> Radios.yesNo(formWithErrors("value"))
           )
 
-          renderer.render("contactdetails/haveSecondContact.njk", json).map(BadRequest(_))
+          renderer.render("contactdetails/haveContactPhone.njk", json).map(BadRequest(_))
         },
         value =>
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, value))
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveContactPhonePage, value))
             _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers))
+          } yield Redirect(navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers))
       )
   }
 }

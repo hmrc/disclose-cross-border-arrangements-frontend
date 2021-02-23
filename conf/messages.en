@@ -303,6 +303,7 @@ contactDetails.organisation.h2 = Main contact
 contactDetails.organisation.additional.h2 = Additional contact
 contactDetails.primaryContactName.checkYourAnswersLabel = Contact name
 contactDetails.primaryContactEmail.checkYourAnswersLabel = Email address
+contactDetails.haveContactPhone.checkYourAnswersLabel = Do they have a telephone number?
 contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Telephone
 contactDetails.haveSecondContact.checkYourAnswersLabel = Do you have an additional contact?
 contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact name
@@ -385,3 +386,7 @@ haveSecondContact.error.required = Select yes if haveSecondContact
 haveSecondaryContactPhone.title = Do they have a telephone number?
 haveSecondaryContactPhone.heading = Do they have a telephone number?
 haveSecondaryContactPhone.error.required = Select yes if haveSecondaryContactPhone
+
+haveContactPhone.title = Do they have a telephone number?
+haveContactPhone.heading = Do they have a telephone number?
+haveContactPhone.error.required = Select yes if haveContactPhone

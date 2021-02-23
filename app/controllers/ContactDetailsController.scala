@@ -66,6 +66,7 @@ class ContactDetailsController @Inject()(
                   Seq(
                     viewHelper.primaryContactName(responseDetail, request.userAnswers),
                     viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
+                    viewHelper.haveContactPhoneNumber(responseDetail, request.userAnswers),
                     viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers)
                   )
                 } else {

@@ -17,9 +17,9 @@
 package controllers.contactdetails
 
 import base.SpecBase
-import forms.HaveSecondContactFormProvider
+import forms.contactdetails.HaveSecondContactFormProvider
 import matchers.JsonMatchers
-import models.{NormalMode, UserAnswers}
+import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any

@@ -21,13 +21,14 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages._
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveSecondContactPage, HaveSecondaryContactPhonePage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveContactPhonePage, HaveSecondContactPage, HaveSecondaryContactPhonePage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersGenerator extends TryValues {
   self: Generators =>
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
+    arbitrary[(HaveContactPhonePage.type, JsValue)] ::
     arbitrary[(HaveSecondaryContactPhonePage.type, JsValue)] ::
     arbitrary[(HaveSecondContactPage.type, JsValue)] ::
     arbitrary[(IndividualContactNamePage.type, JsValue)] ::
