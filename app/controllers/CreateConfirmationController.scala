@@ -79,6 +79,6 @@ class CreateConfirmationController @Inject()(
   }
 
   private def confirmationPanelText(id: String)(implicit messages: Messages): Html = {
-    Html(s"${{ messages("createConfirmation.panel.html") }}<br><strong style='word-break: break-word'>$id</strong>")
+    Html(s"${{ messages("createConfirmation.panel.html") }}<br><strong class='breakString'>$id</strong>")
   }
 }
