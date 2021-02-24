@@ -28,21 +28,13 @@ class ContactNameFormProvider @Inject() extends Mappings with RegexConstants {
 
   lazy val maxLength: Int = 35
 
-  def apply(): Form[Name] =
+  def apply(): Form[String] =
     Form(
-      mapping(
-        "firstName" -> validatedText(
-          "contactName.error.firstName.required",
-          "contactName.error.firstName.invalid",
-          "contactName.error.firstName.length",
-          apiNameRegex,
-          maxLength),
-        "lastName" -> validatedText(
-          "contactName.error.lastName.required",
-          "contactName.error.lastName.invalid",
-          "contactName.error.lastName.length",
-          apiNameRegex,
-          maxLength)
-      )(Name.apply)(Name.unapply)
+      "contactName" -> validatedText(
+        "contactName.error.required",
+        "contactName.error.invalid",
+        "contactName.error.length",
+        apiNameRegex,
+        maxLength)
     )
 }

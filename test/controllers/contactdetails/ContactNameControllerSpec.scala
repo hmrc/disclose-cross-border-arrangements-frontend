@@ -17,10 +17,9 @@
 package controllers.contactdetails
 
 import base.SpecBase
-import controllers.routes
 import forms.contactdetails.ContactNameFormProvider
 import matchers.JsonMatchers
-import models.{Name, UserAnswers}
+import models.UserAnswers
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
@@ -80,7 +79,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val userAnswers = UserAnswers(userAnswersId).set(ContactNamePage, Name("Kit", "Kat")).success.value
+      val userAnswers = UserAnswers(userAnswersId).set(ContactNamePage, "Name").success.value
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
       val request = FakeRequest(GET, contactNameRoute)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
@@ -92,12 +91,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      val filledForm = form.bind(
-        Map(
-          "firstName" -> "Kit",
-          "lastName" -> "Kat"
-        )
-      )
+      val filledForm = form.bind(Map("contactName" -> "Name"))
 
       val expectedJson = Json.obj(
         "form" -> filledForm
@@ -125,7 +119,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       val request =
         FakeRequest(POST, contactNameRoute)
-          .withFormUrlEncodedBody(("firstName", "Kit"), ("lastName", "Kat"))
+          .withFormUrlEncodedBody(("contactName", "Name"))
 
       val result = route(application, request).value
 
@@ -183,7 +177,7 @@ class ContactNameControllerSpec extends SpecBase with MockitoSugar with Nunjucks
 
       val request =
         FakeRequest(POST, contactNameRoute)
-          .withFormUrlEncodedBody(("firstName", "value 1"), ("lastName", "value 2"))
+          .withFormUrlEncodedBody(("contactName", "value 1"))
 
       val result = route(application, request).value
 

@@ -23,7 +23,7 @@ import models._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages._
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, IndividualContactNamePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import pages.contactdetails._
 
 class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
 
@@ -94,7 +94,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
           (answers, firstName, lastName) =>
             val updatedAnswers =
               answers
-                .set(ContactNamePage, Name(firstName, lastName))
+                .set(ContactNamePage, "Name")
                 .success
                 .value
             navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)

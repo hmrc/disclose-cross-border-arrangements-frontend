@@ -314,14 +314,10 @@ contactDetails.button = Confirm and send
 
 contactName.title = Who should we contact if we have any questions about your disclosures?
 contactName.heading = Who should we contact if we have any questions about your disclosures?
-contactName.firstName = First name
-contactName.lastName = Last name
-contactName.error.firstName.required = Enter the first name of the person we should contact if we have any questions about your disclosures
-contactName.error.firstName.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
-contactName.error.firstName.length = First name must be 35 characters or less
-contactName.error.lastName.required = Enter the last name of the person we should contact if we have any questions about your disclosures
-contactName.error.lastName.invalid = Last name  must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
-contactName.error.lastName.length = Last name must be 35 characters or less
+contactName.hint = For example, ‘DAC6 team’ or ‘Ashley Smith’.
+contactName.error.required = Enter the first name of the person we should contact if we have any questions about your disclosures
+contactName.error.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+contactName.error.length = First name must be 35 characters or less
 
 contactEmailAddress.title = What is your email address?
 contactEmailAddress.heading = What is your email address?

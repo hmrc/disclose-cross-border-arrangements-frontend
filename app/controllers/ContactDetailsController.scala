@@ -21,12 +21,15 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation}
+import models.UserAnswers
+import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
+import pages.contactdetails.HaveSecondContactPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.SummaryList
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,7 +49,6 @@ class ContactDetailsController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
 
@@ -55,47 +57,17 @@ class ContactDetailsController @Inject()(
           } else {
             if (details.subscriptionDetails.isDefined) {
               val responseDetail = details.subscriptionDetails.get.displaySubscriptionForDACResponse.responseDetail
+              val secondaryContactDetailsList = buildSecondaryContactRows(responseDetail, request.userAnswers)
 
               val isOrganisation = responseDetail.primaryContact.contactInformation.head match {
                 case ContactInformationForIndividual(_, _, _, _) => false
                 case ContactInformationForOrganisation(_, _, _, _) => true
               }
 
-              val contactDetailsList =
-                if (responseDetail.secondaryContact.isDefined) {
-                  Seq(
-                    viewHelper.primaryContactName(responseDetail, request.userAnswers),
-                    viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
-                    viewHelper.haveContactPhoneNumber(responseDetail, request.userAnswers),
-                    viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers)
-                  )
-                } else {
-                  Seq(
-                    viewHelper.primaryContactName(responseDetail, request.userAnswers),
-                    viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
-                    viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers)
-                  )
-                }
-
-              val secondaryContactDetailsList =
-                if (responseDetail.secondaryContact.isDefined) {
-                  Some(
-                    Seq(
-                      viewHelper.haveSecondaryContact(responseDetail, request.userAnswers),
-                      viewHelper.secondaryContactName(responseDetail, request.userAnswers),
-                      viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
-                      viewHelper.haveSecondaryContactPhone(responseDetail, request.userAnswers),
-                      viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers)
-                    )
-                  )
-                } else {
-                  None
-                }
-
               val json = {
                 if (secondaryContactDetailsList.isDefined) {
                   Json.obj(
-                    "contactDetails" -> contactDetailsList,
+                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
                     "additionalContact" -> true,
                     "secondaryContactDetails" -> secondaryContactDetailsList.get,
                     "isOrganisation" -> isOrganisation,
@@ -104,14 +76,13 @@ class ContactDetailsController @Inject()(
                   )
                 } else {
                   Json.obj(
-                    "contactDetails" -> contactDetailsList,
+                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
                     "additionalContact" -> false,
                     "isOrganisation" -> isOrganisation,
                     "homePageLink" -> appConfig.discloseArrangeLink,
                     "changeProvided" -> false
                   )
                 }
-
               }
 
               renderer.render("contactDetails.njk", json).map(Ok(_))
@@ -136,4 +107,55 @@ class ContactDetailsController @Inject()(
           }
       }
   }
+
+  private def buildPrimaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
+    if (responseDetail.secondaryContact.isDefined) {
+      Seq(
+        viewHelper.primaryContactName(responseDetail, userAnswers),
+        Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
+        Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
+        viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
+      ).filter(_.isDefined).map(_.get)
+    } else {
+      Seq(
+        viewHelper.primaryContactName(responseDetail, userAnswers),
+        Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
+        Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
+        viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
+      ).filter(_.isDefined).map(_.get)
+    }
+  }
+
+  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Seq[SummaryList.Row]] = {
+
+    userAnswers.get(HaveSecondContactPage) match {
+      case Some(true) =>
+        Some(
+          Seq(
+            Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
+            Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
+            viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
+          ).filter(_.isDefined).map(_.get)
+        )
+      case Some(false) =>
+        Some(Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers)))
+      case None =>
+        if (responseDetail.secondaryContact.isDefined) {
+          Some(
+            Seq(
+              Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
+              Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
+              Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
+              Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
+              viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
+            ).filter(_.isDefined).map(_.get)
+          )
+        } else {
+          None
+        }
+    }
+  }
+
 }

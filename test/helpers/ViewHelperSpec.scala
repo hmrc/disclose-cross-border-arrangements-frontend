@@ -269,11 +269,11 @@ class ViewHelperSpec extends SpecBase
         val expectedRow =
           Row(
             key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-            value = Value(lit"Kit Kat"),
+            value = Value(lit"Contact name"),
             actions = List(
               Action(
                 content = msg"site.edit",
-                href = controllers.contactdetails.routes.IndividualContactNameController.onPageLoad().url,
+                href = controllers.contactdetails.routes.ContactNameController.onPageLoad().url,
                 visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
                 attributes = Map("id" -> "change-primary-contact-name")
               )
@@ -288,7 +288,7 @@ class ViewHelperSpec extends SpecBase
         val result = viewHelper.primaryContactName(
           displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
-        result mustBe expectedRow
+        result mustBe Some(expectedRow)
       }
     }
 
@@ -346,7 +346,7 @@ class ViewHelperSpec extends SpecBase
           val result = viewHelper.primaryPhoneNumber(
             displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
-          result mustBe expectedRow
+          result mustBe Some(expectedRow)
       }
     }
 
@@ -433,7 +433,7 @@ class ViewHelperSpec extends SpecBase
           val result = viewHelper.secondaryPhoneNumber(
             displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
-          result mustBe expectedRow
+          result mustBe Some(expectedRow)
       }
     }
   }

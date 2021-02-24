@@ -31,35 +31,25 @@
 
           {{ csrf() | safe }}
 
-          <h1 class="govuk-heading-xl">
-            {{ messages("contactName.heading") }}
-          </h1>
-
           {{ govukInput({
             label: {
-              text: messages('contactName.firstName')
+              text: messages('contactName.heading'),
+              isPageHeading: true,
+              classes: "govuk-label--xl"
             },
-            classes: "govuk-!-width-two-thirds",
-            id: "firstName",
-            name: "firstName",
-            value: form.firstName.value,
-            errorMessage: form.firstName.error
-          }) }}
-
-          {{ govukInput({
-            label: {
-              text: messages('contactName.lastName')
+            hint: {
+              text: messages('contactName.hint')
             },
-            classes: "govuk-!-width-two-thirds",
-            id: "lastName",
-            name: "lastName",
-            value: form.lastName.value,
-            errorMessage: form.lastName.error
+            classes: "govuk-!-width-three-quarters",
+            id: "contactName",
+            name: "contactName",
+            value: form.contactName.value,
+            errorMessage: form.contactName.error
           }) }}
 
           {{ govukButton({
-            text: messages("site.continue"),
-            attributes:{"id": "submit"}
+            text: messages("site.saveAndContinue"),
+            attributes: {id:"submit"}
           }) }}
 
         </form>
