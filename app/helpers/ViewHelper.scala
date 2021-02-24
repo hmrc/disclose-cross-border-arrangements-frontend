@@ -63,7 +63,7 @@ class ViewHelper @Inject()() {
 
   def buildDisclosuresTable(retrievedHistory: SubmissionHistory)(implicit messages: Messages) : Table = {
 
-    val submissionDateFormat = DateTimeFormatter.ofPattern("hh.mma 'on' d MMMM yyyy")
+    val submissionDateFormat = DateTimeFormatter.ofPattern("h:mma 'on' d MMMM yyyy")
 
     val rows = retrievedHistory.details.zipWithIndex.map {
       case (submission, count) =>
