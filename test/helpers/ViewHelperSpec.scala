@@ -153,14 +153,14 @@ class ViewHelperSpec extends SpecBase
           Seq(
             Cell(msg"arrangementID", attributes = Map("id" -> s"arrangementID_0")),
             Cell(msg"disclosureID", attributes = Map("id" -> s"disclosureID_0")),
-            Cell(msg"10.23am on 1 July 2020", attributes = Map("id" -> s"submissionTime_0")),
+            Cell(msg"10:23am on 1 July 2020", attributes = Map("id" -> s"submissionTime_0")),
             Cell(msg"GBXADAC0001234567AAA00101", attributes = Map("id" -> s"messageRef_0"), classes = Seq("govuk-!-width-one-third", "breakString")),
             Cell(msg"New", attributes = Map("id" -> s"disclosureType_0"))
           ),
           Seq(
             Cell(msg"arrangementID2", attributes = Map("id" -> s"arrangementID_1")),
             Cell(msg"disclosureID2", attributes = Map("id" -> s"disclosureID_1")),
-            Cell(msg"08.23pm on 2 July 2020", attributes = Map("id" -> s"submissionTime_1")),
+            Cell(msg"8:23pm on 2 July 2020", attributes = Map("id" -> s"submissionTime_1")),
             Cell(msg"GBXADAC0001234567AAA00102", attributes = Map("id" -> s"messageRef_1"), classes = Seq("govuk-!-width-one-third", "breakString")),
             Cell(msg"Add", attributes = Map("id" -> s"disclosureType_1"))
           )
