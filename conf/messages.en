@@ -326,11 +326,19 @@ contactEmailAddress.error.required = Enter an email address
 contactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
 contactEmailAddress.error.length = Enter an email address that is 132 characters or less
 
+haveContactPhone.title = Do they have a telephone number?
+haveContactPhone.heading = Do they have a telephone number?
+haveContactPhone.error.required = Select yes if haveContactPhone
+
 contactTelephoneNumber.title = What is your telephone number?
 contactTelephoneNumber.heading = What is your telephone number?
 contactTelephoneNumber.hint = For international numbers include the country code.
 contactTelephoneNumber.error.required = Enter a telephone number
 contactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
+
+haveSecondContact.title = Is there someone else we can contact if your first contact is not available?
+haveSecondContact.heading = Is there someone else we can contact if your first contact is not available?
+haveSecondContact.error.required = Select yes if haveSecondContact
 
 secondaryContactName.title = What is the name of the individual or team we should contact?
 secondaryContactName.heading = What is the name of the individual or team we should contact?
@@ -345,6 +353,10 @@ secondaryContactEmailAddress.hint = We will use this email address to send confi
 secondaryContactEmailAddress.error.required = Enter an email address
 secondaryContactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
 secondaryContactEmailAddress.error.length = Enter an email address that is 132 characters or less
+
+haveSecondaryContactPhone.title = Do they have a telephone number?
+haveSecondaryContactPhone.heading = Do they have a telephone number?
+haveSecondaryContactPhone.error.required = Select yes if haveSecondaryContactPhone
 
 secondaryContactTelephoneNumber.title = What is the telephone number for your second contact?
 secondaryContactTelephoneNumber.heading = What is the telephone number for your second contact?
@@ -374,15 +386,3 @@ contactUsToUseManualService.p3 = If we cannot arrange a time for you to access t
 detailsAlreadyUpdated.title = You have recently updated your contact details
 detailsAlreadyUpdated.heading = You have recently updated your contact details
 detailsAlreadyUpdated.p = You must wait until your recent changes have been accepted. You can make further changes in a couple of hours.
-
-haveSecondContact.title = Is there someone else we can contact if your first contact is not available?
-haveSecondContact.heading = Is there someone else we can contact if your first contact is not available?
-haveSecondContact.error.required = Select yes if haveSecondContact
-
-haveSecondaryContactPhone.title = Do they have a telephone number?
-haveSecondaryContactPhone.heading = Do they have a telephone number?
-haveSecondaryContactPhone.error.required = Select yes if haveSecondaryContactPhone
-
-haveContactPhone.title = Do they have a telephone number?
-haveContactPhone.heading = Do they have a telephone number?
-haveContactPhone.error.required = Select yes if haveContactPhone

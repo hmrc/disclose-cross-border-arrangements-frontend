@@ -429,7 +429,7 @@ class ViewHelper @Inject()() {
         case Some(telephone) => telephone
         case None =>
           contactInformationList.head match {
-            case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
+            case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}" //TODO This is impossible
             case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
           }
       }

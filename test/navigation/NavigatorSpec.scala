@@ -88,35 +88,21 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
         }
       }
 
-      "must go from What is the name of the individual or team we should contact? page to Check your contact details page" in {
+      "must go from Who should we contact if we have any questions about your disclosures? page to What is your email address? page" in {
 
-        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
-          (answers, firstName, lastName) =>
+        forAll(arbitrary[UserAnswers]) {
+          answers =>
             val updatedAnswers =
               answers
                 .set(ContactNamePage, "Name")
                 .success
                 .value
             navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)
-              .mustBe(routes.ContactDetailsController.onPageLoad())
+              .mustBe(controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad())
         }
       }
 
-      "must go from Who should we contact if we have any questions about your disclosures? page to Check your contact details page" in {
-
-        forAll(arbitrary[UserAnswers], validPersonalName, validPersonalName) {
-          (answers, firstName, lastName) =>
-            val updatedAnswers =
-              answers
-                .set(IndividualContactNamePage, Name(firstName, lastName))
-                .success
-                .value
-            navigator.nextPage(IndividualContactNamePage, NormalMode, updatedAnswers)
-              .mustBe(routes.ContactDetailsController.onPageLoad())
-        }
-      }
-
-      "must go from What is your email address? page to Check your contact details page" in {
+      "must go from What is your email address? page to Do they have a telephone number? page" in {
 
         forAll(arbitrary[UserAnswers], validEmailAddress) {
           (answers, email) =>
@@ -126,8 +112,28 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .success
                 .value
             navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers)
-              .mustBe(routes.ContactDetailsController.onPageLoad())
+              .mustBe(controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad())
         }
+      }
+
+      "must go from Do they have a telephone number? page to What is your telephone number? page if answer is 'Yes'" in {
+          val updatedAnswers =
+            UserAnswers(userAnswersId)
+              .set(HaveContactPhonePage, true)
+              .success
+              .value
+          navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
+            .mustBe(controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad())
+      }
+
+      "must go from Do they have a telephone number? page to Check your contact details page if answer is 'No'" in {
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveContactPhonePage, false)
+            .success
+            .value
+        navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
+          .mustBe(routes.ContactDetailsController.onPageLoad())
       }
 
       "must go from What is your telephone number? page to Check your contact details page" in {
@@ -144,6 +150,28 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
         }
       }
 
+      "must go from Is there someone else we can contact if your first contact is not available? page to " +
+        "What is the name of the individual or team we should contact? page if answer is 'Yes'" in {
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveSecondContactPage, true)
+            .success
+            .value
+        navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
+          .mustBe(controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad())
+      }
+
+      "must go from Is there someone else we can contact if your first contact is not available? page to " +
+        "Check your contact details page if answer is 'No'" in {
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveSecondContactPage, false)
+            .success
+            .value
+        navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
+          .mustBe(routes.ContactDetailsController.onPageLoad())
+      }
+
       "must go from What is the name of the individual or team we should contact? page to " +
         "Check your contact details page - Secondary contact" in {
 
@@ -155,7 +183,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .success
                 .value
             navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers)
-              .mustBe(routes.ContactDetailsController.onPageLoad())
+              .mustBe(controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad())
         }
       }
 
@@ -169,8 +197,28 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .success
                 .value
             navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers)
-              .mustBe(routes.ContactDetailsController.onPageLoad())
+              .mustBe(controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad())
         }
+      }
+
+      "must go from Do they have a telephone number? page to What is the telephone number for your second contact? page if answer is 'Yes'" in {
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveSecondaryContactPhonePage, true)
+            .success
+            .value
+        navigator.nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
+          .mustBe(controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad())
+      }
+
+      "must go from Do they have a telephone number? page to Check your contact details page if answer is 'No' for secondary contact" in {
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveSecondaryContactPhonePage, false)
+            .success
+            .value
+        navigator.nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
+          .mustBe(routes.ContactDetailsController.onPageLoad())
       }
 
       "must go from What is the telephone number for your second contact? page to Check your contact details page" in {

@@ -20,11 +20,14 @@ import base.SpecBase
 import controllers.Assets.SERVICE_UNAVAILABLE
 import generators.Generators
 import helpers.JsonFixtures._
+import models.UserAnswers
 import models.subscription._
-import models.{Name, UserAnswers}
-import org.mockito.{ArgumentCaptor, Mockito}
 import org.mockito.Matchers.any
+import org.mockito.Mockito.{times, verify, when}
+import org.mockito.{ArgumentCaptor, Mockito}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.contactdetails.ContactNamePage
 import play.api.Application
 import play.api.http.Status.OK
 import play.api.inject.bind
@@ -34,23 +37,27 @@ import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.BeforeAndAfterEach
-import pages.contactdetails.IndividualContactNamePage
 
 class SubscriptionConnectorSpec extends SpecBase
   with ScalaCheckPropertyChecks
   with Generators with BeforeAndAfterEach {
 
-  val primaryContact: PrimaryContact = PrimaryContact(Seq(
+  val individualPrimaryContact: PrimaryContact = PrimaryContact(Seq(
     ContactInformationForIndividual(
       individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
-      email = "email@email.com", phone = Some("07111222333"), mobile = Some("07111222333"))
+      email = "email@email.com", phone = Some("07111222333"), mobile = None)
   ))
-  val secondaryContact: SecondaryContact = SecondaryContact(Seq(
+
+  val primaryContact: PrimaryContact = PrimaryContact(Seq(
     ContactInformationForOrganisation(
       organisation = OrganisationDetails(organisationName = "Organisation Name"),
       email = "email@email.com", phone = None, mobile = None)
+  ))
+
+  val secondaryContact: SecondaryContact = SecondaryContact(Seq(
+    ContactInformationForOrganisation(
+      organisation = OrganisationDetails(organisationName = "Secondary contact name"),
+      email = "email2@email.com", phone = Some("07111222333"), mobile = None)
   ))
 
   val responseCommon: ResponseCommon = ResponseCommon(
@@ -88,12 +95,36 @@ class SubscriptionConnectorSpec extends SpecBase
   "SubscriptionConnector" - {
 
     "displaySubscriptionDetails" - {
-      "must return the correct DisplaySubscriptionForDACResponse" in {
+
+      "must return the correct DisplaySubscriptionForDACResponse for an Individual" in {
+        forAll(validDacID) {
+          safeID =>
+            val expectedBody = displaySubscriptionPayloadNoSecondary(
+              JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("email@email.com"), JsString("07111222333"))
+
+            val responseDetailUpdate: ResponseDetail = responseDetail.copy(
+              subscriptionID = safeID, primaryContact = individualPrimaryContact, secondaryContact = None)
+
+            val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+              DisplaySubscriptionForDACResponse(
+                SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
+              )
+
+            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+              .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
+
+
+            val result = connector.displaySubscriptionDetails(enrolmentID)
+            result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionForDACResponse))
+        }
+      }
+
+      "must return the correct DisplaySubscriptionForDACResponse for an Organisation" in {
         forAll(validDacID) {
           safeID =>
             val expectedBody = displaySubscriptionPayload(
-              JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
-              JsString("email@email.com"), JsString("email@email.com"), JsString("07111222333"))
+              JsString(safeID), JsString("Organisation Name"), JsString("Secondary contact name"),
+              JsString("email@email.com"), JsString("email2@email.com"), JsString("07111222333"))
 
             val responseDetailUpdate: ResponseDetail = responseDetail.copy(subscriptionID = safeID)
 
@@ -213,7 +244,7 @@ class SubscriptionConnectorSpec extends SpecBase
               .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload(JsString(dacID)))))
 
             val userAnswers = UserAnswers(userAnswersId)
-              .set(IndividualContactNamePage, Name("Kit", "Kat")).success.value
+              .set(ContactNamePage, "Organisation Name").success.value
 
 
             val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)

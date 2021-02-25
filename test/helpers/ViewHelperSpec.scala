@@ -264,8 +264,8 @@ class ViewHelperSpec extends SpecBase
   "Building contact details page" - {
 
     "must create row for Contact name" in {
-      forAll(validDacID, validEmailAddress, validPhoneNumber) {
-        (safeID, email, phone) =>
+      forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, email, secondaryEmail, phone) =>
         val expectedRow =
           Row(
             key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
@@ -280,13 +280,14 @@ class ViewHelperSpec extends SpecBase
             )
           )
 
-        val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
-          JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
-        val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
-          Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
+        val displayPayload: String = displaySubscriptionPayload(
+          JsString(safeID), JsString("Contact name"), JsString("Secondary contact name"), JsString(email),
+          JsString(secondaryEmail), JsString(phone))
+        val displaySubscriptionDetails: DisplaySubscriptionForDACResponse =
+          Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
         val result = viewHelper.primaryContactName(
-          displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
         result mustBe Some(expectedRow)
       }
@@ -351,12 +352,12 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Secondary contact name" in {
-      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (safeID, name, orgName, email, secondaryEmail, phone) =>
+      forAll(validDacID, validOrganisationName, validPersonalName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, orgName, secondaryName, email, secondaryEmail, phone) =>
           val expectedRow =
             Row(
               key = Key(msg"contactDetails.secondaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-              value = Value(lit"$orgName"),
+              value = Value(lit"$secondaryName"),
               actions = List(
                 Action(
                   content = msg"site.edit",
@@ -368,8 +369,7 @@ class ViewHelperSpec extends SpecBase
             )
 
           val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
-            JsString(secondaryEmail), JsString(phone))
+            JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
           val result = viewHelper.secondaryContactName(
@@ -380,8 +380,8 @@ class ViewHelperSpec extends SpecBase
     }
 
     "must create row for Secondary email address" in {
-      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (safeID, name, orgName, email, secondaryEmail, phone) =>
+      forAll(validDacID, validOrganisationName, validPersonalName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, orgName, secondaryContactName, email, secondaryEmail, phone) =>
           val expectedRow =
             Row(
               key = Key(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
@@ -397,7 +397,7 @@ class ViewHelperSpec extends SpecBase
             )
 
           val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
+            JsString(safeID), JsString(orgName), JsString(secondaryContactName), JsString(email),
             JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
@@ -408,32 +408,17 @@ class ViewHelperSpec extends SpecBase
       }
     }
 
-    "must create row for Secondary telephone - None if it's missing" in {
-      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (safeID, name, orgName, email, secondaryEmail, phone) =>
-          val expectedRow =
-            Row(
-              key = Key(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-              value = Value(lit"None"),
-              actions = List(
-                Action(
-                  content = msg"site.edit",
-                  href = controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
-                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
-                  attributes = Map("id" -> "change-secondary-phone-number")
-                )
-              )
-            )
-
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(name), JsString(name), JsString(orgName), JsString(email),
-            JsString(secondaryEmail), JsString(phone))
+    "must not create row for Secondary telephone if it's not available" in {
+      forAll(validDacID, validPersonalName, validEmailAddress, validPhoneNumber) {
+        (safeID, name, email, phone) =>
+          val displayPayload: String = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString(name), JsString(name), JsString(email), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
           val result = viewHelper.secondaryPhoneNumber(
             displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
-          result mustBe Some(expectedRow)
+          result mustBe None
       }
     }
   }

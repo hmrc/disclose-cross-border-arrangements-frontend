@@ -21,9 +21,8 @@ import play.api.libs.json.{JsObject, JsString, Json}
 object JsonFixtures {
 
   def displaySubscriptionPayload(subscriptionID: JsString,
-                                 firstName: JsString,
-                                 lastName:JsString,
                                  organisationName: JsString,
+                                 secondaryContactName: JsString,
                                  primaryEmail: JsString,
                                  secondaryEmail: JsString,
                                  phone: JsString): String = {
@@ -41,19 +40,17 @@ object JsonFixtures {
       |      "primaryContact": [
       |        {
       |          "email": $primaryEmail,
-      |          "phone": $phone,
-      |          "mobile": $phone,
-      |          "individual": {
-      |            "lastName": $lastName,
-      |            "firstName": $firstName
+      |          "organisation": {
+      |            "organisationName": $organisationName
       |          }
       |        }
       |      ],
       |      "secondaryContact": [
       |        {
       |          "email": $secondaryEmail,
+      |          "phone": $phone,
       |          "organisation": {
-      |            "organisationName": $organisationName
+      |            "organisationName": $secondaryContactName
       |          }
       |        }
       |      ]

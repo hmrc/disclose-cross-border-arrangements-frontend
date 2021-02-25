@@ -51,7 +51,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
           reset(mockRenderer, mockSubscriptionConnector)
 
           val jsonPayload = displaySubscriptionPayload(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"),
+            JsString(safeID), JsString("FirstName"), JsString("Secondary contact name"),
             JsString(email), JsString(secondaryEmail), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get

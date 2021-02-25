@@ -43,7 +43,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
   "ContactDetails Controller" - {
 
-    "must return OK and the correct view for a GET without a secondary contact" in {
+    "must return OK and the correct view for a GET if user is an Individual" in {
 
       forAll(validDacID ,validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
@@ -79,7 +79,6 @@ class ContactDetailsControllerSpec extends SpecBase
           val contactDetails = (json \ "contactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
-          contactDetails.contains("Contact name") mustBe true
           contactDetails.contains("Email address") mustBe true
           contactDetails.contains("Telephone") mustBe true
           contactDetails.contains("Secondary contact name") mustBe false
@@ -90,7 +89,7 @@ class ContactDetailsControllerSpec extends SpecBase
       }
     }
 
-    "must return OK and the correct view for a GET with a secondary contact" in {
+    "must return OK and the correct view for a GET if user is an organisation with a secondary contact" in {
 
       forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
@@ -98,7 +97,7 @@ class ContactDetailsControllerSpec extends SpecBase
           reset(mockRenderer, mockSubscriptionConnector)
 
           val jsonPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString(email),
+            JsString(safeID), JsString("Organisation Name"), JsString("Secondary contact name"), JsString(email),
             JsString(secondaryEmail), JsString(phone))
 
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
@@ -130,7 +129,7 @@ class ContactDetailsControllerSpec extends SpecBase
           templateCaptor.getValue mustEqual "contactDetails.njk"
           contactDetails.contains("Contact name") mustBe true
           contactDetails.contains("Email address") mustBe true
-          contactDetails.contains("Telephone") mustBe true
+          contactDetails.contains("Telephone") mustBe false
           secondaryContactDetails.contains("Additional contact name") mustBe true
           secondaryContactDetails.contains("Additional contact email address") mustBe true
           secondaryContactDetails.contains("Additional contact telephone number") mustBe true
