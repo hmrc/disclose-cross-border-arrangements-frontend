@@ -89,3 +89,5 @@ GET        /keep-alive                                  controllers.KeepAliveCon
 GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()
 
 GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
+
+GET        /change-contact/details-not-updated          controllers.DetailsNotUpdatedController.onPageLoad()

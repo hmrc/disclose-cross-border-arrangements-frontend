@@ -386,3 +386,7 @@ contactUsToUseManualService.p3 = If we cannot arrange a time for you to access t
 detailsAlreadyUpdated.title = You have recently updated your contact details
 detailsAlreadyUpdated.heading = You have recently updated your contact details
 detailsAlreadyUpdated.p = You must wait until your recent changes have been accepted. You can make further changes in a couple of hours.
+
+detailsNotUpdated.title = There is a problem with sending your details
+detailsNotUpdated.heading = There is a problem with sending your details
+detailsNotUpdated.p = Your details have been saved. You can try to send them again in a couple of hours.

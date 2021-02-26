@@ -1,0 +1,29 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+
+{% block pageTitle %}
+  {{ title(messages("detailsNotUpdated.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("detailsNotUpdated.heading") }}
+        </h1>
+
+        <p class="govuk-body">{{ messages("detailsNotUpdated.p") }}</p>
+
+        <p class="govuk-body">
+          <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("site.homePageLink.text") }}</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
