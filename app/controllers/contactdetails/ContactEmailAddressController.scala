@@ -18,8 +18,10 @@ package controllers.contactdetails
 
 import controllers.actions._
 import forms.contactdetails.ContactEmailAddressFormProvider
+import helpers.ViewHelper
 import models.NormalMode
 import navigation.Navigator
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.ContactEmailAddressPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -36,6 +38,7 @@ class ContactEmailAddressController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
+    viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
@@ -49,10 +52,17 @@ class ContactEmailAddressController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(ContactEmailAddressPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      val preparedForm =
+        (request.userAnswers.get(ContactEmailAddressPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+          case (Some(value), _) => form.fill(value)
+          case (None, Some(displaySubscription)) =>
+            val primaryContactEmail =
+              viewHelper.retrieveContactEmail(
+                displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+
+            form.fill(primaryContactEmail)
+          case _ => form
+        }
 
       val json = Json.obj(
         "form" -> preparedForm
@@ -73,11 +83,24 @@ class ContactEmailAddressController @Inject()(
 
           renderer.render("contactdetails/contactEmailAddress.njk", json).map(BadRequest(_))
         },
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactEmailAddressPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers))
+        newContactEmail => {
+          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+            case Some(displaySubscription) =>
+              val primaryContactEmail =
+                viewHelper.retrieveContactEmail(
+                  displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+
+              if (newContactEmail != primaryContactEmail) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactEmailAddressPage, newContactEmail))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers))
+              } else {
+                Future.successful(Redirect(controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad()))
+              }
+            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+          }
+        }
       )
   }
 }

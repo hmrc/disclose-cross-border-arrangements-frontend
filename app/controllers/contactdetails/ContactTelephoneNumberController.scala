@@ -18,8 +18,10 @@ package controllers.contactdetails
 
 import controllers.actions._
 import forms.contactdetails.ContactTelephoneNumberFormProvider
+import helpers.ViewHelper
 import models.NormalMode
 import navigation.Navigator
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.ContactTelephoneNumberPage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -36,6 +38,7 @@ class ContactTelephoneNumberController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
+    viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
@@ -49,10 +52,16 @@ class ContactTelephoneNumberController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(ContactTelephoneNumberPage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      val preparedForm =
+        (request.userAnswers.get(ContactTelephoneNumberPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+          case (Some(value), _) => form.fill(value)
+          case (None, Some(displaySubscription)) =>
+            val primaryContactPhone = viewHelper.retrieveContactPhone(
+              displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+
+            form.fill(primaryContactPhone)
+          case _ => form
+        }
 
       val json = Json.obj(
         "form" -> preparedForm
@@ -73,11 +82,23 @@ class ContactTelephoneNumberController @Inject()(
 
           renderer.render("contactdetails/contactTelephoneNumber.njk", json).map(BadRequest(_))
         },
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactTelephoneNumberPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers))
+        newContactPhone => {
+          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+            case Some(displaySubscription) =>
+              val primaryContactPhone = viewHelper.retrieveContactPhone(
+                displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+
+              if (newContactPhone != primaryContactPhone) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactTelephoneNumberPage, newContactPhone))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers))
+              } else {
+                Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+              }
+            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+          }
+        }
       )
   }
 }

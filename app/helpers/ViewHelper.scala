@@ -179,7 +179,7 @@ class ViewHelper @Inject()() {
     }
   }
 
-  def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+  private def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveContactPhonePage) match {
       case Some(true) => true
       case Some(false) => false
@@ -192,7 +192,7 @@ class ViewHelper @Inject()() {
     }
   }
 
-  def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+  private def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveSecondaryContactPhonePage) match {
       case Some(true) => true
       case Some(false) => false
@@ -201,25 +201,35 @@ class ViewHelper @Inject()() {
     }
   }
 
+  def retrieveContactName(contactInformation: Seq[ContactInformation]): (String, Boolean) = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(individual, _, _, _) =>
+        (s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}", false)
+      case ContactInformationForOrganisation(organisation, _, _, _) =>
+        (s"${organisation.organisationName}", true)
+    }
+  }
+
+  def retrieveContactEmail(contactInformation: Seq[ContactInformation]): String = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, email, _, _) => email
+      case ContactInformationForOrganisation(_, email, _, _) => email
+    }
+  }
+
+  def retrieveContactPhone(contactInformation: Seq[ContactInformation]): String = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
+      case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
+    }
+  }
+
+
   def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
     val (contactName, isOrganisation) = userAnswers.get(ContactNamePage) match {
       case Some(contactName) => (contactName, true)
-//      case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
-      case _ =>
-        responseDetail.primaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(individual, _, _, _) =>
-            (s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}", false)
-          case ContactInformationForOrganisation(organisation, _, _, _) =>
-            (s"${organisation.organisationName}", true)
-        }
+      case None => retrieveContactName(responseDetail.primaryContact.contactInformation)
     }
-
-//    val changeLink = responseDetail.primaryContact.contactInformation.head match {
-//      case ContactInformationForIndividual(_, _, _, _) =>
-//        controllers.contactdetails.routes.IndividualContactNameController.onPageLoad().url
-//      case ContactInformationForOrganisation(_, _, _, _) =>
-//        controllers.contactdetails.routes.ContactNameController.onPageLoad().url
-//    }
 
     if (isOrganisation) {
       Some(
@@ -245,11 +255,7 @@ class ViewHelper @Inject()() {
   def primaryContactEmail(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactEmail = userAnswers.get(ContactEmailAddressPage) match {
       case Some(email) => email
-      case None =>
-        responseDetail.primaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(_, email, _, _) => email
-          case ContactInformationForOrganisation(_, email, _, _) => email
-        }
+      case None => retrieveContactEmail(responseDetail.primaryContact.contactInformation)
     }
 
     Row(
@@ -292,11 +298,7 @@ class ViewHelper @Inject()() {
     if (primaryContactPhoneExists(responseDetail.primaryContact.contactInformation, userAnswers)) {
       val phoneNumber = userAnswers.get(ContactTelephoneNumberPage) match {
         case Some(telephone) => telephone
-        case None =>
-          responseDetail.primaryContact.contactInformation.head match {
-            case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
-            case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
-          }
+        case None => retrieveContactPhone(responseDetail.primaryContact.contactInformation)
       }
 
       Some(
@@ -342,18 +344,14 @@ class ViewHelper @Inject()() {
   }
 
   def secondaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
-
     //Note: Secondary contact name is only one field in the registration journey. It's always ContactInformationForOrganisation
     val contactName = userAnswers.get(SecondaryContactNamePage) match {
       case Some(contactName) => contactName
       case None =>
-        contactInformationList.head match {
-          case ContactInformationForIndividual(individual, _, _, _) =>
-            s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
-          case ContactInformationForOrganisation(organisation, _, _, _) =>
-            s"${organisation.organisationName}"
-        }
+        val contactInformationList =
+          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+        retrieveContactName(contactInformationList)._1
     }
 
     Row(
@@ -371,15 +369,13 @@ class ViewHelper @Inject()() {
   }
 
   def secondaryContactEmail(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
-
     val contactEmail = userAnswers.get(SecondaryContactEmailAddressPage) match {
       case Some(email) => email
       case None =>
-        contactInformationList.head match {
-          case ContactInformationForIndividual(_, email, _, _) => email
-          case ContactInformationForOrganisation(_, email, _, _) => email
-        }
+        val contactInformationList =
+          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+        retrieveContactEmail(contactInformationList)
     }
 
     Row(
@@ -423,15 +419,11 @@ class ViewHelper @Inject()() {
   def secondaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
     val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
 
-    //Note: Display Row only if secondary phone exists
     if (secondaryContactPhoneExists(contactInformationList, userAnswers)) {
       val phoneNumber = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
         case Some(telephone) => telephone
         case None =>
-          contactInformationList.head match {
-            case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}" //TODO This is impossible
-            case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
-          }
+          retrieveContactPhone(contactInformationList)
       }
 
       Some(

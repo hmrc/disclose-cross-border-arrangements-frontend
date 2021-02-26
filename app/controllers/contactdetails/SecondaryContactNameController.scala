@@ -18,8 +18,11 @@ package controllers.contactdetails
 
 import controllers.actions._
 import forms.contactdetails.SecondaryContactNameFormProvider
+import helpers.ViewHelper
 import models.NormalMode
+import models.subscription.ContactInformation
 import navigation.Navigator
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.SecondaryContactNamePage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -36,6 +39,7 @@ class SecondaryContactNameController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
+    viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
@@ -49,10 +53,17 @@ class SecondaryContactNameController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(SecondaryContactNamePage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      val preparedForm =
+        (request.userAnswers.get(SecondaryContactNamePage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+          case (Some(value), _) => form.fill(value)
+          case (None, Some(displaySubscription)) =>
+            val (secondaryContactName, _) =
+              viewHelper.retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+                .fold(Seq[ContactInformation]())(_.contactInformation))
+
+            form.fill(secondaryContactName)
+          case _ => form
+        }
 
       val json = Json.obj(
         "form" -> preparedForm
@@ -73,11 +84,24 @@ class SecondaryContactNameController @Inject()(
 
           renderer.render("contactdetails/secondaryContactName.njk", json).map(BadRequest(_))
         },
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactNamePage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers))
+        newContactName => {
+          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+            case Some(displaySubscription) =>
+              val (secondaryContactName, _) =
+                viewHelper.retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+                  .fold(Seq[ContactInformation]())(_.contactInformation))
+
+              if (newContactName != secondaryContactName) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactNamePage, newContactName))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers))
+              } else {
+                Future.successful(Redirect(controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad()))
+              }
+            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+          }
+        }
       )
   }
 }

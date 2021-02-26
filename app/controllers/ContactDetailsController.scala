@@ -21,13 +21,15 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import models.UserAnswers
+import models.{NormalMode, UserAnswers}
 import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
-import pages.contactdetails.HaveSecondContactPage
+import pages.DisplaySubscriptionDetailsPage
+import pages.contactdetails.{ContactNamePage, HaveSecondContactPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.SummaryList
 
@@ -36,6 +38,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ContactDetailsController @Inject()(
     override val messagesApi: MessagesApi,
+    sessionRepository: SessionRepository,
     subscriptionConnector: SubscriptionConnector,
     appConfig: FrontendAppConfig,
     errorHandler: ErrorHandler,
@@ -85,7 +88,10 @@ class ContactDetailsController @Inject()(
                 }
               }
 
-              renderer.render("contactDetails.njk", json).map(Ok(_))
+              (for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(DisplaySubscriptionDetailsPage, details.subscriptionDetails.get))
+                _              <- sessionRepository.set(updatedAnswers)
+              } yield renderer.render("contactDetails.njk", json).map(Ok(_))).flatten
             } else {
               errorHandler.onServerError(request, new Exception("Conversion of display subscription payload failed"))
             }
