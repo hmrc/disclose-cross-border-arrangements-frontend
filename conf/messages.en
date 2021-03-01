@@ -188,7 +188,7 @@ upload_form.heading = Upload an XML file
 upload_error.title = Upload Error
 upload_error.heading = Upload Error
 
-upload_result_form.title = Verifying uploaded file
+upload_result_form.title = We are checking your file
 upload_result_form.heading = We are checking your file
 
 validation.title = Validator placeholder
