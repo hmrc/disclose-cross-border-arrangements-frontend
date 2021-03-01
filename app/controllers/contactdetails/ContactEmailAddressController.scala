@@ -65,7 +65,8 @@ class ContactEmailAddressController @Inject()(
         }
 
       val json = Json.obj(
-        "form" -> preparedForm
+        "form" -> preparedForm,
+        "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
       )
 
       renderer.render("contactdetails/contactEmailAddress.njk", json).map(Ok(_))
@@ -78,7 +79,8 @@ class ContactEmailAddressController @Inject()(
         formWithErrors => {
 
           val json = Json.obj(
-            "form" -> formWithErrors
+            "form" -> formWithErrors,
+            "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
           )
 
           renderer.render("contactdetails/contactEmailAddress.njk", json).map(BadRequest(_))

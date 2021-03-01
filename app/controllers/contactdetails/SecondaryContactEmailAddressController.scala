@@ -66,7 +66,8 @@ class SecondaryContactEmailAddressController @Inject()(
         }
 
       val json = Json.obj(
-        "form" -> preparedForm
+        "form" -> preparedForm,
+        "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
       )
 
       renderer.render("contactdetails/secondaryContactEmailAddress.njk", json).map(Ok(_))
@@ -79,7 +80,8 @@ class SecondaryContactEmailAddressController @Inject()(
         formWithErrors => {
 
           val json = Json.obj(
-            "form" -> formWithErrors
+            "form" -> formWithErrors,
+            "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
           )
 
           renderer.render("contactdetails/secondaryContactEmailAddress.njk", json).map(BadRequest(_))

@@ -19,17 +19,20 @@ package controllers.contactdetails
 import base.SpecBase
 import forms.contactdetails.SecondaryContactEmailAddressFormProvider
 import generators.Generators
+import helpers.JsonFixtures.displaySubscriptionPayload
 import matchers.JsonMatchers
 import models.UserAnswers
+import models.subscription.DisplaySubscriptionForDACResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.SecondaryContactEmailAddressPage
 import play.api.inject.bind
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -116,6 +119,14 @@ class SecondaryContactEmailAddressControllerSpec extends SpecBase
     }
 
     "must redirect to the next page when valid data is submitted" in {
+      val jsonPayload = displaySubscriptionPayload(
+        JsString("subscriptionID"), JsString("Organisation Name"), JsString("Secondary contact name"),
+        JsString("email@email.com"), JsString("email2@email.com"), JsString("07111222333"))
+
+      val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(DisplaySubscriptionDetailsPage, displaySubscriptionDetails).success.value
 
       forAll(validEmailAddress) {
         email =>
@@ -124,7 +135,7 @@ class SecondaryContactEmailAddressControllerSpec extends SpecBase
           when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
 
           val application =
-            applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            applicationBuilder(userAnswers = Some(userAnswers))
               .overrides(
                 bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
                 bind[SessionRepository].toInstance(mockSessionRepository)

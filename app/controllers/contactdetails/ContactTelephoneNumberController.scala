@@ -64,7 +64,8 @@ class ContactTelephoneNumberController @Inject()(
         }
 
       val json = Json.obj(
-        "form" -> preparedForm
+        "form" -> preparedForm,
+        "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
       )
 
       renderer.render("contactdetails/contactTelephoneNumber.njk", json).map(Ok(_))
@@ -77,7 +78,8 @@ class ContactTelephoneNumberController @Inject()(
         formWithErrors => {
 
           val json = Json.obj(
-            "form" -> formWithErrors
+            "form" -> formWithErrors,
+            "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
           )
 
           renderer.render("contactdetails/contactTelephoneNumber.njk", json).map(BadRequest(_))

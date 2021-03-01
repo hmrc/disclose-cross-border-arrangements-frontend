@@ -20,7 +20,6 @@ import controllers.actions._
 import forms.contactdetails.ContactNameFormProvider
 import helpers.ViewHelper
 import models.NormalMode
-import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation}
 import navigation.Navigator
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.ContactNamePage

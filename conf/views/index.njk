@@ -42,15 +42,16 @@
                           attributes: {id:"submit"}
                         }) }}
 
-        {% if manualJourneyToggle %}
           <p class="govuk-body">
             {{messages("index.submission.paragraph.1")}}
           </p>
 
           <ul class="govuk-list govuk-list--bullet">
-            <li>
-              <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
-            </li>
+            {% if manualJourneyToggle %}
+              <li>
+                <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
+              </li>
+            {% endif %}
             {% if hasSubmissions %}
               <li>
                 <a href="{{routes.controllers.HistoryController.onPageLoad().url}}" class="govuk-link">{{messages("history.link")}}</a>
@@ -62,7 +63,6 @@
               </li>
             {% endif %}
           </ul>
-        {% endif %}
 
       </div>
     </div>

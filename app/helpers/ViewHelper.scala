@@ -19,6 +19,7 @@ package helpers
 import com.google.inject.Inject
 import models.subscription.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
 import models.{GenericError, SubmissionHistory, UserAnswers}
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails._
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
@@ -179,7 +180,7 @@ class ViewHelper @Inject()() {
     }
   }
 
-  private def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+  def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveContactPhonePage) match {
       case Some(true) => true
       case Some(false) => false
@@ -192,7 +193,7 @@ class ViewHelper @Inject()() {
     }
   }
 
-  private def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+  def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveSecondaryContactPhonePage) match {
       case Some(true) => true
       case Some(false) => false
@@ -219,8 +220,34 @@ class ViewHelper @Inject()() {
 
   def retrieveContactPhone(contactInformation: Seq[ContactInformation]): String = {
     contactInformation.head match {
-      case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
-      case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
+      case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("")}"
+      case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("")}"
+    }
+  }
+
+  def getPrimaryContactName(userAnswers: UserAnswers): String = {
+    (userAnswers.get(ContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+      case (Some(contactName), _) => contactName
+      case (None, Some(displaySubscription)) =>
+        val (contactName, _) =
+          retrieveContactName(
+            displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+
+        contactName
+      case _ => "your first contact"
+    }
+  }
+
+  def getSecondaryContactName(userAnswers: UserAnswers): String = {
+    (userAnswers.get(SecondaryContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+      case (Some(secondaryContactName), _) => secondaryContactName
+      case (None, Some(displaySubscription)) =>
+        val (secondaryContactName, _) =
+          retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+            .fold(Seq[ContactInformation]())(_.contactInformation))
+
+        secondaryContactName
+      case _ => "your second contact"
     }
   }
 
@@ -349,7 +376,7 @@ class ViewHelper @Inject()() {
       case Some(contactName) => contactName
       case None =>
         val contactInformationList =
-          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(_.contactInformation)
 
         retrieveContactName(contactInformationList)._1
     }

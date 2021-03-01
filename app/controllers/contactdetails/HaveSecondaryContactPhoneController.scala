@@ -18,8 +18,11 @@ package controllers.contactdetails
 
 import controllers.actions._
 import forms.contactdetails.HaveSecondaryContactPhoneFormProvider
+import helpers.ViewHelper
 import models.NormalMode
+import models.subscription.ContactInformation
 import navigation.Navigator
+import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.HaveSecondaryContactPhonePage
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -36,6 +39,7 @@ class HaveSecondaryContactPhoneController @Inject()(
     override val messagesApi: MessagesApi,
     sessionRepository: SessionRepository,
     navigator: Navigator,
+    viewHelper: ViewHelper,
     identify: IdentifierAction,
     getData: DataRetrievalAction,
     requireData: DataRequiredAction,
@@ -49,14 +53,22 @@ class HaveSecondaryContactPhoneController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(HaveSecondaryContactPhonePage) match {
-        case None => form
-        case Some(value) => form.fill(value)
-      }
+      val preparedForm =
+        (request.userAnswers.get(HaveSecondaryContactPhonePage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+          case (Some(value), _) => form.fill(value)
+          case (None, Some(displaySubscription)) => //TODO secondaryContactPhoneExists is similar to this. Refactor?
+            val haveSecondContactPhone =
+              viewHelper.secondaryContactPhoneExists(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+                .fold(Seq[ContactInformation]())(_.contactInformation), request.userAnswers)
+
+            form.fill(haveSecondContactPhone)
+          case _ => form
+        }
 
       val json = Json.obj(
         "form"   -> preparedForm,
-        "radios" -> Radios.yesNo(preparedForm("value"))
+        "radios" -> Radios.yesNo(preparedForm("value")),
+        "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
       )
 
       renderer.render("contactdetails/haveSecondaryContactPhone.njk", json).map(Ok(_))
@@ -70,7 +82,8 @@ class HaveSecondaryContactPhoneController @Inject()(
 
           val json = Json.obj(
             "form"   -> formWithErrors,
-            "radios" -> Radios.yesNo(formWithErrors("value"))
+            "radios" -> Radios.yesNo(formWithErrors("value")),
+            "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
           )
 
           renderer.render("contactdetails/haveSecondaryContactPhone.njk", json).map(BadRequest(_))
