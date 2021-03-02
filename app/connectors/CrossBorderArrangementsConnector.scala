@@ -17,17 +17,14 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadStatus, UpscanIdentifiers}
-
-import javax.inject.Inject
+import controllers.Assets.NO_CONTENT
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import play.api.http.HeaderNames
-import play.api.http.Status.OK
-import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.SubmissionUtil._
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
@@ -63,14 +60,10 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   def retrieveFirstDisclosureForArrangementID(arrangementID: String)(implicit hc: HeaderCarrier): Future[SubmissionDetails] =
   httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
 
-  def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+  def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map { response =>
-      response.status match {
-        case 204 => true
-        case _ => false
-      }
+      response.status == NO_CONTENT
     }
-  }
 
   def getSubmissionHistory(enrolmentId: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {
     httpClient.GET[SubmissionHistory](historyUrl(enrolmentId)).recover {
@@ -83,39 +76,4 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
       case _ => SubmissionHistory(Seq())
     }
   }
-
-  def requestUpload(uploadId: UploadId, fileReference: Reference)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    httpClient.POST[UpscanIdentifiers, HttpResponse](s"$baseUrl/upscan/upload", UpscanIdentifiers(uploadId, fileReference))
-  }
-
-  def getUploadDetails(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadSessionDetails]] = {
-    httpClient.GET[HttpResponse](s"$baseUrl/upscan/details/${uploadId.value}").map {
-      response =>  response.status match {
-        case OK => response.json.validate[UploadSessionDetails] match {
-          case JsSuccess(details, _) =>
-            Some(details)
-          case JsError(_) =>
-            None
-        }
-        case _ => None
-      }
-    }
-  }
-
-  def getUploadStatus(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadStatus]] = {
-    httpClient.GET[HttpResponse](s"$baseUrl/upscan/status/${uploadId.value}").map {
-      response =>  response.status match {
-        case OK => response.json.validate[UploadStatus] match {
-          case JsSuccess(status, _) =>
-            Some(status)
-          case JsError(_) =>
-            None
-        }
-        case _ => None
-      }
-    }
-  }
-
-
-
 }

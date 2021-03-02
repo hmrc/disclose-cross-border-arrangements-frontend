@@ -36,15 +36,21 @@
 
     <div class="js-visible mt-3">
 
-        <div class="form-group">
+        <div class="form-group {% if form.errors.length > 0 %}govuk-form-group--error{% endif %}">
+
+          {% if form.errors.length > 0 %}
+            <span id="event-name-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span>{{ form.file.error.text }}
+              </span>
+          {% endif %}
+
             <div class="form-control-wrapper">
                 {{ govukFileUpload({
                   id: "file-upload",
                   name: "file",
+                  classes: "hmrc-file-upload",
                   attributes: {
                     "accept": ".xml,application/xml",
-                    "_type": "file",
-                    "class": "upload",
                     "required": "required",
                     "aria-labelledby" : "heading"
                    }
