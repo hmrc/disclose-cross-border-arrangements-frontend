@@ -44,15 +44,21 @@
 
             <div class="govuk-form-group govuk-form-group--error">
 
-              <label id="value-label" class="govuk-label" for="searchBox">
-                {{ messages("submissionHistory.p1") }}
-              </label>
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="searchBox">
+                  {{ messages("submissionHistory.p1") }}
+                </label>
+              </h2>
+
+              <div id="search-hint" class="govuk-hint">
+                {{ messages("submissionHistory.p2") }}
+              </div>
 
               <span id="event-name-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span>{{ form.searchBox.error.text }}
               </span>
 
-              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text" aria-describedby="value-label">
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text" aria-describedby="search-hint">
 
               <button class="govuk-button" data-module="govuk-button" id="submit">
                 {{ messages("submissionHistory.button") }}
@@ -63,9 +69,15 @@
 
             <div class="govuk-form-group">
 
-              <label id="value-label" class="govuk-label" for="searchBox">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="searchBox">
                   {{ messages("submissionHistory.p1") }}
-              </label>
+                </label>
+              </h2>
+
+              <div id="search-hint" class="govuk-hint">
+                {{ messages("submissionHistory.p2") }}
+              </div>
 
               <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text" aria-describedby="value-label">
 
