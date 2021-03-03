@@ -182,8 +182,7 @@ class ViewHelper @Inject()() {
 
   def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveContactPhonePage) match {
-      case Some(true) => true
-      case Some(false) => false
+      case Some(value) => value
       case None =>
         contactInformation.head match {
           case ContactInformationForIndividual(_, _, phone, _) if phone.isDefined => true
@@ -195,8 +194,7 @@ class ViewHelper @Inject()() {
 
   def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
     userAnswers.get(HaveSecondaryContactPhonePage) match {
-      case Some(true) => true
-      case Some(false) => false
+      case Some(value) => value
       case None if contactInformation.nonEmpty => true
       case None => false
     }

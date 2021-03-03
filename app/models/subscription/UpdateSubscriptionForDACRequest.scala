@@ -85,7 +85,7 @@ object UpdateSubscriptionDetails {
   implicit val format: OFormat[UpdateSubscriptionDetails] = Json.format[UpdateSubscriptionDetails]
 
   private def buildContactInformation(contactInformation: Seq[ContactInformation],
-                                      userAnswers: UserAnswers): Either[ContactInformationForIndividual, ContactInformationForOrganisation] = {
+                                      userAnswers: UserAnswers): ContactInformation = {
 
     //Note: There should only be one item in contact information
     contactInformation.head match {
@@ -105,7 +105,7 @@ object UpdateSubscriptionDetails {
           case None => details
         }
 
-        Left(ContactInformationForIndividual(individualDetails, emailAddress, telephone, mobile))
+        ContactInformationForIndividual(individualDetails, emailAddress, telephone, mobile)
       case ContactInformationForOrganisation(details, email, phone, mobile) =>
         val emailAddress = userAnswers.get(ContactEmailAddressPage) match {
           case Some(email) => email
@@ -122,7 +122,7 @@ object UpdateSubscriptionDetails {
           case None => details
         }
 
-        Right(ContactInformationForOrganisation(organisationDetails, emailAddress, telephone, mobile))
+        ContactInformationForOrganisation(organisationDetails, emailAddress, telephone, mobile)
     }
   }
 
@@ -156,8 +156,8 @@ object UpdateSubscriptionDetails {
                                   userAnswers: UserAnswers): RequestDetailForUpdate = {
     val primaryContact =
       buildContactInformation(responseDetail.primaryContact.contactInformation, userAnswers) match {
-        case Left(contactInformationForIndividual) => PrimaryContact(Seq(contactInformationForIndividual))
-        case Right(contactInformationForOrganisation) => PrimaryContact(Seq(contactInformationForOrganisation))
+        case contactInformation@ContactInformationForIndividual(_, _, _, _) => PrimaryContact(Seq(contactInformation))
+        case contactInformation@ContactInformationForOrganisation(_, _, _, _) => PrimaryContact(Seq(contactInformation))
       }
 
     val secondaryContact: Option[SecondaryContact] =

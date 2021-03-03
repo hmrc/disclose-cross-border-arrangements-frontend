@@ -177,6 +177,30 @@ class SubscriptionConnectorSpec extends SpecBase
         }
       }
 
+      "must return no contact details and lock as true if 'Create/Amend request is in progress'" in {
+        val errorDetail =
+          """{
+            |"errorDetail": {
+            |  "timestamp": "2020-12-31T08:14:07.148Z",
+            |  "correlationId": "d60de98c-f499-47f5-b2d6-e80966e8d19e",
+            |  "errorCode": "503",
+            |  "errorMessage": "Create/Amend request is in progress",
+            |  "source": "Back End",
+            |  "sourceFaultDetail": {
+            |    "detail": [
+            |      "201 - Create/Amend request is in progress"
+            |    ]
+            |  }
+            |}
+            |}""".stripMargin
+
+        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
+
+        val result = connector.displaySubscriptionDetails(enrolmentID)
+        result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
+      }
+
       "must return None if status is not OK" in {
         val errorDetail =
           """{

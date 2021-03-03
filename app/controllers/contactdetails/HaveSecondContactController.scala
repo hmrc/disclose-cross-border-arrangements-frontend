@@ -57,16 +57,11 @@ class HaveSecondContactController @Inject()(
         (request.userAnswers.get(HaveSecondContactPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
           case (None, Some(displaySubscription)) =>
-
-            val contactInformationList =
+            val haveSecondContact =
               displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                .fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+                .fold(Seq[ContactInformation]())(_.contactInformation).nonEmpty
 
-            if (contactInformationList.nonEmpty) {
-              form.fill(true)
-            } else {
-              form.fill(false)
-            }
+            form.fill(haveSecondContact)
           case _ => form
         }
 
@@ -93,11 +88,24 @@ class HaveSecondContactController @Inject()(
 
           renderer.render("contactdetails/haveSecondContact.njk", json).map(BadRequest(_))
         },
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers))
+        newValue => {
+          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+            case Some(displaySubscription) =>
+              val haveSecondContact =
+                displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+                  .fold(Seq[ContactInformation]())(_.contactInformation).nonEmpty
+
+              if (newValue != haveSecondContact) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, newValue))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers))
+              } else {
+                Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+              }
+            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+          }
+        }
       )
   }
 }

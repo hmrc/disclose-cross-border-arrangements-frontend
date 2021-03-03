@@ -55,7 +55,7 @@ class HaveContactPhoneController @Inject()(
       val preparedForm =
         (request.userAnswers.get(HaveContactPhonePage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
-          case (None, Some(displaySubscription)) => //TODO primaryContactPhoneExists is similar to this. Refactor?
+          case (None, Some(displaySubscription)) =>
             val haveSecondContactPhone =
               viewHelper.primaryContactPhoneExists(
                 displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation,
@@ -88,11 +88,25 @@ class HaveContactPhoneController @Inject()(
 
           renderer.render("contactdetails/haveContactPhone.njk", json).map(BadRequest(_))
         },
-        value =>
-          for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveContactPhonePage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers))
+        newValue => {
+          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+            case Some(displaySubscription) =>
+              val haveSecondContactPhone =
+                viewHelper.primaryContactPhoneExists(
+                  displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation,
+                  request.userAnswers)
+
+              if (newValue != haveSecondContactPhone) {
+                for {
+                  updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveContactPhonePage, newValue))
+                  _ <- sessionRepository.set(updatedAnswers)
+                } yield Redirect(navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers))
+              } else {
+                Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+              }
+            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+          }
+        }
       )
   }
 }

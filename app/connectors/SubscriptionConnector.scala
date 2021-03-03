@@ -55,11 +55,8 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
           case errorStatus: Int => response.json.validate[DisplaySubscriptionErrorResponse] match {
             case JsSuccess(errorResponse, _) if errorResponse.errorDetail.errorMessage == errorMessage =>
               DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
-            case JsSuccess(errorResponse, _) =>
+            case _ =>
               logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
-              DisplaySubscriptionDetailsAndStatus(None)
-            case JsError(errors) =>
-              logger.warn("Validation of display subscription error response payload failed", errors)
               DisplaySubscriptionDetailsAndStatus(None)
           }
         }

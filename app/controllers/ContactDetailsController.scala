@@ -21,10 +21,10 @@ import connectors.SubscriptionConnector
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import models.{NormalMode, UserAnswers}
+import models.UserAnswers
 import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
-import pages.DisplaySubscriptionDetailsPage
-import pages.contactdetails.{ContactNamePage, HaveSecondContactPage}
+import pages.{DisplaySubscriptionDetailsPage, Page, QuestionPage}
+import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveContactPhonePage, HaveSecondContactPage, HaveSecondaryContactPhonePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -75,7 +75,7 @@ class ContactDetailsController @Inject()(
                     "secondaryContactDetails" -> secondaryContactDetailsList.get,
                     "isOrganisation" -> isOrganisation,
                     "homePageLink" -> appConfig.discloseArrangeLink,
-                    "changeProvided" -> false
+                    "changeProvided" -> changeProvided(request.userAnswers)
                   )
                 } else {
                   Json.obj(
@@ -83,7 +83,7 @@ class ContactDetailsController @Inject()(
                     "additionalContact" -> false,
                     "isOrganisation" -> isOrganisation,
                     "homePageLink" -> appConfig.discloseArrangeLink,
-                    "changeProvided" -> false
+                    "changeProvided" -> changeProvided(request.userAnswers)
                   )
                 }
               }
@@ -106,7 +106,7 @@ class ContactDetailsController @Inject()(
           if (details.subscriptionDetails.isDefined) {
             subscriptionConnector.updateSubscription(details.subscriptionDetails.get.displaySubscriptionForDACResponse, request.userAnswers)
               .map { _ =>
-                Redirect(routes.IndexController.onPageLoad())
+                Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad())
               }
           } else {
             errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
@@ -162,6 +162,20 @@ class ContactDetailsController @Inject()(
           None
         }
     }
+  }
+
+  private def changeProvided(userAnswers: UserAnswers): Boolean = {
+    List(
+      userAnswers.get(ContactNamePage).isDefined,
+      userAnswers.get(ContactEmailAddressPage).isDefined,
+      userAnswers.get(HaveContactPhonePage).isDefined,
+      userAnswers.get(ContactTelephoneNumberPage).isDefined,
+      userAnswers.get(HaveSecondContactPage).isDefined,
+      userAnswers.get(SecondaryContactNamePage).isDefined,
+      userAnswers.get(SecondaryContactEmailAddressPage).isDefined,
+      userAnswers.get(HaveSecondaryContactPhonePage).isDefined,
+      userAnswers.get(SecondaryContactTelephoneNumberPage).isDefined,
+    ).contains(true)
   }
 
 }
