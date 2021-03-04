@@ -17,30 +17,29 @@
 package connectors
 
 import base.SpecBase
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import controllers.Assets.SERVICE_UNAVAILABLE
 import generators.Generators
 import helpers.JsonFixtures._
 import models.UserAnswers
-import models.subscription._
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.mockito.{ArgumentCaptor, Mockito}
+import models.subscription.{UpdateSubscriptionDetails, _}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.contactdetails.ContactNamePage
 import play.api.Application
 import play.api.http.Status.OK
-import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsString, JsValue}
-import uk.gov.hmrc.http.{HttpClient, HttpResponse}
+import play.api.libs.json.JsString
+import uk.gov.hmrc.http.HttpClient
+import utils.WireMockHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class SubscriptionConnectorSpec extends SpecBase
   with ScalaCheckPropertyChecks
-  with Generators with BeforeAndAfterEach {
+  with Generators with BeforeAndAfterEach
+  with WireMockHelper {
 
   val individualPrimaryContact: PrimaryContact = PrimaryContact(Seq(
     ContactInformationForIndividual(
@@ -80,17 +79,35 @@ class SubscriptionConnectorSpec extends SpecBase
       SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail)
     )
 
+  val requestCommon: RequestCommonForUpdate = RequestCommonForUpdate(
+    regime = "DAC",
+    receiptDate = "2020-09-23T16:12:11Z",
+    acknowledgementReference = "AB123c",
+    originatingSystem = "MDTP",
+    requestParameters = None
+  )
+
+  val primaryContactForInd: PrimaryContact = PrimaryContact(
+    Seq(ContactInformationForIndividual(IndividualDetails("FirstName", "LastName", None), "email@email.com", None, None))
+  )
+
+  val requestDetailForUpdate: RequestDetailForUpdate = RequestDetailForUpdate(
+    IDType = "DAC",
+    IDNumber = "IDNumber",
+    tradingName = None,
+    isGBUser =  false,
+    primaryContact = primaryContactForInd,
+    secondaryContact = None
+  )
+
   val mockHttpClient: HttpClient = mock[HttpClient]
 
-  override lazy val app: Application = new GuiceApplicationBuilder()
-    .overrides(bind[HttpClient].toInstance(mockHttpClient)
-    ).build()
+  override lazy val app: Application = new GuiceApplicationBuilder().configure(
+    "microservice.services.cross-border-arrangements.port" -> server.port()
+  ).build()
 
   lazy val connector: SubscriptionConnector = app.injector.instanceOf[SubscriptionConnector]
 
-  override def beforeEach {
-    Mockito.reset(mockHttpClient)
-  }
 
   "SubscriptionConnector" - {
 
@@ -110,8 +127,7 @@ class SubscriptionConnectorSpec extends SpecBase
                 SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
               )
 
-            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-              .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
+            stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", OK, expectedBody)
 
 
             val result = connector.displaySubscriptionDetails(enrolmentID)
@@ -133,8 +149,7 @@ class SubscriptionConnectorSpec extends SpecBase
                 SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
               )
 
-            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-              .thenReturn(Future.successful(HttpResponse(OK, expectedBody)))
+            stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", OK, expectedBody)
 
 
             val result = connector.displaySubscriptionDetails(enrolmentID)
@@ -169,8 +184,7 @@ class SubscriptionConnectorSpec extends SpecBase
                  |  }
                  |}""".stripMargin
 
-            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-              .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
+            stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", OK, invalidBody)
 
             val result = connector.displaySubscriptionDetails(enrolmentID)
             result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
@@ -194,8 +208,7 @@ class SubscriptionConnectorSpec extends SpecBase
             |}
             |}""".stripMargin
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
+        stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", SERVICE_UNAVAILABLE, errorDetail)
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
@@ -218,8 +231,7 @@ class SubscriptionConnectorSpec extends SpecBase
             |}
             |}""".stripMargin
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
+        stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", SERVICE_UNAVAILABLE, errorDetail)
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
@@ -237,8 +249,7 @@ class SubscriptionConnectorSpec extends SpecBase
             |}
             |}""".stripMargin
 
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, errorDetail)))
+        stubResponse("/disclose-cross-border-arrangements/subscription/retrieve-subscription", SERVICE_UNAVAILABLE, errorDetail)
 
         val result = connector.displaySubscriptionDetails(enrolmentID)
         result.futureValue mustBe DisplaySubscriptionDetailsAndStatus(None)
@@ -248,40 +259,33 @@ class SubscriptionConnectorSpec extends SpecBase
     "updateSubscription" - {
 
       "must return UpdateSubscriptionForDACResponse if status is OK and users updated their contact info" in {
-       val dacID = validDacID.toString
+        val dacID = validDacID.toString
 
-            val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
-            val responseDetailUpdate: ResponseDetail = responseDetail.copy(subscriptionID = dacID)
+        val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
+        val responseDetailUpdate: ResponseDetail = responseDetail.copy(subscriptionID = dacID)
 
-            val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
-              DisplaySubscriptionForDACResponse(
-                SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
-              )
+        val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+          DisplaySubscriptionForDACResponse(
+            SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetailUpdate)
+          )
 
-            val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
-              UpdateSubscriptionForDACResponse(
-                UpdateSubscription(
-                  responseCommon = ResponseCommon("OK", None, "2020-09-23T16:12:11Z", Some(Seq(returnParameters))),
-                  responseDetail = ResponseDetailForUpdate(dacID)))
+        val updateSubscriptionForDACResponse: UpdateSubscriptionForDACResponse =
+          UpdateSubscriptionForDACResponse(
+            UpdateSubscription(
+              responseCommon = ResponseCommon("OK", None, "2020-09-23T16:12:11Z", Some(Seq(returnParameters))),
+              responseDetail = ResponseDetailForUpdate(dacID)))
 
-            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-              .thenReturn(Future.successful(HttpResponse(OK, updateSubscriptionResponsePayload(JsString(dacID)))))
+        stubResponse("/disclose-cross-border-arrangements/subscription/update-subscription", OK,
+          updateSubscriptionResponsePayload(JsString(dacID)))
 
-            val userAnswers = UserAnswers(userAnswersId)
-              .set(ContactNamePage, "Organisation Name").success.value
+        val userAnswers = UserAnswers(userAnswersId)
+          .set(ContactNamePage, "Organisation Name").success.value
 
+        val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
 
-            val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, userAnswers)
-            val argumentCaptor: ArgumentCaptor[UpdateSubscriptionForDACRequest] = ArgumentCaptor.forClass(classOf[UpdateSubscriptionForDACRequest])
+        result.futureValue mustBe Some(updateSubscriptionForDACResponse)
 
-            verify(mockHttpClient, times(1)).POST(any(), argumentCaptor.capture(), any())(any(), any(), any(), any())
-
-            result.futureValue mustBe Some(updateSubscriptionForDACResponse)
-
-            val body = argumentCaptor.getValue
-            body.updateSubscriptionForDACRequest.requestDetail.IDType mustBe "DAC"
-
-        }
+      }
 
 
       "must return None if unable to validate json" in {
@@ -301,8 +305,7 @@ class SubscriptionConnectorSpec extends SpecBase
                 |}
                 |""".stripMargin
 
-            when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-              .thenReturn(Future.successful(HttpResponse(OK, invalidBody)))
+            stubResponse("/disclose-cross-border-arrangements/subscription/update-subscription", OK, invalidBody)
 
             val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
             result.futureValue mustBe None
@@ -310,13 +313,33 @@ class SubscriptionConnectorSpec extends SpecBase
       }
 
       "must return None if status is not OK" in {
-        when(mockHttpClient.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-          .thenReturn(Future.successful(HttpResponse(SERVICE_UNAVAILABLE, "")))
+        stubResponse("/disclose-cross-border-arrangements/subscription/update-subscription", SERVICE_UNAVAILABLE)
 
         val result = connector.updateSubscription(displaySubscriptionForDACResponse.displaySubscriptionForDACResponse, emptyUserAnswers)
         result.futureValue mustBe None
       }
     }
+
+    "cacheSubscription" - {
+      "must return OK if update was stored successfully" in {
+        stubResponse("/disclose-cross-border-arrangements/subscription/cache-subscription", OK)
+
+        val updateSubscriptionDetails = UpdateSubscriptionDetails(requestCommon, requestDetailForUpdate)
+
+        val result = connector.cacheSubscription(updateSubscriptionDetails, "subscriptionID")
+        result.futureValue.status mustBe OK
+      }
+    }
   }
+
+  private def stubResponse(expectedUrl: String, expectedStatus: Int, expectedBody: String = ""): StubMapping =
+    server.stubFor(
+      post(urlEqualTo(expectedUrl))
+        .willReturn(
+          aResponse()
+            .withStatus(expectedStatus)
+            .withBody(expectedBody)
+        )
+    )
 
 }

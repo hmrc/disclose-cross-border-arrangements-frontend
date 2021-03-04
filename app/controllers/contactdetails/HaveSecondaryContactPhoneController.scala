@@ -95,7 +95,7 @@ class HaveSecondaryContactPhoneController @Inject()(
                 viewHelper.secondaryContactPhoneExists(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
                   .fold(Seq[ContactInformation]())(_.contactInformation), request.userAnswers)
 
-              if (newValue != haveSecondContactPhone) {
+              if ((newValue != haveSecondContactPhone) || newValue) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondaryContactPhonePage, newValue))
                   _ <- sessionRepository.set(updatedAnswers)

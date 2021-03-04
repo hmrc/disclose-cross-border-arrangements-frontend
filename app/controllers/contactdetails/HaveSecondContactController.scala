@@ -95,7 +95,7 @@ class HaveSecondContactController @Inject()(
                 displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
                   .fold(Seq[ContactInformation]())(_.contactInformation).nonEmpty
 
-              if (newValue != haveSecondContact) {
+              if ((newValue != haveSecondContact) || newValue) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, newValue))
                   _ <- sessionRepository.set(updatedAnswers)

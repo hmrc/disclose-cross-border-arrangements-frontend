@@ -87,4 +87,14 @@ class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: H
     }
   }
 
+  def cacheSubscription(createSubscriptionForDACRequest: UpdateSubscriptionDetails,
+                        subscriptionID: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+    val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/cache-subscription"
+
+    http.POST[CreateSubscriptionForDACRequest, HttpResponse](
+      submissionUrl,
+      CreateSubscriptionForDACRequest(createSubscriptionForDACRequest, subscriptionID)
+    )
+  }
+
 }

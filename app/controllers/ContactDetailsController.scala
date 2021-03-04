@@ -22,9 +22,9 @@ import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
 import models.UserAnswers
-import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
-import pages.{DisplaySubscriptionDetailsPage, Page, QuestionPage}
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveContactPhonePage, HaveSecondContactPage, HaveSecondaryContactPhonePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail, UpdateSubscriptionDetails}
+import pages.DisplaySubscriptionDetailsPage
+import pages.contactdetails._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -35,6 +35,7 @@ import uk.gov.hmrc.viewmodels.SummaryList
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class ContactDetailsController @Inject()(
     override val messagesApi: MessagesApi,
@@ -104,9 +105,23 @@ class ContactDetailsController @Inject()(
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
           if (details.subscriptionDetails.isDefined) {
-            subscriptionConnector.updateSubscription(details.subscriptionDetails.get.displaySubscriptionForDACResponse, request.userAnswers)
-              .map { _ =>
-                Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad())
+            val subscriptionDetails = details.subscriptionDetails.get.displaySubscriptionForDACResponse
+
+            subscriptionConnector.updateSubscription(subscriptionDetails, request.userAnswers)
+              .flatMap { updateResponse =>
+                if (updateResponse.isDefined) {
+                  subscriptionConnector.cacheSubscription(
+                    UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, request.userAnswers),
+                    updateResponse.get.updateSubscriptionForDACResponse.responseDetail.subscriptionID)
+                    .flatMap { _ =>
+                      for {
+                        updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
+                        _ <- sessionRepository.set(updatedUserAnswers)
+                      } yield Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad())
+                  }
+                } else {
+                  Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
+                }
               }
           } else {
             errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
@@ -115,40 +130,20 @@ class ContactDetailsController @Inject()(
   }
 
   private def buildPrimaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
-    if (responseDetail.secondaryContact.isDefined) {
-      Seq(
-        viewHelper.primaryContactName(responseDetail, userAnswers),
-        Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
-        Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
-        viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
-      ).filter(_.isDefined).map(_.get)
-    } else {
-      Seq(
-        viewHelper.primaryContactName(responseDetail, userAnswers),
-        Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
-        Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
-        viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
-      ).filter(_.isDefined).map(_.get)
-    }
+    Seq(
+      viewHelper.primaryContactName(responseDetail, userAnswers),
+      Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
+      Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
+      viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
+    ).filter(_.isDefined).map(_.get)
   }
 
   private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Seq[SummaryList.Row]] = {
-
     userAnswers.get(HaveSecondContactPage) match {
-      case Some(true) =>
-        Some(
-          Seq(
-            Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
-            Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
-            Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
-            Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
-            viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
-          ).filter(_.isDefined).map(_.get)
-        )
       case Some(false) =>
         Some(Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers)))
-      case None =>
-        if (responseDetail.secondaryContact.isDefined) {
+      case haveSecondContact: Option[Boolean] =>
+        if (haveSecondContact.isDefined || responseDetail.secondaryContact.isDefined) {
           Some(
             Seq(
               Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
@@ -176,6 +171,18 @@ class ContactDetailsController @Inject()(
       userAnswers.get(HaveSecondaryContactPhonePage).isDefined,
       userAnswers.get(SecondaryContactTelephoneNumberPage).isDefined,
     ).contains(true)
+  }
+
+  private def cleanupAnswers(userAnswers: UserAnswers): Try[UserAnswers] = {
+    userAnswers.remove(ContactNamePage)
+      .flatMap(_.remove(ContactEmailAddressPage))
+      .flatMap(_.remove(HaveContactPhonePage))
+      .flatMap(_.remove(ContactTelephoneNumberPage))
+      .flatMap(_.remove(HaveSecondContactPage))
+      .flatMap(_.remove(SecondaryContactNamePage))
+      .flatMap(_.remove(SecondaryContactEmailAddressPage))
+      .flatMap(_.remove(HaveSecondaryContactPhonePage))
+      .flatMap(_.remove(SecondaryContactTelephoneNumberPage))
   }
 
 }

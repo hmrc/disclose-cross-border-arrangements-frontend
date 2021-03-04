@@ -96,7 +96,7 @@ class HaveContactPhoneController @Inject()(
                   displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation,
                   request.userAnswers)
 
-              if (newValue != haveSecondContactPhone) {
+              if ((newValue != haveSecondContactPhone) || newValue) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveContactPhonePage, newValue))
                   _ <- sessionRepository.set(updatedAnswers)

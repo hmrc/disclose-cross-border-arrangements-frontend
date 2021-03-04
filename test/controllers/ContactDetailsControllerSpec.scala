@@ -31,6 +31,7 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
@@ -201,6 +202,9 @@ class ContactDetailsControllerSpec extends SpecBase
           when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
             .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
 
+          when(mockSubscriptionConnector.cacheSubscription(any(), any())(any(), any()))
+            .thenReturn(Future.successful(HttpResponse(OK, "")))
+
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
           ).build()
@@ -211,6 +215,36 @@ class ContactDetailsControllerSpec extends SpecBase
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).value mustEqual routes.DetailsAlreadyUpdatedController.onPageLoad().url
+
+          application.stop()
+      }
+    }
+
+    "must redirect to /details-not-updated page if update was unsuccessful" in {
+
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+          val jsonPayload = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
+
+          val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
+
+          when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
+            .thenReturn(Future.successful(None))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+          ).build()
+
+          val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.DetailsNotUpdatedController.onPageLoad().url
 
           application.stop()
       }
