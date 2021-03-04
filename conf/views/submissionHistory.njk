@@ -36,14 +36,6 @@
           {{ messages("submissionHistory.heading") }}
         </h1>
 
-        <p class="govuk-heading-m">
-          {{ messages("submissionHistory.p1") }}
-        </p>
-
-        <p id="value-hint" class="govuk-hint">
-          {{ messages("submissionHistory.p2") }}
-        </p>
-
         <form action="{{ routes.controllers.HistoryController.onSearch().url }}" method="post" role="search">
 
           {{ csrf() | safe }}
@@ -51,15 +43,22 @@
           {% if form.errors.length > 0 %}
 
             <div class="govuk-form-group govuk-form-group--error">
-              <label class="govuk-label govuk-visually-hidden" for="searchBox">
-                {{ messages("submissionHistory.button") }}
-              </label>
+
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="searchBox">
+                  {{ messages("submissionHistory.p1") }}
+                </label>
+              </h2>
+
+              <div id="search-hint" class="govuk-hint">
+                {{ messages("submissionHistory.p2") }}
+              </div>
 
               <span id="event-name-error" class="govuk-error-message">
                 <span class="govuk-visually-hidden">Error:</span>{{ form.searchBox.error.text }}
               </span>
 
-              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text">
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1 govuk-input--error" id="searchBox" name="searchBox" type="text" aria-describedby="search-hint">
 
               <button class="govuk-button" data-module="govuk-button" id="submit">
                 {{ messages("submissionHistory.button") }}
@@ -69,10 +68,18 @@
           {% else %}
 
             <div class="govuk-form-group">
-              <label class="govuk-label govuk-visually-hidden" for="searchBox">
-                {{ messages("submissionHistory.button") }}
-              </label>
-              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text">
+
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="searchBox">
+                  {{ messages("submissionHistory.p1") }}
+                </label>
+              </h2>
+
+              <div id="search-hint" class="govuk-hint">
+                {{ messages("submissionHistory.p2") }}
+              </div>
+
+              <input class="govuk-input govuk-!-width-one-half govuk-!-margin-right-1" id="searchBox" name="searchBox" type="text" aria-describedby="search-hint">
 
               <button class="govuk-button" data-module="govuk-button" id="submit">
                 {{ messages("submissionHistory.button") }}
