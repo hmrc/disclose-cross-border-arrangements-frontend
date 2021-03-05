@@ -81,9 +81,6 @@ POST       /change-contact/second-contact-have-phone    controllers.contactdetai
 GET        /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onPageLoad()
 POST       /change-secondary-contact-telephone-number   controllers.contactdetails.SecondaryContactTelephoneNumberController.onSubmit()
 
-GET        /change-name                                 controllers.contactdetails.IndividualContactNameController.onPageLoad()
-POST       /change-name                                 controllers.contactdetails.IndividualContactNameController.onSubmit()
-
 GET        /keep-alive                                  controllers.KeepAliveController.keepAlive
 
 GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()

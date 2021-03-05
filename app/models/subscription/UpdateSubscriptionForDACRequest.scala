@@ -100,12 +100,7 @@ object UpdateSubscriptionDetails {
           case None => phone
         }
 
-        val individualDetails = userAnswers.get(IndividualContactNamePage) match {
-          case Some(name) => IndividualDetails(name.firstName, name.lastName, None)
-          case None => details
-        }
-
-        ContactInformationForIndividual(individualDetails, emailAddress, telephone, mobile)
+        ContactInformationForIndividual(details, emailAddress, telephone, mobile)
       case ContactInformationForOrganisation(details, email, phone, mobile) =>
         val emailAddress = userAnswers.get(ContactEmailAddressPage) match {
           case Some(email) => email

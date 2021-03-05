@@ -17,9 +17,7 @@
 package forms.contactdetails
 
 import forms.mappings.Mappings
-import models.Name
 import play.api.data.Form
-import play.api.data.Forms.mapping
 import utils.RegexConstants
 
 import javax.inject.Inject

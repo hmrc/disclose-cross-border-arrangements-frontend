@@ -16,7 +16,6 @@
 
 package pages.contactdetails
 
-import models.Name
 import pages.QuestionPage
 import play.api.libs.json.JsPath
 
