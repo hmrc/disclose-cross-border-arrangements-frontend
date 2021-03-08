@@ -17,16 +17,16 @@
 package helpers
 
 import config.FrontendAppConfig
-import connectors.CrossBorderArrangementsConnector
-import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadStatus}
+import connectors.{CrossBorderArrangementsConnector, UpscanConnector}
+import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadStatus, UpscanInitiateResponse}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeCrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfig,
-                                                     httpClient: HttpClient)(implicit ec: ExecutionContext)
-  extends CrossBorderArrangementsConnector(configuration, httpClient){
+class FakeUpscanConnector @Inject()(configuration: FrontendAppConfig,
+                                    httpClient: HttpClient)(implicit ec: ExecutionContext)
+  extends UpscanConnector(configuration, httpClient, "name"){
 
   //TODO: I know!
   var statusBuffer: Option[UploadStatus] = None
@@ -40,8 +40,15 @@ class FakeCrossBorderArrangementsConnector @Inject()(configuration: FrontendAppC
     detailsBuffer = Some(uploadDetails)
   }
 
-  override def requestUpload(uploadId: UploadId, fileReference: Reference)(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    Future.successful(HttpResponse(200, ""))
+  override def getUpscanFormData(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
+    Future.successful(UpscanInitiateResponse(
+      fileReference = Reference("file-reference"),
+      postTarget = "target",
+      formFields = Map.empty
+    ))
+
+  override def requestUpload(fileReference: Reference)(implicit hc: HeaderCarrier): Future[UploadId] =
+    Future.successful(UploadId("UploadId"))
 
   override def getUploadStatus(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadStatus]] = {
     Future.successful(statusBuffer)
