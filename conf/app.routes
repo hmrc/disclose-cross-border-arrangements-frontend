@@ -83,7 +83,7 @@ POST       /change-secondary-contact-telephone-number   controllers.contactdetai
 
 GET        /keep-alive                                  controllers.KeepAliveController.keepAlive
 
-GET        /manual/contact-us                           controllers.ContactUsToUseManualServiceController.onPageLoad()
+GET        /contact-us                                  controllers.ContactUsToUseManualServiceController.onPageLoad()
 
 GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
 GET        /change-contact/details-not-updated          controllers.DetailsNotUpdatedController.onPageLoad()

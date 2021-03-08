@@ -142,7 +142,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "enterUrl" -> "/disclose-cross-border-arrangements/manual/contact-us"
+        "enterUrl" -> "/disclose-cross-border-arrangements/upload/contact-us"
       )
 
       templateCaptor.getValue mustEqual "index.njk"
