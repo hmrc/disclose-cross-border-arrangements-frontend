@@ -310,6 +310,8 @@ contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact n
 contactDetails.secondaryContactEmail.checkYourAnswersLabel = Additional contact email address
 contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Additional contact telephone number
 contactDetails.haveSecondContactPhone.checkYourAnswersLabel = Does the additional contact have a telephone number?
+contactDetails.h2 = Now send your new contact details
+contactDetails.p = By sending these details, you are confirming that the information is correct and complete to the best of your knowledge.
 contactDetails.button = Confirm and send
 
 contactName.title = Who should we contact if we have any questions about your disclosures?
@@ -390,3 +392,7 @@ detailsAlreadyUpdated.p = You must wait until your recent changes have been acce
 detailsNotUpdated.title = There is a problem with sending your details
 detailsNotUpdated.heading = There is a problem with sending your details
 detailsNotUpdated.p = Your details have been saved. You can try to send them again in a couple of hours.
+
+detailsUpdated.title = Contact details updated
+detailsUpdated.panel.heading = Contact details updated
+detailsUpdated.p = We will use your new details if we need to contact you.

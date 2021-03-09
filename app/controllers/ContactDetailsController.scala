@@ -117,7 +117,7 @@ class ContactDetailsController @Inject()(
                       for {
                         updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
                         _ <- sessionRepository.set(updatedUserAnswers)
-                      } yield Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad())
+                      } yield Redirect(routes.DetailsUpdatedController.onPageLoad())
                   }
                 } else {
                   Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))

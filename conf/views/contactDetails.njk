@@ -47,6 +47,12 @@
           <form action="{{ routes.controllers.ContactDetailsController.onSubmit().url }}" method="post">
             {{ csrf() | safe }}
 
+            <h2 class="govuk-heading-m govuk-!-padding-top-5">
+              {{ messages("contactDetails.h2") }}
+            </h2>
+
+            <p class="govuk-body">{{ messages("contactDetails.p") }}</p>
+
              {{ govukButton({
                text: messages("contactDetails.button"),
                preventDoubleClick: true,
