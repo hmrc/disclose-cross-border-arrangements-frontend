@@ -95,10 +95,12 @@ object UpdateSubscriptionDetails {
           case None => email
         }
 
-        val telephone = userAnswers.get(ContactTelephoneNumberPage) match {
-          case Some(phone) => Some(phone)
-          case None => phone
-        }
+        val telephone =
+          (userAnswers.get(ContactTelephoneNumberPage), userAnswers.get(HaveContactPhonePage)) match {
+            case (_, Some(false)) => None
+            case (Some(newPhone), _) => Some(newPhone)
+            case _ => phone
+          }
 
         ContactInformationForIndividual(details, emailAddress, telephone, mobile)
       case ContactInformationForOrganisation(details, email, phone, mobile) =>
@@ -107,10 +109,12 @@ object UpdateSubscriptionDetails {
           case None => email
         }
 
-        val telephone = userAnswers.get(ContactTelephoneNumberPage) match {
-          case Some(phone) => Some(phone)
-          case None => phone
-        }
+        val telephone =
+          (userAnswers.get(ContactTelephoneNumberPage), userAnswers.get(HaveContactPhonePage)) match {
+            case (_, Some(false)) => None
+            case (Some(newPhone), _) => Some(newPhone)
+            case _ => phone
+          }
 
         val organisationDetails = userAnswers.get(ContactNamePage) match {
           case Some(name) => OrganisationDetails(name)
@@ -132,10 +136,12 @@ object UpdateSubscriptionDetails {
           case None => email
         }
 
-        val telephone = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
-          case Some(phone) => Some(phone)
-          case None => phone
-        }
+        val telephone =
+          (userAnswers.get(SecondaryContactTelephoneNumberPage), userAnswers.get(HaveSecondaryContactPhonePage)) match {
+            case (_, Some(false)) => None
+            case (Some(newPhone), _) => Some(newPhone)
+            case _ => phone
+          }
 
         val organisationDetails = userAnswers.get(SecondaryContactNamePage) match {
           case Some(name) => OrganisationDetails(name)
@@ -156,11 +162,13 @@ object UpdateSubscriptionDetails {
       }
 
     val secondaryContact: Option[SecondaryContact] =
-      if (responseDetail.secondaryContact.isDefined) {
-        val contactInformation = buildSecondaryContactInformation(responseDetail.secondaryContact.get.contactInformation, userAnswers)
-        Some(SecondaryContact(Seq(contactInformation)))
-      } else {
-        None
+      responseDetail.secondaryContact.fold(Option.empty[SecondaryContact]){ secondaryContact =>
+        userAnswers.get(HaveSecondContactPage) match {
+          case Some(false) => None
+          case _ =>
+            val contactInformation = buildSecondaryContactInformation(secondaryContact.contactInformation, userAnswers)
+            Some(SecondaryContact(Seq(contactInformation)))
+        }
       }
 
     RequestDetailForUpdate(

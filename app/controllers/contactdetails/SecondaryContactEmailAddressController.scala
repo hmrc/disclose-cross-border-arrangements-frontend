@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.contactdetails.SecondaryContactEmailAddressFormProvider
 import helpers.ViewHelper
 import models.NormalMode
-import models.subscription.ContactInformation
+import models.subscription.DisplaySubscriptionForDACResponse
 import navigation.Navigator
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.SecondaryContactEmailAddressPage
@@ -56,12 +56,7 @@ class SecondaryContactEmailAddressController @Inject()(
       val preparedForm =
         (request.userAnswers.get(SecondaryContactEmailAddressPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
-          case (None, Some(displaySubscription)) =>
-            val secondaryEmailContact =
-              viewHelper.retrieveContactEmail(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                .fold(Seq[ContactInformation]())(_.contactInformation))
-
-            form.fill(secondaryEmailContact)
+          case (None, Some(displaySubscription)) => form.fill(retrieveSecondaryContactEmail(displaySubscription))
           case _ => form
         }
 
@@ -89,11 +84,7 @@ class SecondaryContactEmailAddressController @Inject()(
         newContactEmail => {
           request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
             case Some(displaySubscription) =>
-              val secondaryEmailContact =
-                viewHelper.retrieveContactEmail(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                  .fold(Seq[ContactInformation]())(_.contactInformation))
-
-              if (newContactEmail != secondaryEmailContact) {
+              if (newContactEmail != retrieveSecondaryContactEmail(displaySubscription)) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactEmailAddressPage, newContactEmail))
                   _ <- sessionRepository.set(updatedAnswers)
@@ -105,5 +96,13 @@ class SecondaryContactEmailAddressController @Inject()(
           }
         }
       )
+  }
+
+  private def retrieveSecondaryContactEmail(displaySubscription: DisplaySubscriptionForDACResponse): String = {
+    val secondaryContact = displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+
+    secondaryContact.fold(""){ _ =>
+      viewHelper.retrieveContactEmail(secondaryContact.get.contactInformation)
+    }
   }
 }

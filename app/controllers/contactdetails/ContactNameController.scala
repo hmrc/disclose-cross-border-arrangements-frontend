@@ -56,7 +56,7 @@ class ContactNameController @Inject()(
         (request.userAnswers.get(ContactNamePage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
           case (None, Some(displaySubscription)) =>
-            val (contactName, _) =
+            val contactName =
               viewHelper.retrieveContactName(
                 displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
 
@@ -86,7 +86,7 @@ class ContactNameController @Inject()(
         newContactName => {
           request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
             case Some(displaySubscription) =>
-              val (contactName, _) =
+              val contactName =
                 viewHelper.retrieveContactName(
                   displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
 

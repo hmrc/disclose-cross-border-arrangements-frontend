@@ -200,12 +200,19 @@ class ViewHelper @Inject()() {
     }
   }
 
-  def retrieveContactName(contactInformation: Seq[ContactInformation]): (String, Boolean) = {
+  def isOrganisation(contactInformation: Seq[ContactInformation]): Boolean = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, _, _, _) => false
+      case ContactInformationForOrganisation(_, _, _, _) => true
+    }
+  }
+
+  def retrieveContactName(contactInformation: Seq[ContactInformation]): String = {
     contactInformation.head match {
       case ContactInformationForIndividual(individual, _, _, _) =>
-        (s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}", false)
+        s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
       case ContactInformationForOrganisation(organisation, _, _, _) =>
-        (s"${organisation.organisationName}", true)
+        s"${organisation.organisationName}"
     }
   }
 
@@ -227,11 +234,8 @@ class ViewHelper @Inject()() {
     (userAnswers.get(ContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
       case (Some(contactName), _) => contactName
       case (None, Some(displaySubscription)) =>
-        val (contactName, _) =
-          retrieveContactName(
-            displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
-
-        contactName
+        retrieveContactName(
+          displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
       case _ => "your first contact"
     }
   }
@@ -240,23 +244,20 @@ class ViewHelper @Inject()() {
     (userAnswers.get(SecondaryContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
       case (Some(secondaryContactName), _) => secondaryContactName
       case (None, Some(displaySubscription)) =>
-        val (secondaryContactName, _) =
-          retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-            .fold(Seq[ContactInformation]())(_.contactInformation))
-
-        secondaryContactName
+        retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+          .fold(Seq[ContactInformation]())(_.contactInformation))
       case _ => "your second contact"
     }
   }
 
 
   def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
-    val (contactName, isOrganisation) = userAnswers.get(ContactNamePage) match {
-      case Some(contactName) => (contactName, true)
+    val contactName = userAnswers.get(ContactNamePage) match {
+      case Some(contactName) => contactName
       case None => retrieveContactName(responseDetail.primaryContact.contactInformation)
     }
 
-    if (isOrganisation) {
+    if (isOrganisation(responseDetail.primaryContact.contactInformation)) {
       Some(
         Row(
           key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
@@ -376,7 +377,7 @@ class ViewHelper @Inject()() {
         val contactInformationList =
           responseDetail.secondaryContact.fold(Seq[ContactInformation]())(_.contactInformation)
 
-        retrieveContactName(contactInformationList)._1
+        retrieveContactName(contactInformationList)
     }
 
     Row(

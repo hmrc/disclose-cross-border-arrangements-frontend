@@ -22,7 +22,7 @@ import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
 import models.UserAnswers
-import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail, UpdateSubscriptionDetails}
+import models.subscription.{ResponseDetail, UpdateSubscriptionDetails}
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -61,19 +61,14 @@ class ContactDetailsController @Inject()(
           } else {
             if (details.subscriptionDetails.isDefined) {
               val responseDetail = details.subscriptionDetails.get.displaySubscriptionForDACResponse.responseDetail
-              val secondaryContactDetailsList = buildSecondaryContactRows(responseDetail, request.userAnswers)
-
-              val isOrganisation = responseDetail.primaryContact.contactInformation.head match {
-                case ContactInformationForIndividual(_, _, _, _) => false
-                case ContactInformationForOrganisation(_, _, _, _) => true
-              }
+              val isOrganisation = viewHelper.isOrganisation(responseDetail.primaryContact.contactInformation)
 
               val json = {
-                if (secondaryContactDetailsList.isDefined) {
+                if (isOrganisation) {
                   Json.obj(
                     "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
                     "additionalContact" -> true,
-                    "secondaryContactDetails" -> secondaryContactDetailsList.get,
+                    "secondaryContactDetails" -> buildSecondaryContactRows(responseDetail, request.userAnswers),
                     "isOrganisation" -> isOrganisation,
                     "homePageLink" -> appConfig.discloseArrangeLink,
                     "changeProvided" -> changeProvided(request.userAnswers)
@@ -126,6 +121,8 @@ class ContactDetailsController @Inject()(
           } else {
             errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
           }
+      } recover {
+        case _ => Redirect(routes.DetailsNotUpdatedController.onPageLoad())
       }
   }
 
@@ -138,23 +135,24 @@ class ContactDetailsController @Inject()(
     ).filter(_.isDefined).map(_.get)
   }
 
-  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Seq[SummaryList.Row]] = {
+  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
     userAnswers.get(HaveSecondContactPage) match {
       case Some(false) =>
-        Some(Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers)))
+        Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
       case haveSecondContact: Option[Boolean] =>
         if (haveSecondContact.isDefined || responseDetail.secondaryContact.isDefined) {
-          Some(
-            Seq(
-              Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
-              Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
-              Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
-              Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
-              viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
-            ).filter(_.isDefined).map(_.get)
-          )
-        } else {
-          None
+          Seq(
+            Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
+            Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
+            viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
+          ).filter(_.isDefined).map(_.get)
+        } else if (responseDetail.secondaryContact.isEmpty) {
+          Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
+        }
+        else {
+          Seq()
         }
     }
   }

@@ -312,13 +312,13 @@ class ViewHelperSpec extends SpecBase
     "must return the individual name from contact details and return false if not an organisation" in {
       val result = viewHelper.retrieveContactName(Seq(contactInformationForInd))
 
-      result mustBe(("FirstName LastName", false))
+      result mustBe "FirstName LastName"
     }
 
     "must return the organisation name from contact details and return true if an organisation" in {
       val result = viewHelper.retrieveContactName(Seq(contactInformationForOrg))
 
-      result mustBe(("Organisation name", true))
+      result mustBe "Organisation name"
     }
   }
 

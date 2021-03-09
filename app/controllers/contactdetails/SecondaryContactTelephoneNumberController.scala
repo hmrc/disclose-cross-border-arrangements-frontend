@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.contactdetails.SecondaryContactTelephoneNumberFormProvider
 import helpers.ViewHelper
 import models.NormalMode
-import models.subscription.ContactInformation
+import models.subscription.DisplaySubscriptionForDACResponse
 import navigation.Navigator
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.SecondaryContactTelephoneNumberPage
@@ -56,12 +56,7 @@ class SecondaryContactTelephoneNumberController @Inject()(
       val preparedForm =
         (request.userAnswers.get(SecondaryContactTelephoneNumberPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
-          case (None, Some(displaySubscription)) =>
-            val secondaryPhoneContact =
-              viewHelper.retrieveContactPhone(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                .fold(Seq[ContactInformation]())(_.contactInformation))
-
-            form.fill(secondaryPhoneContact)
+          case (None, Some(displaySubscription)) => form.fill(retrieveSecondaryContactPhone(displaySubscription))
           case _ => form
       }
 
@@ -89,11 +84,7 @@ class SecondaryContactTelephoneNumberController @Inject()(
         newContactPhone => {
           request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
             case Some(displaySubscription) =>
-              val secondaryPhoneContact =
-                viewHelper.retrieveContactPhone(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                  .fold(Seq[ContactInformation]())(_.contactInformation))
-
-              if (newContactPhone != secondaryPhoneContact) {
+              if (newContactPhone != retrieveSecondaryContactPhone(displaySubscription)) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactTelephoneNumberPage, newContactPhone))
                   _ <- sessionRepository.set(updatedAnswers)
@@ -105,5 +96,13 @@ class SecondaryContactTelephoneNumberController @Inject()(
           }
         }
       )
+  }
+
+  private def retrieveSecondaryContactPhone(displaySubscription: DisplaySubscriptionForDACResponse): String = {
+    val secondaryContact = displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+
+    secondaryContact.fold(""){ _ =>
+      viewHelper.retrieveContactPhone(secondaryContact.get.contactInformation)
+    }
   }
 }

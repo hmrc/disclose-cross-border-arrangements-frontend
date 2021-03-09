@@ -20,7 +20,7 @@ import controllers.actions._
 import forms.contactdetails.SecondaryContactNameFormProvider
 import helpers.ViewHelper
 import models.NormalMode
-import models.subscription.ContactInformation
+import models.subscription.DisplaySubscriptionForDACResponse
 import navigation.Navigator
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.SecondaryContactNamePage
@@ -56,12 +56,7 @@ class SecondaryContactNameController @Inject()(
       val preparedForm =
         (request.userAnswers.get(SecondaryContactNamePage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
-          case (None, Some(displaySubscription)) =>
-            val (secondaryContactName, _) =
-              viewHelper.retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                .fold(Seq[ContactInformation]())(_.contactInformation))
-
-            form.fill(secondaryContactName)
+          case (None, Some(displaySubscription)) => form.fill(retrieveSecondaryContactName(displaySubscription))
           case _ => form
         }
 
@@ -87,11 +82,7 @@ class SecondaryContactNameController @Inject()(
         newContactName => {
           request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
             case Some(displaySubscription) =>
-              val (secondaryContactName, _) =
-                viewHelper.retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                  .fold(Seq[ContactInformation]())(_.contactInformation))
-
-              if (newContactName != secondaryContactName) {
+              if (newContactName != retrieveSecondaryContactName(displaySubscription)) {
                 for {
                   updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactNamePage, newContactName))
                   _ <- sessionRepository.set(updatedAnswers)
@@ -103,5 +94,13 @@ class SecondaryContactNameController @Inject()(
           }
         }
       )
+  }
+
+  private def retrieveSecondaryContactName(displaySubscription: DisplaySubscriptionForDACResponse): String = {
+    val secondaryContact = displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+
+    secondaryContact.fold(""){ _ =>
+      viewHelper.retrieveContactName(secondaryContact.get.contactInformation)
+    }
   }
 }
