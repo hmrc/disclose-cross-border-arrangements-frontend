@@ -308,6 +308,20 @@ class ViewHelperSpec extends SpecBase
     }
   }
 
+  "isOrganisation" - {
+    "must return false if contact is an Individual" in {
+      val result = viewHelper.isOrganisation(Seq(contactInformationForInd))
+
+      result mustBe false
+    }
+
+    "must return true if contact is an Organisation" in {
+      val result = viewHelper.isOrganisation(Seq(contactInformationForOrg))
+
+      result mustBe true
+    }
+  }
+
   "retrieveContactName" - {
     "must return the individual name from contact details and return false if not an organisation" in {
       val result = viewHelper.retrieveContactName(Seq(contactInformationForInd))

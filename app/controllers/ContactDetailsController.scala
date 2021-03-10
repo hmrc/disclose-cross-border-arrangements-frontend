@@ -98,28 +98,25 @@ class ContactDetailsController @Inject()(
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
-        details =>
-          if (details.subscriptionDetails.isDefined) {
-            val subscriptionDetails = details.subscriptionDetails.get.displaySubscriptionForDACResponse
+        detailsAndStatus =>
+          detailsAndStatus.subscriptionDetails match {
+            case Some(details) =>
+              val subscriptionDetails = details.displaySubscriptionForDACResponse
 
-            subscriptionConnector.updateSubscription(subscriptionDetails, request.userAnswers)
-              .flatMap { updateResponse =>
-                if (updateResponse.isDefined) {
+              subscriptionConnector.updateSubscription(subscriptionDetails, request.userAnswers).flatMap {
+                case Some(updateResponse) =>
                   subscriptionConnector.cacheSubscription(
                     UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, request.userAnswers),
-                    updateResponse.get.updateSubscriptionForDACResponse.responseDetail.subscriptionID)
+                    updateResponse.updateSubscriptionForDACResponse.responseDetail.subscriptionID)
                     .flatMap { _ =>
                       for {
                         updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
-                        _ <- sessionRepository.set(updatedUserAnswers)
+                        _                  <- sessionRepository.set(updatedUserAnswers)
                       } yield Redirect(routes.DetailsUpdatedController.onPageLoad())
-                  }
-                } else {
-                  Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
-                }
+                    }
+                case None => Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
               }
-          } else {
-            errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
+            case None => Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
           }
       } recover {
         case _ => Redirect(routes.DetailsNotUpdatedController.onPageLoad())

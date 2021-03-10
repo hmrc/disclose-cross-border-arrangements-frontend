@@ -250,7 +250,7 @@ class ContactDetailsControllerSpec extends SpecBase
       }
     }
 
-    "must display the InternalServerError page if users click submit and display or update subscription details failed" in {
+    "must redirect to /details-not-updated page if users click submit and call to retrieve subscription details failed" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -262,15 +262,11 @@ class ContactDetailsControllerSpec extends SpecBase
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
       ).build()
       val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual INTERNAL_SERVER_ERROR
-
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-
-      templateCaptor.getValue mustEqual "internalServerError.njk"
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DetailsNotUpdatedController.onPageLoad().url
 
       application.stop()
     }
