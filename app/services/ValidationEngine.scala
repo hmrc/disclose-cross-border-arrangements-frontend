@@ -36,7 +36,7 @@ class ValidationEngine @Inject()(xmlValidationService: XMLValidationService,
   private val logger = LoggerFactory.getLogger(getClass)
 
 
-  def validateFile(downloadUrl: String, enrolmentId: String,businessRulesCheckRequired: Boolean = true)
+  def validateFile(downloadUrl: String, enrolmentId: String, businessRulesCheckRequired: Boolean = true)
                   (implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[Either[Exception, XMLValidationStatus]] = {
 
     try {

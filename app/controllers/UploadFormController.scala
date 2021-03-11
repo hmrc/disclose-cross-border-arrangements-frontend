@@ -16,63 +16,65 @@
 
 package controllers
 
-import com.google.inject.Inject
 import config.FrontendAppConfig
-import connectors.{CrossBorderArrangementsConnector, UpscanConnector}
+import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import forms.mappings.Mappings
 import handlers.ErrorHandler
-
-import javax.inject.Singleton
 import models.UserAnswers
-import models.upscan.{Failed, Quarantined, UploadId, UploadedSuccessfully, UpscanInitiateRequest}
+import models.upscan._
 import org.slf4j.LoggerFactory
 import pages.UploadIDPage
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.UploadProgressTracker
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.NunjucksSupport
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class UploadFormController @Inject()(
-                                      override val messagesApi: MessagesApi,
-                                      val controllerComponents: MessagesControllerComponents,
-                                      appConfig: FrontendAppConfig,
-                                      identify: IdentifierAction,
-                                      getData: DataRetrievalAction,
-                                      requireData: DataRequiredAction,
-                                      upscanInitiateConnector: UpscanConnector,
-                                      connector: CrossBorderArrangementsConnector,
-                                      sessionRepository: SessionRepository,
-                                      renderer: Renderer,
-                                      errorHandler: ErrorHandler
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+  override val messagesApi: MessagesApi,
+  val controllerComponents: MessagesControllerComponents,
+  appConfig: FrontendAppConfig,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  upscanConnector: UpscanConnector,
+  sessionRepository: SessionRepository,
+  renderer: Renderer,
+  errorHandler: ErrorHandler
+)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
-      val uploadId           = UploadId.generate
-      val successRedirectUrl = appConfig.upscanRedirectBase +  routes.UploadFormController.showResult.url
-      val errorRedirectUrl   = appConfig.upscanRedirectBase + "/disclose-cross-border-arrangements/error"
-      val callbackUrl        = appConfig.crossBorderArrangementsUrl + "/disclose-cross-border-arrangements/callback"
-      val initiateBody       = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl)
+      val form: Form[String] = new Mappings {
+        val apply: Form[String] = Form( "file" -> text() )
+      }.apply
 
       {
         for {
-          upscanInitiateResponse <- upscanInitiateConnector.getUpscanFormData(initiateBody)
-          _                      <- connector.requestUpload(uploadId, upscanInitiateResponse.fileReference)
+          upscanInitiateResponse <- upscanConnector.getUpscanFormData
+          uploadId               <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
           updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
           _                      <- sessionRepository.set(updatedAnswers)
         } yield {
+          val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
+            form.withError("file", "upload_form.error.file.invalid")
+          }
           renderer.render(
             "upload-form.njk",
-            Json.obj("upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
+            Json.obj(
+              "form" -> formWithErrors,
+              "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
               "status" -> Json.toJson(0))
           ).map(Ok(_))
         }
@@ -109,11 +111,13 @@ class UploadFormController @Inject()(
 
       request.userAnswers.get(UploadIDPage) match {
         case Some(uploadId) =>
-          connector.getUploadStatus(uploadId) flatMap {
+          upscanConnector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
+            case Some(Rejected) =>
+              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Failed) =>
               errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
             case Some(_) =>

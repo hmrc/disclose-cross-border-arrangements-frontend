@@ -17,26 +17,24 @@
 package controllers
 
 import base.SpecBase
-import connectors.{CrossBorderArrangementsConnector, UpscanConnector}
+import connectors.UpscanConnector
 import generators.Generators
-import helpers.FakeCrossBorderArrangementsConnector
+import helpers.FakeUpscanConnector
 import matchers.JsonMatchers
 import models.UserAnswers
 import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UploadIDPage
 import play.api.inject.bind
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import play.twirl.api.Html
 import repositories.SessionRepository
-import services.UploadProgressTracker
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
@@ -48,72 +46,53 @@ class UploadFormControllerSpec extends SpecBase
   with JsonMatchers
   with Generators {
 
-  val mockUpscanInitiateConnector = mock[UpscanConnector]
-  val mockUploadProgressTracker = mock[UploadProgressTracker]
+  val fakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
   val mockSessionRepository = mock[SessionRepository]
 
-  val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+  val userAnswers = UserAnswers(userAnswersId)
+    .set(UploadIDPage, UploadId("uploadId")).success.value
+
+  val application = applicationBuilder(userAnswers = Some(userAnswers))
     .overrides(
-      bind[CrossBorderArrangementsConnector].to[FakeCrossBorderArrangementsConnector],
-      bind[UpscanConnector].toInstance(mockUpscanInitiateConnector)
+      bind[UpscanConnector].toInstance(fakeUpscanConnector)
     )
     .build()
 
 
   "upload form controller" - {
+
     "must initiate a request to upscan to bring back an upload form" in {
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
-      when(mockUpscanInitiateConnector.getUpscanFormData(any[UpscanInitiateRequest]())(any[HeaderCarrier]()))
-        .thenReturn(Future.successful(UpscanInitiateResponse(Reference(""), "", Map.empty[String, String])))
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
-
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
-        .overrides(
-          bind[CrossBorderArrangementsConnector].to[FakeCrossBorderArrangementsConnector],
-          bind[UpscanConnector].toInstance(mockUpscanInitiateConnector)
-        )
-        .build()
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val request = FakeRequest(GET, routes.UploadFormController.onPageLoad().url)
       val result = route(application, request).value
 
       status(result) mustBe OK
-      verify(mockUpscanInitiateConnector, times(1)).getUpscanFormData(any[UpscanInitiateRequest]())(any[HeaderCarrier]())
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
       templateCaptor.getValue mustEqual "upload-form.njk"
     }
 
-    "must read the progress of the upload from the database" in {
-
-      val uploadId = UploadId("uploadId")
-      val userAnswers = UserAnswers(userAnswersId)
-        .set(UploadIDPage, uploadId)
-        .success.value
-
-      //TODO: This should be mocked but strange errors had to be worked around
-      val crossBorderArrangementsConnector = application.injector.instanceOf[FakeCrossBorderArrangementsConnector]
-
-      val applicationLocal = applicationBuilder(userAnswers = Some(userAnswers))
-        .overrides(
-          bind[CrossBorderArrangementsConnector].toInstance(crossBorderArrangementsConnector),
-          bind[UploadProgressTracker].toInstance(mockUploadProgressTracker),
-          bind[UpscanConnector].toInstance(mockUpscanInitiateConnector)
-        ).build()
+    "must read the progress of the upload from the backend" in {
 
       val request = FakeRequest(GET, routes.UploadFormController.getStatus().url)
 
       def verifyResult(uploadStatus: UploadStatus, expectedResult: Int = SEE_OTHER): Unit = {
 
-        crossBorderArrangementsConnector.setStatus(uploadStatus)
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(
+            bind[UpscanConnector].toInstance(fakeUpscanConnector)
+          )
+          .build()
+
+        fakeUpscanConnector.setStatus(uploadStatus)
 
         when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
         val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
-
-
-        val result = route(applicationLocal, request).value
+        val result = route(application, request).value
 
         status(result) mustBe expectedResult
         if (expectedResult == OK) {
@@ -122,7 +101,6 @@ class UploadFormControllerSpec extends SpecBase
         }
 
         application.stop()
-        reset(mockUploadProgressTracker, mockRenderer)
       }
 
       verifyResult(InProgress, OK)

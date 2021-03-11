@@ -56,7 +56,7 @@ class UpscanConnectorSpec extends SpecBase
             )
         )
 
-        whenReady(connector.getUpscanFormData(request)){
+        whenReady(connector.getUpscanFormData){
           result =>
             result mustBe body.toUpscanInitiateResponse
         }
@@ -74,7 +74,7 @@ class UpscanConnectorSpec extends SpecBase
           )
       )
 
-      val result = connector.getUpscanFormData(request)
+      val result = connector.getUpscanFormData
 
       whenReady(result.failed){ e =>
         e mustBe an[UpstreamErrorResponse]
@@ -92,7 +92,7 @@ class UpscanConnectorSpec extends SpecBase
           )
       )
 
-      val result = connector.getUpscanFormData(request)
+      val result = connector.getUpscanFormData
       whenReady(result.failed){ e =>
         e mustBe an[UpstreamErrorResponse]
         val error = e.asInstanceOf[UpstreamErrorResponse]

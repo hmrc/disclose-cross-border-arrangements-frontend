@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.CrossBorderArrangementsConnector
+import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
 
@@ -39,7 +39,7 @@ class FileValidationController @Inject()(
   getData: DataRetrievalAction,
   val sessionRepository: SessionRepository,
   val controllerComponents: MessagesControllerComponents,
-  connector: CrossBorderArrangementsConnector,
+  upscanConnector: UpscanConnector,
   requireData: DataRequiredAction,
   validationEngine: ValidationEngine ,
   errorHandler: ErrorHandler,
@@ -52,7 +52,7 @@ class FileValidationController @Inject()(
     {
       for {
         uploadId <- getUploadId(request.userAnswers)
-        uploadSessions <- connector.getUploadDetails(uploadId)
+        uploadSessions <- upscanConnector.getUploadDetails(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
         validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
       } yield {
