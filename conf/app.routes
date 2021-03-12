@@ -24,7 +24,7 @@ GET        /success                                     controllers.UploadFormCo
 
 GET        /status                                      controllers.UploadFormController.getStatus
 
-GET        /upload                                      controllers.UploadFormController.onPageLoad
+GET        /choose-file                                 controllers.UploadFormController.onPageLoad
 
 GET        /error                                       controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String)
 
