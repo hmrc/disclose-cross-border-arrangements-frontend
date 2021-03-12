@@ -16,22 +16,32 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.SubscriptionConnector
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import javax.inject.Inject
+import models.UserAnswers
+import models.subscription.{ResponseDetail, UpdateSubscriptionDetails}
+import pages.DisplaySubscriptionDetailsPage
+import pages.contactdetails._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import uk.gov.hmrc.viewmodels.SummaryList
 
-import scala.concurrent.ExecutionContext
+import javax.inject.Inject
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class ContactDetailsController @Inject()(
     override val messagesApi: MessagesApi,
+    sessionRepository: SessionRepository,
     subscriptionConnector: SubscriptionConnector,
+    appConfig: FrontendAppConfig,
     errorHandler: ErrorHandler,
     viewHelper: ViewHelper,
     identify: IdentifierAction,
@@ -43,38 +53,44 @@ class ContactDetailsController @Inject()(
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
 
-          if (details.isDefined) {
-            val responseDetail = details.get.displaySubscriptionForDACResponse.responseDetail
+          if (details.isLocked) {
+            Future.successful(Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad()))
+          } else {
+            if (details.subscriptionDetails.isDefined) {
+              val responseDetail = details.subscriptionDetails.get.displaySubscriptionForDACResponse.responseDetail
+              val isOrganisation = viewHelper.isOrganisation(responseDetail.primaryContact.contactInformation)
 
-            val contactDetailsList =
-              if (responseDetail.secondaryContact.isDefined) {
-                Seq(
-                  viewHelper.primaryContactName(responseDetail, request.userAnswers),
-                  viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
-                  viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers),
-                  viewHelper.secondaryContactName(responseDetail, request.userAnswers),
-                  viewHelper.secondaryContactEmail(responseDetail, request.userAnswers),
-                  viewHelper.secondaryPhoneNumber(responseDetail, request.userAnswers)
-                )
-              } else {
-                Seq(
-                  viewHelper.primaryContactName(responseDetail, request.userAnswers),
-                  viewHelper.primaryContactEmail(responseDetail, request.userAnswers),
-                  viewHelper.primaryPhoneNumber(responseDetail, request.userAnswers)
-                )
+              val json = {
+                if (isOrganisation) {
+                  Json.obj(
+                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
+                    "additionalContact" -> true,
+                    "secondaryContactDetails" -> buildSecondaryContactRows(responseDetail, request.userAnswers),
+                    "isOrganisation" -> isOrganisation,
+                    "homePageLink" -> appConfig.discloseArrangeLink,
+                    "changeProvided" -> changeProvided(request.userAnswers)
+                  )
+                } else {
+                  Json.obj(
+                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
+                    "additionalContact" -> false,
+                    "isOrganisation" -> isOrganisation,
+                    "homePageLink" -> appConfig.discloseArrangeLink,
+                    "changeProvided" -> changeProvided(request.userAnswers)
+                  )
+                }
               }
 
-            val contactDetails = Json.obj(
-              "contactDetails" -> contactDetailsList
-            )
-
-            renderer.render("contactDetails.njk", contactDetails).map(Ok(_))
-          } else {
-            errorHandler.onServerError(request, new Exception("Conversion of display subscription payload failed"))
+              (for {
+                updatedAnswers <- Future.fromTry(request.userAnswers.set(DisplaySubscriptionDetailsPage, details.subscriptionDetails.get))
+                _              <- sessionRepository.set(updatedAnswers)
+              } yield renderer.render("contactDetails.njk", json).map(Ok(_))).flatten
+            } else {
+              errorHandler.onServerError(request, new Exception("Conversion of display subscription payload failed"))
+            }
           }
       }
   }
@@ -82,15 +98,86 @@ class ContactDetailsController @Inject()(
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
-        details =>
-          if (details.isDefined) {
-            subscriptionConnector.updateSubscription(details.get.displaySubscriptionForDACResponse, request.userAnswers).map {
-              _ =>
-                Redirect(routes.IndexController.onPageLoad())
+        detailsAndStatus =>
+          detailsAndStatus.subscriptionDetails match {
+            case Some(details) =>
+              val subscriptionDetails = details.displaySubscriptionForDACResponse
+
+              subscriptionConnector.updateSubscription(subscriptionDetails, request.userAnswers).flatMap {
+                case Some(updateResponse) =>
+                  subscriptionConnector.cacheSubscription(
+                    UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, request.userAnswers),
+                    updateResponse.updateSubscriptionForDACResponse.responseDetail.subscriptionID)
+                    .flatMap { _ =>
+                      for {
+                        updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
+                        _                  <- sessionRepository.set(updatedUserAnswers)
+                      } yield Redirect(routes.DetailsUpdatedController.onPageLoad())
+                    }
+                case None => Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
               }
-          } else {
-            errorHandler.onServerError(request, new Exception("Conversion of display/update subscription payload failed"))
+            case None => Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
           }
+      } recover {
+        case _ => Redirect(routes.DetailsNotUpdatedController.onPageLoad())
       }
   }
+
+  private def buildPrimaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
+    Seq(
+      viewHelper.primaryContactName(responseDetail, userAnswers),
+      Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
+      Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
+      viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
+    ).filter(_.isDefined).map(_.get)
+  }
+
+  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
+    userAnswers.get(HaveSecondContactPage) match {
+      case Some(false) =>
+        Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
+      case haveSecondContact: Option[Boolean] =>
+        if (haveSecondContact.isDefined || responseDetail.secondaryContact.isDefined) {
+          Seq(
+            Some(viewHelper.haveSecondaryContact(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactName(responseDetail, userAnswers)),
+            Some(viewHelper.secondaryContactEmail(responseDetail, userAnswers)),
+            Some(viewHelper.haveSecondaryContactPhone(responseDetail, userAnswers)),
+            viewHelper.secondaryPhoneNumber(responseDetail, userAnswers)
+          ).filter(_.isDefined).map(_.get)
+        } else if (responseDetail.secondaryContact.isEmpty) {
+          Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
+        }
+        else {
+          Seq()
+        }
+    }
+  }
+
+  private def changeProvided(userAnswers: UserAnswers): Boolean = {
+    List(
+      userAnswers.get(ContactNamePage).isDefined,
+      userAnswers.get(ContactEmailAddressPage).isDefined,
+      userAnswers.get(HaveContactPhonePage).isDefined,
+      userAnswers.get(ContactTelephoneNumberPage).isDefined,
+      userAnswers.get(HaveSecondContactPage).isDefined,
+      userAnswers.get(SecondaryContactNamePage).isDefined,
+      userAnswers.get(SecondaryContactEmailAddressPage).isDefined,
+      userAnswers.get(HaveSecondaryContactPhonePage).isDefined,
+      userAnswers.get(SecondaryContactTelephoneNumberPage).isDefined,
+    ).contains(true)
+  }
+
+  private def cleanupAnswers(userAnswers: UserAnswers): Try[UserAnswers] = {
+    userAnswers.remove(ContactNamePage)
+      .flatMap(_.remove(ContactEmailAddressPage))
+      .flatMap(_.remove(HaveContactPhonePage))
+      .flatMap(_.remove(ContactTelephoneNumberPage))
+      .flatMap(_.remove(HaveSecondContactPage))
+      .flatMap(_.remove(SecondaryContactNamePage))
+      .flatMap(_.remove(SecondaryContactEmailAddressPage))
+      .flatMap(_.remove(HaveSecondaryContactPhonePage))
+      .flatMap(_.remove(SecondaryContactTelephoneNumberPage))
+  }
+
 }

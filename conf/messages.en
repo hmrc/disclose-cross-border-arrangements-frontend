@@ -10,11 +10,13 @@ site.edit.hidden = Change {0}
 site.no = No
 site.yes = Yes
 site.continue = Continue
+site.saveAndContinue = Save and continue
 site.getHelpWithThisPage = Get help with this page (opens in a new tab)
 site.confirmAndSend= Confirm and send
 site.service_name = Disclose cross-border arrangements for DAC6
 site.textarea.char_limit = (Limit is {0} characters)
 site.title.suffix = - GOV.UK
+site.homePageLink.text = Back to disclose cross-border arrangements
 
 error.title.prefix = Error:
 error.summary.title = There is a problem
@@ -158,13 +160,12 @@ error.summary.title = There is a problem
 index.title = Disclose cross-border arrangements for DAC6
 index.heading = Disclose cross-border arrangements for DAC6
 index.guidance = Upload an XML file to tell us about an arrangement.
-index.submission.paragraph.1 = If you prefer, you can
-index.submission.paragraph.link = use our manual form to disclose an arrangement, or to continue or remove one
-index.submission.paragraph.2 = you’ve already started.
+index.submission.paragraph.1 = You can:
+index.submission.paragraph.link = use our manual form to disclose an arrangement
 index.continue = Disclose a cross-border arrangement
 
-history.link = View uploaded files
-contactDetails.link = View and change contact details
+history.link = view all your submitted disclosures
+contactDetails.link = change your contact details
 submissionHistory.title = Your disclosures
 submissionHistory.heading = Your disclosures
 submissionHistory.caption = Your disclosures
@@ -295,40 +296,52 @@ displaySubscriptionForDAC.organisationEmail = Organisation Email
 displaySubscriptionForDAC.organisationPhone = Organisation Phone
 displaySubscriptionForDAC.organisationMobile = Organisation Mobile
 
-contactDetails.title = Check your contact details
-contactDetails.heading = Check your contact details
-contactDetails.h2 = Contact details
+contactDetails.organisation.title = Your organisation’s contact details
+contactDetails.individual.title = Your contact details
+contactDetails.organisation.heading = Your organisation’s contact details
+contactDetails.individual.heading = Your contact details
+contactDetails.organisation.h2 = Main contact
+contactDetails.organisation.additional.h2 = Additional contact
 contactDetails.primaryContactName.checkYourAnswersLabel = Contact name
 contactDetails.primaryContactEmail.checkYourAnswersLabel = Email address
-contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Telephone
+contactDetails.haveContactPhone.checkYourAnswersLabel = Do they have a telephone number?
+contactDetails.primaryPhoneNumber.checkYourAnswersLabel = Telephone number
+contactDetails.haveSecondContact.checkYourAnswersLabel = Do you have an additional contact?
 contactDetails.secondaryContactName.checkYourAnswersLabel = Additional contact name
 contactDetails.secondaryContactEmail.checkYourAnswersLabel = Additional contact email address
 contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel = Additional contact telephone number
+contactDetails.haveSecondContactPhone.checkYourAnswersLabel = Does the additional contact have a telephone number?
+contactDetails.h2 = Now send your new contact details
+contactDetails.p = By sending these details, you are confirming that the information is correct and complete to the best of your knowledge.
 contactDetails.button = Confirm and send
 
 contactName.title = Who should we contact if we have any questions about your disclosures?
 contactName.heading = Who should we contact if we have any questions about your disclosures?
-contactName.firstName = First name
-contactName.lastName = Last name
-contactName.error.firstName.required = Enter the first name of the person we should contact if we have any questions about your disclosures
-contactName.error.firstName.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
-contactName.error.firstName.length = First name must be 35 characters or less
-contactName.error.lastName.required = Enter the last name of the person we should contact if we have any questions about your disclosures
-contactName.error.lastName.invalid = Last name  must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
-contactName.error.lastName.length = Last name must be 35 characters or less
+contactName.hint = For example, ‘DAC6 team’ or ‘Ashley Smith’.
+contactName.error.required = Enter the first name of the person we should contact if we have any questions about your disclosures
+contactName.error.invalid = First name must only include letters a to z, apostrophes, grave accents, ampersands, hyphens, backslashes, carets and spaces
+contactName.error.length = First name must be 35 characters or less
 
 contactEmailAddress.title = What is your email address?
-contactEmailAddress.heading = What is your email address?
+contactEmailAddress.heading = What is the email address for {0}?
 contactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
 contactEmailAddress.error.required = Enter an email address
 contactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
 contactEmailAddress.error.length = Enter an email address that is 132 characters or less
 
-contactTelephoneNumber.title = What is your telephone number?
-contactTelephoneNumber.heading = What is your telephone number?
+haveContactPhone.title = Do they have a telephone number?
+haveContactPhone.heading = Does {0} have a telephone number?
+haveContactPhone.error.required = Select yes if there is a telephone number
+
+contactTelephoneNumber.title = What is their telephone number?
+contactTelephoneNumber.heading = What is the telephone number for {0}?
 contactTelephoneNumber.hint = For international numbers include the country code.
 contactTelephoneNumber.error.required = Enter a telephone number
 contactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
+
+haveSecondContact.title = Is there someone else we can contact if your first contact is not available?
+haveSecondContact.heading = Is there someone else we can contact if {0} is not available?
+haveSecondContact.error.required = Select yes if there is someone else we can contact
 
 secondaryContactName.title = What is the name of the individual or team we should contact?
 secondaryContactName.heading = What is the name of the individual or team we should contact?
@@ -338,14 +351,18 @@ secondaryContactName.error.invalid = Name of the individual or team must only in
 secondaryContactName.error.length = Individual or team must be 35 characters or less
 
 secondaryContactEmailAddress.title = What is the email address for your second contact?
-secondaryContactEmailAddress.heading = What is the email address for your second contact?
+secondaryContactEmailAddress.heading = What is the email address for {0}?
 secondaryContactEmailAddress.hint = We will use this email address to send confirmation of your disclosures.
 secondaryContactEmailAddress.error.required = Enter an email address
 secondaryContactEmailAddress.error.invalid = Enter an email address in the correct format, like name@example.com
 secondaryContactEmailAddress.error.length = Enter an email address that is 132 characters or less
 
+haveSecondaryContactPhone.title = Do they have a telephone number?
+haveSecondaryContactPhone.heading = Does {0} have a telephone number?
+haveSecondaryContactPhone.error.required = Select yes if there is a telephone number
+
 secondaryContactTelephoneNumber.title = What is the telephone number for your second contact?
-secondaryContactTelephoneNumber.heading = What is the telephone number for your second contact?
+secondaryContactTelephoneNumber.heading = What is the telephone number for {0}?
 secondaryContactTelephoneNumber.hint = For international numbers include the country code.
 secondaryContactTelephoneNumber.error.required = Enter a telephone number
 secondaryContactTelephoneNumber.error.invalid = Enter a telephone number, like 01632 960 001, 07700 900 982 or +44 0808 157 0192
@@ -368,4 +385,15 @@ contactUsToUseManualService.p1.email = dac6digital@hmrc.gov.uk
 contactUsToUseManualService.p1b = so we can arrange a time for you to access this new service.
 contactUsToUseManualService.p2 = If your disclosure is due soon, and you need to use the manual service to disclose, please email us ahead of the reporting deadline.
 contactUsToUseManualService.p3 = If we cannot arrange a time for you to access the service before the deadline, we won’t charge a late filing penalty as long as you disclose as soon as possible after the deadline.
-contactUsToUseManualService.homePageLink.text = Back to disclose cross-border arrangements
+
+detailsAlreadyUpdated.title = You have recently updated your contact details
+detailsAlreadyUpdated.heading = You have recently updated your contact details
+detailsAlreadyUpdated.p = You must wait until your recent changes have been accepted. You can make further changes in a couple of hours.
+
+detailsNotUpdated.title = There is a problem with sending your details
+detailsNotUpdated.heading = There is a problem with sending your details
+detailsNotUpdated.p = Your details have been saved. You can try to send them again in a couple of hours.
+
+detailsUpdated.title = Contact details updated
+detailsUpdated.panel.heading = Contact details updated
+detailsUpdated.p = We will use your new details if we need to contact you.

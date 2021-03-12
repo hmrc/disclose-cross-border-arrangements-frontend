@@ -16,18 +16,18 @@
 
 package helpers
 
-import java.time.format.DateTimeFormatter
-
 import com.google.inject.Inject
-import controllers.routes
 import models.subscription.{ContactInformation, ContactInformationForIndividual, ContactInformationForOrganisation, ResponseDetail}
 import models.{GenericError, SubmissionHistory, UserAnswers}
-import pages._
+import pages.DisplaySubscriptionDetailsPage
+import pages.contactdetails._
 import play.api.i18n.Messages
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels.Table.Cell
 import uk.gov.hmrc.viewmodels.{Html, MessageInterpolators, Table}
+
+import java.time.format.DateTimeFormatter
 
 
 class ViewHelper @Inject()() {
@@ -180,49 +180,108 @@ class ViewHelper @Inject()() {
     }
   }
 
-
-  def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val contactName = (userAnswers.get(ContactNamePage), userAnswers.get(IndividualContactNamePage)) match {
-      case (Some(contactName), _) => s"${contactName.firstName} ${contactName.lastName}"
-      case (_, Some(contactName)) => s"${contactName.firstName} ${contactName.lastName}"
-      case _ =>
-        responseDetail.primaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(individual, _, _, _) =>
-            s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
-          case ContactInformationForOrganisation(organisation, _, _, _) =>
-            s"${organisation.organisationName}"
+  def primaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+    userAnswers.get(HaveContactPhonePage) match {
+      case Some(value) => value
+      case None =>
+        contactInformation.head match {
+          case ContactInformationForIndividual(_, _, phone, _) if phone.isDefined => true
+          case ContactInformationForOrganisation(_, _, phone, _) if phone.isDefined => true
+          case _ => false
         }
     }
+  }
 
-    val changeLink = responseDetail.primaryContact.contactInformation.head match {
-      case ContactInformationForIndividual(_, _, _, _) =>
-        routes.IndividualContactNameController.onPageLoad().url
-      case ContactInformationForOrganisation(_, _, _, _) =>
-        routes.ContactNameController.onPageLoad().url
+  def secondaryContactPhoneExists(contactInformation: Seq[ContactInformation], userAnswers: UserAnswers): Boolean = {
+    userAnswers.get(HaveSecondaryContactPhonePage) match {
+      case Some(value) => value
+      case None if contactInformation.nonEmpty => true
+      case None => false
+    }
+  }
+
+  def isOrganisation(contactInformation: Seq[ContactInformation]): Boolean = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, _, _, _) => false
+      case ContactInformationForOrganisation(_, _, _, _) => true
+    }
+  }
+
+  def retrieveContactName(contactInformation: Seq[ContactInformation]): String = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(individual, _, _, _) =>
+        s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
+      case ContactInformationForOrganisation(organisation, _, _, _) =>
+        s"${organisation.organisationName}"
+    }
+  }
+
+  def retrieveContactEmail(contactInformation: Seq[ContactInformation]): String = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, email, _, _) => email
+      case ContactInformationForOrganisation(_, email, _, _) => email
+    }
+  }
+
+  def retrieveContactPhone(contactInformation: Seq[ContactInformation]): String = {
+    contactInformation.head match {
+      case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("")}"
+      case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("")}"
+    }
+  }
+
+  def getPrimaryContactName(userAnswers: UserAnswers): String = {
+    (userAnswers.get(ContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+      case (Some(contactName), _) => contactName
+      case (None, Some(displaySubscription)) =>
+        retrieveContactName(
+          displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+      case _ => "your first contact"
+    }
+  }
+
+  def getSecondaryContactName(userAnswers: UserAnswers): String = {
+    (userAnswers.get(SecondaryContactNamePage), userAnswers.get(DisplaySubscriptionDetailsPage)) match {
+      case (Some(secondaryContactName), _) => secondaryContactName
+      case (None, Some(displaySubscription)) =>
+        retrieveContactName(displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+          .fold(Seq[ContactInformation]())(_.contactInformation))
+      case _ => "your second contact"
+    }
+  }
+
+
+  def primaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
+    val contactName = userAnswers.get(ContactNamePage) match {
+      case Some(contactName) => contactName
+      case None => retrieveContactName(responseDetail.primaryContact.contactInformation)
     }
 
-    Row(
-      key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-      value = Value(lit"$contactName"),
-      actions = List(
-        Action(
-          content = msg"site.edit",
-          href = changeLink,
-          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
-          attributes = Map("id" -> "change-primary-contact-name")
+    if (isOrganisation(responseDetail.primaryContact.contactInformation)) {
+      Some(
+        Row(
+          key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+          value = Value(lit"$contactName"),
+          actions = List(
+            Action(
+              content = msg"site.edit",
+              href = controllers.contactdetails.routes.ContactNameController.onPageLoad().url,
+              visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
+              attributes = Map("id" -> "change-primary-contact-name")
+            )
+          )
         )
       )
-    )
+    } else {
+      None
+    }
+
   }
 
   def primaryContactEmail(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactEmail = userAnswers.get(ContactEmailAddressPage) match {
       case Some(email) => email
-      case None =>
-        responseDetail.primaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(_, email, _, _) => email
-          case ContactInformationForOrganisation(_, email, _, _) => email
-        }
+      case None => retrieveContactEmail(responseDetail.primaryContact.contactInformation)
     }
 
     Row(
@@ -231,7 +290,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.ContactEmailAddressController.onPageLoad().url,
+          href = controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactEmail.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-primary-contact-email")
         )
@@ -239,43 +298,86 @@ class ViewHelper @Inject()() {
     )
   }
 
-  def primaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val phoneNumber = userAnswers.get(ContactTelephoneNumberPage) match {
-      case Some(telephone) => telephone
-      case None =>
-        responseDetail.primaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
-          case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
-        }
-    }
+  def haveContactPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+    val haveContactPhoneNumber =
+      if (primaryContactPhoneExists(responseDetail.primaryContact.contactInformation, userAnswers)) {
+        "site.yes"
+      } else {
+        "site.no"
+      }
 
     Row(
-      key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-      value = Value(lit"$phoneNumber"),
+      key = Key(msg"contactDetails.haveContactPhone.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveContactPhoneNumber"),
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.ContactTelephoneNumberController.onPageLoad().url,
-          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
-          attributes = Map("id" -> "change-primary-phone-number")
+          href = controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveContactPhone.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-contact-phone-number")
+        )
+      )
+    )
+  }
+
+  def primaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
+    if (primaryContactPhoneExists(responseDetail.primaryContact.contactInformation, userAnswers)) {
+      val phoneNumber = userAnswers.get(ContactTelephoneNumberPage) match {
+        case Some(telephone) => telephone
+        case None => retrieveContactPhone(responseDetail.primaryContact.contactInformation)
+      }
+
+      Some(
+        Row(
+          key = Key(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+          value = Value(lit"$phoneNumber"),
+          actions = List(
+            Action(
+              content = msg"site.edit",
+              href = controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad().url,
+              visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryPhoneNumber.checkYourAnswersLabel")),
+              attributes = Map("id" -> "change-primary-phone-number")
+            )
+          )
+        )
+      )
+    } else {
+      None
+    }
+  }
+
+  def haveSecondaryContact(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+    val haveSecondaryContact = userAnswers.get(HaveSecondContactPage) match {
+      case Some(true) => "site.yes"
+      case None if contactInformationList.nonEmpty => "site.yes"
+      case _ => "site.no"
+    }
+
+    Row(
+      key = Key(msg"contactDetails.haveSecondContact.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveSecondaryContact"),
+      actions = List(
+        Action(
+          content = msg"site.edit",
+          href = controllers.contactdetails.routes.HaveSecondContactController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveSecondContact.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-second-contact")
         )
       )
     )
   }
 
   def secondaryContactName(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
-
     //Note: Secondary contact name is only one field in the registration journey. It's always ContactInformationForOrganisation
     val contactName = userAnswers.get(SecondaryContactNamePage) match {
       case Some(contactName) => contactName
       case None =>
-        contactInformationList.head match {
-          case ContactInformationForIndividual(individual, _, _, _) =>
-            s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}"
-          case ContactInformationForOrganisation(organisation, _, _, _) =>
-            s"${organisation.organisationName}"
-        }
+        val contactInformationList =
+          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(_.contactInformation)
+
+        retrieveContactName(contactInformationList)
     }
 
     Row(
@@ -284,7 +386,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactNameController.onPageLoad().url,
+          href = controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactName.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-contact-name")
         )
@@ -293,15 +395,13 @@ class ViewHelper @Inject()() {
   }
 
   def secondaryContactEmail(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
-    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
-
     val contactEmail = userAnswers.get(SecondaryContactEmailAddressPage) match {
       case Some(email) => email
       case None =>
-        contactInformationList.head match {
-          case ContactInformationForIndividual(_, email, _, _) => email
-          case ContactInformationForOrganisation(_, email, _, _) => email
-        }
+        val contactInformationList =
+          responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+        retrieveContactEmail(contactInformationList)
     }
 
     Row(
@@ -310,7 +410,7 @@ class ViewHelper @Inject()() {
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactEmailAddressController.onPageLoad().url,
+          href = controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad().url,
           visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactEmail.checkYourAnswersLabel")),
           attributes = Map("id" -> "change-secondary-contact-email")
         )
@@ -318,29 +418,57 @@ class ViewHelper @Inject()() {
     )
   }
 
-  def secondaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
+  def haveSecondaryContactPhone(responseDetail: ResponseDetail, userAnswers: UserAnswers): Row = {
     val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
 
-    val phoneNumber = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
-      case Some(telephone) => telephone
-      case None =>
-        contactInformationList.head match {
-          case ContactInformationForIndividual(_, _, phone, _) => s"${phone.getOrElse("None")}"
-          case ContactInformationForOrganisation(_, _, phone, _) => s"${phone.getOrElse("None")}"
-        }
-    }
+    val haveSecondaryContactPhone =
+      if (secondaryContactPhoneExists(contactInformationList, userAnswers)) {
+        "site.yes"
+      } else {
+        "site.no"
+      }
 
     Row(
-      key = Key(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-      value = Value(lit"$phoneNumber"),
+      key = Key(msg"contactDetails.haveSecondContactPhone.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+      value = Value(msg"$haveSecondaryContactPhone"),
       actions = List(
         Action(
           content = msg"site.edit",
-          href = routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
-          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
-          attributes = Map("id" -> "change-secondary-phone-number")
+          href = controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad().url,
+          visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.haveSecondContactPhone.checkYourAnswersLabel")),
+          attributes = Map("id" -> "change-have-second-contact-phone")
         )
       )
     )
   }
+
+  def secondaryPhoneNumber(responseDetail: ResponseDetail, userAnswers: UserAnswers): Option[Row] = {
+    val contactInformationList = responseDetail.secondaryContact.fold(Seq[ContactInformation]())(sc => sc.contactInformation)
+
+    if (secondaryContactPhoneExists(contactInformationList, userAnswers)) {
+      val phoneNumber = userAnswers.get(SecondaryContactTelephoneNumberPage) match {
+        case Some(telephone) => telephone
+        case None =>
+          retrieveContactPhone(contactInformationList)
+      }
+
+      Some(
+        Row(
+          key = Key(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+          value = Value(lit"$phoneNumber"),
+          actions = List(
+            Action(
+              content = msg"site.edit",
+              href = controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad().url,
+              visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.secondaryContactPhoneNumber.checkYourAnswersLabel")),
+              attributes = Map("id" -> "change-secondary-phone-number")
+            )
+          )
+        )
+      )
+    } else {
+      None
+    }
+  }
+
 }

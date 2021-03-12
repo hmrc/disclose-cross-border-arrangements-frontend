@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.SubscriptionConnector
 import generators.Generators
 import helpers.JsonFixtures.{displaySubscriptionPayload, displaySubscriptionPayloadNoSecondary, updateSubscriptionResponsePayload}
-import models.subscription.{DisplaySubscriptionForDACResponse, UpdateSubscriptionForDACResponse}
+import models.subscription.{DisplaySubscriptionDetailsAndStatus, DisplaySubscriptionForDACResponse, UpdateSubscriptionForDACResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{reset, times, verify, when}
@@ -31,6 +31,7 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
@@ -43,7 +44,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
   "ContactDetails Controller" - {
 
-    "must return OK and the correct view for a GET without a secondary contact" in {
+    "must return OK and the correct view for a GET if user is an Individual" in {
 
       forAll(validDacID ,validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
@@ -59,7 +60,7 @@ class ContactDetailsControllerSpec extends SpecBase
             .thenReturn(Future.successful(Html("")))
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -79,7 +80,6 @@ class ContactDetailsControllerSpec extends SpecBase
           val contactDetails = (json \ "contactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
-          contactDetails.contains("Contact name") mustBe true
           contactDetails.contains("Email address") mustBe true
           contactDetails.contains("Telephone") mustBe true
           contactDetails.contains("Secondary contact name") mustBe false
@@ -90,7 +90,7 @@ class ContactDetailsControllerSpec extends SpecBase
       }
     }
 
-    "must return OK and the correct view for a GET with a secondary contact" in {
+    "must return OK and the correct view for a GET if user is an organisation with a secondary contact" in {
 
       forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
@@ -98,7 +98,7 @@ class ContactDetailsControllerSpec extends SpecBase
           reset(mockRenderer, mockSubscriptionConnector)
 
           val jsonPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString("Organisation Name"), JsString(email),
+            JsString(safeID), JsString("Organisation Name"), JsString("Secondary contact name"), JsString(email),
             JsString(secondaryEmail), JsString(phone))
 
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
@@ -107,7 +107,7 @@ class ContactDetailsControllerSpec extends SpecBase
             .thenReturn(Future.successful(Html("")))
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -125,17 +125,39 @@ class ContactDetailsControllerSpec extends SpecBase
 
           val json = jsonCaptor.getValue
           val contactDetails = (json \ "contactDetails").toString
+          val secondaryContactDetails = (json \ "secondaryContactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
           contactDetails.contains("Contact name") mustBe true
           contactDetails.contains("Email address") mustBe true
-          contactDetails.contains("Telephone") mustBe true
-          contactDetails.contains("Additional contact name") mustBe true
-          contactDetails.contains("Additional contact email address") mustBe true
-          contactDetails.contains("Additional contact telephone number") mustBe true
+          contactDetails.contains("Telephone") mustBe false
+          secondaryContactDetails.contains("Additional contact name") mustBe true
+          secondaryContactDetails.contains("Additional contact email address") mustBe true
+          secondaryContactDetails.contains("Additional contact telephone number") mustBe true
 
           application.stop()
       }
+    }
+
+    "must redirect to the /details-already-updated page if update lock is true" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None, isLocked = true)))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      ).build()
+      val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DetailsAlreadyUpdatedController.onPageLoad().url
+
+      application.stop()
     }
 
     "must display the InternalServerError page if display subscription details isn't available" in {
@@ -144,7 +166,7 @@ class ContactDetailsControllerSpec extends SpecBase
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -175,10 +197,13 @@ class ContactDetailsControllerSpec extends SpecBase
             Json.parse(updateSubscriptionResponsePayload(JsString(safeID))).as[UpdateSubscriptionForDACResponse]
 
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-            .thenReturn(Future.successful(Some(displaySubscriptionDetails)))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
           when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
             .thenReturn(Future.successful(Some(updateSubscriptionForDACResponse)))
+
+          when(mockSubscriptionConnector.cacheSubscription(any(), any())(any(), any()))
+            .thenReturn(Future.successful(HttpResponse(OK, "")))
 
           val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
             bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
@@ -189,33 +214,59 @@ class ContactDetailsControllerSpec extends SpecBase
           val result = route(application, request).value
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+          redirectLocation(result).value mustEqual routes.DetailsUpdatedController.onPageLoad().url
 
           application.stop()
       }
     }
 
-    "must display the InternalServerError page if users click submit and display or update subscription details failed" in {
+    "must redirect to /details-not-updated page if update was unsuccessful" in {
+
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
+        (safeID, email, phone) =>
+          val jsonPayload = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
+
+          val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
+
+          when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+            .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
+
+          when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
+            .thenReturn(Future.successful(None))
+
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
+            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+          ).build()
+
+          val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).value mustEqual routes.DetailsNotUpdatedController.onPageLoad().url
+
+          application.stop()
+      }
+    }
+
+    "must redirect to /details-not-updated page if users click submit and call to retrieve subscription details failed" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-        .thenReturn(Future.successful(None))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
         bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
       ).build()
       val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
 
-      status(result) mustEqual INTERNAL_SERVER_ERROR
-
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-
-      templateCaptor.getValue mustEqual "internalServerError.njk"
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DetailsNotUpdatedController.onPageLoad().url
 
       application.stop()
     }

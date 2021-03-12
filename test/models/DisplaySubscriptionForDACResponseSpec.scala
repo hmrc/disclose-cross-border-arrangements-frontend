@@ -34,18 +34,18 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
   "DisplaySubscriptionForDACResponse" - {
     "must deserialise DisplaySubscriptionForDACResponse" in {
 
-      forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
-        (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
+      forAll(validDacID, validOrganisationName, validPersonalName, validEmailAddress, validEmailAddress, validPhoneNumber) {
+        (safeID, organisationName, secondaryName, primaryEmail, secondaryEmail, phoneNumber) =>
 
           val primaryContact: PrimaryContact = PrimaryContact(Seq(
-            ContactInformationForIndividual(
-              individual = IndividualDetails(firstName = name, lastName = name, middleName = None),
-              email = primaryEmail, phone = Some(phoneNumber), mobile = Some(phoneNumber))
+            ContactInformationForOrganisation(
+              organisation = OrganisationDetails(organisationName = organisationName),
+              email = primaryEmail, phone = None, mobile = None)
           ))
           val secondaryContact: SecondaryContact = SecondaryContact(Seq(
             ContactInformationForOrganisation(
-              organisation = OrganisationDetails(organisationName = organisationName),
-              email = secondaryEmail, phone = None, mobile = None)
+              organisation = OrganisationDetails(organisationName = secondaryName),
+              email = secondaryEmail, phone = Some(phoneNumber), mobile = None)
           ))
 
           val responseDetail: ResponseDetail = ResponseDetail(
@@ -59,8 +59,7 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
             SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
           val jsonPayload = displaySubscriptionPayload(
-            JsString(safeID), JsString(name), JsString(name), JsString(organisationName),
-            JsString(primaryEmail), JsString(secondaryEmail), JsString(phoneNumber))
+            JsString(safeID), JsString(organisationName), JsString(secondaryName), JsString(primaryEmail), JsString(secondaryEmail), JsString(phoneNumber))
 
           Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get mustBe displaySubscriptionForDACResponse
       }
