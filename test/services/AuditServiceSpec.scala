@@ -90,8 +90,8 @@ class AuditServiceSpec extends SpecBase
           detail = expectedjson,
           tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
             ++ AuditExtensions.auditHeaderCarrier(hc).toAuditTags(
-            "/disclose-cross-border-arrangements/submission",
-            "/disclose-cross-border-arrangements/submission"
+            "/disclose-cross-border-arrangements/upload/submission",
+            "/disclose-cross-border-arrangements/upload/submission"
           )
         )
 

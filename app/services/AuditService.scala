@@ -54,8 +54,8 @@ class AuditService @Inject()(appConfig: FrontendAppConfig, auditConnector: Audit
       "initialDisclosureMA" -> nodeVal(xml \ "DAC6Disclosures" \ "InitialDisclosureMA")
     )
 
-    val transactionName: String = "/disclose-cross-border-arrangements/submission"
-    val path: String = "/disclose-cross-border-arrangements/submission"
+    val transactionName: String = "/disclose-cross-border-arrangements/upload/submission"
+    val path: String = "/disclose-cross-border-arrangements/upload/submission"
 
     auditConnector.sendExtendedEvent(ExtendedDataEvent(
       auditSource = appConfig.appName,
