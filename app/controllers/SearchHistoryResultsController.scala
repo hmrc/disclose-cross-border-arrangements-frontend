@@ -16,9 +16,11 @@
 
 package controllers
 
+import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions._
 import helpers.ViewHelper
+
 import javax.inject.Inject
 import pages.HistoryPage
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -36,6 +38,7 @@ class SearchHistoryResultsController @Inject()(
     requireData: DataRequiredAction,
     crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
     val controllerComponents: MessagesControllerComponents,
+    appConfig: FrontendAppConfig,
     viewHelper: ViewHelper,
     renderer: Renderer
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -50,7 +53,11 @@ class SearchHistoryResultsController @Inject()(
 
       {for {
         retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
-        context = Json.obj("disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails))
+        context = Json.obj(
+          "disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails),
+          "searchAgainPageLink" -> appConfig.searchAgainLink,
+          "homePageLink" -> appConfig.discloseArrangeLink
+        )
       } yield {
         renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
       }}.flatten

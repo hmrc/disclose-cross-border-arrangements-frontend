@@ -30,6 +30,14 @@
           {{ govukTable(disclosuresTable) }}
         {% endif %}
 
+        <p class="govuk-body">
+          <a class="govuk-link" id='search-again-link' href='{{ searchAgainPageLink | safe }}'>{{ messages("submissionHistory.searchAgain") }}</a>
+        </p>
+
+        <p class="govuk-body">
+          <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("site.homePageLink.text") }}</a>
+        </p>
+
       </div>
     </div>
   </div>
