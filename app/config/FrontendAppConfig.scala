@@ -39,6 +39,7 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   val signOutUrl: String             = configuration.get[String]("urls.logout")
 
   lazy val discloseArrangeLink: String = configuration.get[String]("urls.homepage")
+  lazy val searchAgainLink: String = discloseArrangeLink  + configuration.get[String]("urls.searchLink")
 
   lazy val authUrl: String = configuration.get[Service]("auth").baseUrl
   lazy val loginUrl: String = configuration.get[String]("urls.login")

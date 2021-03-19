@@ -5,7 +5,7 @@
 {% from "govuk/components/table/macro.njk"         import govukTable %}
 
 {% block pageTitle %}
-  {{ title(messages("submissionHistory.title")) }}
+  {{  title( messages('submissionHistory.notFound.title') if disclosuresTable.rows | length == 0 else messages('submissionHistory.title') ) }}
 {% endblock %}
 
 {% block beforeContent %}
@@ -23,10 +23,20 @@
       <div class="govuk-grid-column-full">
 
         <h1 class="govuk-heading-xl">
-          {{ messages("submissionHistory.heading") }}
+          {{ messages('submissionHistory.notFound.heading') if disclosuresTable.rows | length == 0 else messages('submissionHistory.heading')  }}
         </h1>
 
-        {{ govukTable(disclosuresTable) }}
+        {% if disclosuresTable.rows | length != 0 %}
+          {{ govukTable(disclosuresTable) }}
+        {% endif %}
+
+        <p class="govuk-body">
+          <a class="govuk-link" id='search-again-link' href='{{ searchAgainPageLink | safe }}'>{{ messages("submissionHistory.searchAgain") }}</a>
+        </p>
+
+        <p class="govuk-body">
+          <a class="govuk-link" id='homepage-link' href='{{ homePageLink | safe }}'>{{ messages("site.homePageLink.text") }}</a>
+        </p>
 
       </div>
     </div>
