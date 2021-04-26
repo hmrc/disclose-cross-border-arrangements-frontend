@@ -36,17 +36,15 @@ import base.SpecBase
 import fixtures.XMLFixture
 import models.{Dac6MetaData, GenericError}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, times, verify}
+import org.mockito.Matchers.any
+import org.mockito.Mockito.{reset, times, verify, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
 import play.api.inject.bind
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.audit.AuditExtensions
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import org.mockito.Mockito.{times, verify, when}
 
 import scala.concurrent.Future
 
@@ -82,17 +80,6 @@ class AuditServiceSpec extends SpecBase
           "messageRefID" -> "GB0000000XXX",
           "disclosureImportInstruction" -> "DAC6NEW",
           "initialDisclosureMA" -> "false"
-        )
-
-        val expected = ExtendedDataEvent(
-          auditSource = "disclose-cross-border-arrangements-frontend",
-          auditType = "DisclosureFileSubmission",
-          detail = expectedjson,
-          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
-            ++ AuditExtensions.auditHeaderCarrier(hc).toAuditTags(
-            "/disclose-cross-border-arrangements/upload/submission",
-            "/disclose-cross-border-arrangements/upload/submission"
-          )
         )
 
         val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])

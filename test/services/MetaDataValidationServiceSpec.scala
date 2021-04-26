@@ -16,17 +16,16 @@
 
 package services
 
-import java.time.LocalDateTime
-
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
-import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, Validation, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, SubmissionDetails, SubmissionHistory, Validation}
 import org.mockito.Matchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 
+import java.time.LocalDateTime
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
