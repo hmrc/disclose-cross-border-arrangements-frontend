@@ -23,8 +23,11 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.Json
 
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with ScalaCheckPropertyChecks {
+
+  val formatter = DateTimeFormatter.ISO_DATE_TIME
 
   val requestParameter = Seq(RequestParameter("Name", "Value"))
 
@@ -40,7 +43,7 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     Seq(ContactInformationForIndividual(IndividualDetails("FirstName", "LastName", None), "email@email.com", None, None))
   )
 
-  val lastUpdated: LocalDateTime = LocalDateTime.now
+  val lastUpdated: LocalDateTime = LocalDateTime.of(2021, 10, 28, 11, 33, 0)
 
   val requestDetailForUpdate: RequestDetailForUpdate = RequestDetailForUpdate(
     IDType = "DAC",
@@ -130,7 +133,7 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             ),
           ),
           "subscriptionID" -> "XADAC0000111111",
-          "lastUpdated" ->  s"$lastUpdated"
+          "lastUpdated" ->  s"${formatter.format(lastUpdated)}"
         )
 
       Json.toJson(updateRequest) mustBe json
