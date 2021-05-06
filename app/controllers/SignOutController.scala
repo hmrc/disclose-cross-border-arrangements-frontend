@@ -34,7 +34,7 @@ class SignOutController @Inject()(
   extends FrontendBaseController
     with I18nSupport {
 
-  def signOut: Action[AnyContent] = (identify andThen getData).async {
+  def signOut: Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Redirect(config.signOutUrl).withNewSession)
   }
