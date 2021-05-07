@@ -45,8 +45,8 @@ recruitmentBanner.dismiss = No thanks
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
 
-session_expired.title = For your security, this service has been reset
-session_expired.heading = For your security, this service has been reset
+session_expired.title = For your security, we signed you out
+session_expired.heading = For your security, we signed you out
 session_expired.guidance = If you uploaded a file, it had not been saved.
 session_expired.link = Back to disclose cross-border arrangements
 
