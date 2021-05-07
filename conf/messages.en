@@ -47,7 +47,7 @@ checkYourAnswers.heading = Check your answers
 
 session_expired.title = For your security, this service has been reset
 session_expired.heading = For your security, this service has been reset
-session_expired.guidance = Your answers have not been saved.
+session_expired.guidance = If you uploaded a file, it had not been saved.
 session_expired.link = Back to disclose cross-border arrangements
 
 unauthorised.title = You can’t access this service with this account

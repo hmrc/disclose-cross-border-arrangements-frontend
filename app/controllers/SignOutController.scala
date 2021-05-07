@@ -27,8 +27,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SignOutController @Inject()(
   config: FrontendAppConfig,
-  identify: IdentifierAction,
-  getData: DataRetrievalAction,
   val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
   extends FrontendBaseController
