@@ -30,8 +30,6 @@
 
 <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
 
-    {{ csrf() | safe }}
-
     {% for key, value in upscanInitiateResponse.formFields %}
     <input type="hidden" name="{{key}}" value="{{value}}"/>
     {% endfor %}
