@@ -56,6 +56,7 @@ class UploadFormController @Inject()(
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
+
       val form: Form[String] = new Mappings {
         val apply: Form[String] = Form( "file" -> text() )
       }.apply
@@ -70,6 +71,7 @@ class UploadFormController @Inject()(
           val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
             form.withError("file", "upload_form.error.file.invalid")
           }
+          //The view for this controller does not contain a crsf token as Upscan cannot function with it
           renderer.render(
             "upload-form.njk",
             Json.obj(
