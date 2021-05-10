@@ -45,9 +45,10 @@ recruitmentBanner.dismiss = No thanks
 checkYourAnswers.title = Check your answers
 checkYourAnswers.heading = Check your answers
 
-session_expired.title = For your security, this service has been reset
-session_expired.heading = For your security, this service has been reset
-session_expired.guidance = The details you have given have been deleted because you did not continue the service for 15 minutes.
+session_expired.title = For your security, we signed you out
+session_expired.heading = For your security, we signed you out
+session_expired.guidance = If you uploaded a file, it has not been saved.
+session_expired.link = Back to disclose cross-border arrangements
 
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
@@ -181,10 +182,6 @@ submissionHistory.disclosureID.label = Disclosure ID
 submissionHistory.submissionDate.label = Submitted
 submissionHistory.messageRef.label = Message reference ID
 submissionHistory.disclosureType.label = Disclosure type
-
-session_expired.title = For your security, this service has been reset
-session_expired.heading = For your security, this service has been reset
-session_expired.guidance = The details you have given have been deleted because you did not continue the service for 15 minutes.
 
 upload_form.title = Upload an XML file
 upload_form.heading = Upload an XML file

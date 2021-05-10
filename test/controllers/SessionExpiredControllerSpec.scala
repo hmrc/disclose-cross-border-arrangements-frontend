@@ -17,9 +17,11 @@
 package controllers
 
 import base.SpecBase
+import matchers.JsonMatchers.containJson
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
@@ -27,6 +29,7 @@ import play.twirl.api.Html
 import scala.concurrent.Future
 
 class SessionExpiredControllerSpec extends SpecBase {
+
 
   "Session Expired Controller" - {
 
@@ -41,13 +44,19 @@ class SessionExpiredControllerSpec extends SpecBase {
 
       val result = route(application, request).value
 
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
       status(result) mustEqual OK
 
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+      val expectedJson = Json.obj(
+        "startUrl" -> frontendAppConfig.dacManualUrl
+      )
 
       templateCaptor.getValue mustEqual "session-expired.njk"
+      jsonCaptor.getValue must containJson(expectedJson)
 
       application.stop()
     }

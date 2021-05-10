@@ -1,4 +1,4 @@
-{% extends "includes/layout.njk" %}
+{% extends "includes/signedout-layout.njk" %}
 
 {% from "macros/title.njk"                         import title %}
 
@@ -18,6 +18,12 @@
 
         <p class="govuk-body">
           {{ messages("session_expired.guidance") }}
+        </p>
+
+        <p>
+          <a id="startUrl" class="govuk-link" href="{{startUrl}}">
+              {{ messages("session_expired.link") }}
+          </a>
         </p>
 
       </div>

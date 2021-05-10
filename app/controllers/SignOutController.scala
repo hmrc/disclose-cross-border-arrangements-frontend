@@ -27,14 +27,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SignOutController @Inject()(
   config: FrontendAppConfig,
-  identify: IdentifierAction,
-  getData: DataRetrievalAction,
   val controllerComponents: MessagesControllerComponents
 )(implicit ec: ExecutionContext)
   extends FrontendBaseController
     with I18nSupport {
 
-  def signOut: Action[AnyContent] = (identify andThen getData).async {
+  def signOut: Action[AnyContent] = Action.async {
     implicit request =>
       Future.successful(Redirect(config.signOutUrl).withNewSession)
   }
