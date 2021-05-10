@@ -71,8 +71,9 @@ class UploadFormController @Inject()(
           val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
             form.withError("file", "upload_form.error.file.invalid")
           }
+          //The view for this controller does not contain a crsf token as Upscan cannot function with it
           renderer.render(
-            "upload-form.njk", //The view for this controller does not contain a crsf token as Upscan cannot function with it
+            "upload-form.njk",
             Json.obj(
               "form" -> formWithErrors,
               "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
