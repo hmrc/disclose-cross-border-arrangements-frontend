@@ -17,15 +17,16 @@
 package renderer
 
 import config.FrontendAppConfig
-import javax.inject.Inject
 import play.api.libs.json.{JsObject, Json, OWrites}
 import play.api.mvc.RequestHeader
 import play.twirl.api.Html
+import uk.gov.hmrc.hmrcfrontend.config.TrackingConsentConfig
 import uk.gov.hmrc.nunjucks.NunjucksRenderer
 
+import javax.inject.Inject
 import scala.concurrent.Future
 
-class Renderer @Inject()(appConfig: FrontendAppConfig, renderer: NunjucksRenderer) {
+class Renderer @Inject()(appConfig: FrontendAppConfig, trackingConfig: TrackingConsentConfig, renderer: NunjucksRenderer) {
 
   def render(template: String)(implicit request: RequestHeader): Future[Html] =
     renderTemplate(template, Json.obj())
@@ -46,6 +47,8 @@ class Renderer @Inject()(appConfig: FrontendAppConfig, renderer: NunjucksRendere
     "signOutUrl"                     -> appConfig.signOutUrl,
     "sendEmailToggle"                -> appConfig.sendEmailToggle,
     "timeout"                        -> appConfig.timeoutSeconds,
-    "countdown"                      -> appConfig.countdownSeconds
+    "countdown"                      -> appConfig.countdownSeconds,
+    "trackingConsentScriptUrl"       -> trackingConfig.trackingUrl().get,
+    "gtmContainer"                   -> trackingConfig.gtmContainer.get
   )
 }
