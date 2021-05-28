@@ -17,11 +17,11 @@
 package helpers
 
 import config.FrontendAppConfig
-import connectors.{CrossBorderArrangementsConnector, UpscanConnector}
-import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadStatus, UpscanInitiateResponse}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
-
+import connectors.UpscanConnector
 import javax.inject.Inject
+import models.upscan._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeUpscanConnector @Inject()(configuration: FrontendAppConfig,

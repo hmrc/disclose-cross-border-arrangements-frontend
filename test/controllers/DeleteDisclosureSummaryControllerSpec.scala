@@ -90,6 +90,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
 
     }
 
+
     "must redirect to Session Expired for a GET if no existing data is found" in {
 
       val application = applicationBuilder(userAnswers = None).build()
@@ -103,6 +104,22 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad().url
 
       application.stop()
+    }
+
+    "must redirect to upload form for a POST if userAnswers empty" in {
+
+      when(mockRenderer.render(any(), any())(any()))
+        .thenReturn(Future.successful(Html("")))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+
+      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+
+      application.stop()
+
     }
 
     "when submitted the uploaded file must be submitted to the backend" in {
@@ -153,6 +170,54 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       verify(mockCrossBorderArrangementsConnector, times(1))
         .submitDocument(any(), any(), any())(any())
       verify(mockEmailService, times(1)).sendEmail(any(), any(), any(), any())(any())
+
+      application.stop()
+    }
+
+
+    "when submitted the uploaded file must be submitted to the backend with no email when toggled off" in {
+      val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
+      val metaData: Dac6MetaData =
+        Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
+
+      val userAnswers = UserAnswers(userAnswersId)
+        .set(ValidXMLPage, "file-name.xml")
+        .success
+        .value
+        .set(URLPage, "url")
+        .success
+        .value
+        .set(Dac6MetaDataPage, metaData)
+        .success
+        .value
+
+      val mockXmlValidationService =  mock[XMLValidationService]
+      val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+
+      val application = applicationBuilder(Some(userAnswers))
+        .overrides(
+          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
+          bind[FrontendAppConfig].toInstance(mockAppConfig)
+        ).build()
+
+      when(mockXmlValidationService.loadXML(any[String]())).
+        thenReturn(<test><value>Success</value></test>)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockAppConfig.sendEmailToggle).thenReturn(false)
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+        .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
+
+      val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
+
+      val result = route(application, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.DeleteDisclosureConfirmationController.onPageLoad().url
+      verify(mockCrossBorderArrangementsConnector, times(1))
+        .submitDocument(any(), any(), any())(any())
 
       application.stop()
     }
