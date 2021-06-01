@@ -22,19 +22,10 @@ import controllers.routes
 import models.UserAnswers
 import pages.ValidXMLPage
 import play.api.i18n.Messages
-import play.twirl.api.{Html, HtmlFormat}
 import uk.gov.hmrc.viewmodels.SummaryList.{Action, Key, Row, Value}
 import uk.gov.hmrc.viewmodels._
 
 class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messages) {
-
-  private def yesOrNo(answer: Boolean)(implicit messages: Messages): Html = {
-    if (answer) {
-      HtmlFormat.escape(messages("site.yes"))
-    } else {
-      HtmlFormat.escape(messages("site.no"))
-    }
-  }
 
   def uploadedFile: Option[Row] = userAnswers.get(ValidXMLPage) map {
     fileName =>
@@ -102,7 +93,7 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
 }
 
 object CheckYourAnswersHelper {
-  private val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
+ DateTimeFormatter.ofPattern("d MMMM yyyy")
 }
 
 

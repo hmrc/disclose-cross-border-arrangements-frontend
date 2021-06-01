@@ -152,6 +152,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       }
     }
 
+
+
     "retrieveFirstDisclosureForArrangementID" - {
       val arrangementID = "GBA20200904AAAAAA"
       val disclosureID = "GBD20200904AAAAAA"
@@ -194,6 +196,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
               )
         }
       }
+
 
       "return throw an exception when call to backend fails" in {
         server.stubFor(

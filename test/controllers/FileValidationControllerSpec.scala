@@ -37,21 +37,21 @@ import reactivemongo.bson.BSONObjectID
 import repositories.SessionRepository
 import services.{ValidationEngine, XMLValidationService}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  val mockValidationEngine = mock[ValidationEngine]
-  val mockXmlValidationService = mock[XMLValidationService]
-  val mockSessionRepository = mock[SessionRepository]
+  val mockValidationEngine: ValidationEngine = mock[ValidationEngine]
+  val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
-  implicit val ec = scala.concurrent.ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
-  override def beforeEach() = {
+  override def beforeEach: Unit = {
     reset(mockSessionRepository)
   }
 
-  val fakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
+  val fakeUpscanConnector: FakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
 
   "FileValidationController" - {
     val uploadId = UploadId("123")

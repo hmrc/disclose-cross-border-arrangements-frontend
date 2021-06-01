@@ -106,7 +106,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       application.stop()
     }
 
-    "must redirect to upload form for a POST if userAnswers empty" in {
+    "must redirect to upload form for a POST if XML url or XML is missing from user answers" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -117,6 +117,8 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
+
+      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad().url
 
       application.stop()
 
