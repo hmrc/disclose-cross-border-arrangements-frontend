@@ -194,7 +194,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
               )
         }
       }
-
+      
       "return throw an exception when call to backend fails" in {
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/history/first-disclosure/$arrangementID"))

@@ -37,21 +37,21 @@ import reactivemongo.bson.BSONObjectID
 import repositories.SessionRepository
 import services.{ValidationEngine, XMLValidationService}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
 
-  val mockValidationEngine = mock[ValidationEngine]
-  val mockXmlValidationService = mock[XMLValidationService]
-  val mockSessionRepository = mock[SessionRepository]
+  val mockValidationEngine: ValidationEngine = mock[ValidationEngine]
+  val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
-  implicit val ec = scala.concurrent.ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
-  override def beforeEach() = {
+  override def beforeEach: Unit = {
     reset(mockSessionRepository)
   }
 
-  val fakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
+  val fakeUpscanConnector: FakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
 
   "FileValidationController" - {
     val uploadId = UploadId("123")
@@ -75,7 +75,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must redirect to Check your answers and present the correct view for a GET" in {
 
-      val uploadId = UploadId("123")
       val metaData = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false,
                                    messageRefId = "GB0000000XXX")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
@@ -98,7 +97,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
 
-      val uploadId = UploadId("123")
       val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"),
                                   disclosureInformationPresent = true, initialDisclosureMA = false,
                                   messageRefId = "GB0000000XXX")
@@ -122,7 +120,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must redirect to invalid XML page if XML validation fails" in {
 
-      val uploadId = UploadId("123")
       val errors: Seq[GenericError] = Seq(GenericError(1, "error"))
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
@@ -142,7 +139,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must redirect to file error page if XML parser fails" in {
 
-      val uploadId = UploadId("123")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("invalidXML"-> "afile")
 
@@ -162,8 +158,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     "must return an Exception when a valid UploadId cannot be found" in {
 
-      val uploadId = UploadId("123")
-
       val controller = application.injector.instanceOf[FileValidationController]
 
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
@@ -172,8 +166,6 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     }
 
     "must return an Exception when meta data cannot be found" in {
-
-      val uploadId = UploadId("123")
 
       fakeUpscanConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))

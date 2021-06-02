@@ -26,7 +26,6 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.inject.bind
-import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html

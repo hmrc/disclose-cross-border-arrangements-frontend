@@ -19,7 +19,6 @@ package controllers
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
-
 import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
@@ -27,7 +26,7 @@ import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.{SessionRepository, UploadSessionRepository}
+import repositories.SessionRepository
 import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 

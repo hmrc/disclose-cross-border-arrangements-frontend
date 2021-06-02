@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
-import models.{Dac6MetaData, GenericError, SubmissionDetails, SubmissionHistory, Validation, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, SubmissionDetails, SubmissionHistory, Validation}
 import org.mockito.Matchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify, when}

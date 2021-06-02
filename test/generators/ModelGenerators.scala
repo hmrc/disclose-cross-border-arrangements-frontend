@@ -16,11 +16,22 @@
 
 package generators
 
+import models.EmailRequest
 import models.upscan.{Failed, InProgress, NotStarted, UploadStatus}
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 
 trait ModelGenerators {
 
   implicit lazy val arbitraryUploadStatus: Arbitrary[UploadStatus] =
     Arbitrary(Gen.oneOf(NotStarted, InProgress, Failed))
+
+  implicit val arbitraryEmailRequest: Arbitrary[EmailRequest] = Arbitrary {
+    for {
+      to <- arbitrary[List[String]]
+      id <- arbitrary[String]
+      contactName <- arbitrary[Map[String, String]]
+
+    } yield EmailRequest(to, id, contactName)
+  }
 }
