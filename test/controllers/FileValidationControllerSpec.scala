@@ -21,6 +21,7 @@ import connectors.UpscanConnector
 import helpers.FakeUpscanConnector
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{Dac6MetaData, GenericError, UserAnswers, ValidationFailure, ValidationSuccess}
+import org.bson.types.ObjectId
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when, _}
@@ -33,7 +34,6 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import reactivemongo.bson.BSONObjectID
 import repositories.SessionRepository
 import services.{ValidationEngine, XMLValidationService}
 
@@ -67,7 +67,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
     val downloadURL = "http://dummy-url.com"
     val uploadDetails = UploadSessionDetails(
-      BSONObjectID.generate(),
+      new ObjectId(),
       UploadId("123"),
       Reference("123"),
       UploadedSuccessfully("afile",downloadURL)
