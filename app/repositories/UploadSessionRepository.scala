@@ -43,7 +43,7 @@ class UploadSessionRepository @Inject()(mongo: MongoComponent, config: Configura
   mongoComponent = mongo,
   collectionName = "uploadSessionRepository",
   domainFormat   = UploadSessionDetails.format,
-  indexes        = DefaultSessionRepository.indexes(config),
+  indexes        = UploadSessionRepository.indexes(config),
   replaceIndexes = true
 ) {
 
