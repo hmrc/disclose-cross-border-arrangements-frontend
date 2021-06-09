@@ -16,9 +16,9 @@
 
 package models
 
-import java.time.LocalDateTime
-
 import play.api.libs.json.{Json, OFormat}
+
+import java.time.LocalDateTime
 
 case class SubmissionHistory(details: Seq[SubmissionDetails])
 
@@ -35,6 +35,6 @@ case class SubmissionDetails(enrolmentID: String,
                              initialDisclosureMA: Boolean,
                              messageRefId: String)
 
-object SubmissionDetails extends MongoDateTimeFormats {
+object SubmissionDetails {
   implicit val format: OFormat[SubmissionDetails] = Json.format[SubmissionDetails]
 }
