@@ -21,6 +21,7 @@ import models.{GenericError, SaxParseError}
 
 import scala.collection.mutable.ListBuffer
 
+//TODO - delete file DAC6-858
 class XmlErrorMessageHelperSpec extends SpecBase{
 
   val lineNumber = 20

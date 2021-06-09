@@ -16,21 +16,20 @@
 
 package controllers
 
-import connectors.UpscanConnector
+import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
-
-import javax.inject.Inject
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.{SessionRepository, UploadSessionRepository}
-import services.ValidationEngine
+import repositories.SessionRepository
+import services.XMLValidationService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileValidationController @Inject()(
@@ -41,7 +40,8 @@ class FileValidationController @Inject()(
   val controllerComponents: MessagesControllerComponents,
   upscanConnector: UpscanConnector,
   requireData: DataRequiredAction,
-  validationEngine: ValidationEngine ,
+  validationService : XMLValidationService,
+  validationConnector: ValidationConnector,
   errorHandler: ErrorHandler,
   navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
@@ -54,10 +54,13 @@ class FileValidationController @Inject()(
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- upscanConnector.getUploadDetails(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
+        xml = validationService.loadXML(downloadUrl)
+        validation: Either[Seq[GenericError], Dac6MetaData] <- validationConnector.sendForValidation(xml)
       } yield {
+        //TODO - Send file here to backend for validation - DAC6-858
         validation match   {
-          case Right(ValidationSuccess(_,Some(metaData))) =>
+          case Right(metaData) =>
+            println("@@@@@RIGHT\n\n\n")
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
@@ -69,7 +72,10 @@ class FileValidationController @Inject()(
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-          case Right(ValidationFailure(errors: Seq[GenericError])) =>
+
+          case Left(errors: Seq[GenericError]) =>
+            println("@@@@@LEFT  WITH ERROR\n\n\n")
+
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
@@ -78,6 +84,8 @@ class FileValidationController @Inject()(
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }
           case Left(_) =>
+            println("@@@@@FAR LEFT\n\n\n")
+
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               _              <- sessionRepository.set(updatedAnswers)
@@ -85,6 +93,7 @@ class FileValidationController @Inject()(
               Redirect(routes.FileErrorController.onPageLoad())
             }
           case _ =>
+            println("@@@@@@ONSERVERERROR\n\n")
             errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
         }
       }
@@ -108,6 +117,5 @@ class FileValidationController @Inject()(
       case _ => throw new RuntimeException("File not uploaded successfully")
     }
   }
-
 }
 

@@ -46,6 +46,7 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   HeaderNames.CONTENT_TYPE -> "application/xml"
   )
 
+  // TODO - Submits document to backend - DAC6-858
   def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] = {
     httpClient.POSTString[GeneratedIDs](submitUrl, constructSubmission(fileName, enrolmentID, xmlDocument).toString(), headers)
   }
