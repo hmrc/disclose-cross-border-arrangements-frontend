@@ -19,7 +19,7 @@ package models
 import base.SpecBase
 import play.api.libs.json.Json
 
-class XMLValidationStatusSpec extends SpecBase {
+class UploadValidationResultSpec extends SpecBase {
 
   "XML Validation Status" - {
     "must marshall correctly for validation success" in {
@@ -31,7 +31,7 @@ class XMLValidationStatusSpec extends SpecBase {
 
       val expectedResult = ValidationSuccess("myDownload")
 
-      Json.parse(json).as[XMLValidationStatus] mustBe expectedResult
+      Json.parse(json).as[UploadValidationResult] mustBe expectedResult
     }
 
     "must marshall correctly for validation failure" in {
@@ -56,7 +56,7 @@ class XMLValidationStatusSpec extends SpecBase {
         )
       )
 
-      Json.parse(json).as[XMLValidationStatus] mustBe expectedResult
+      Json.parse(json).as[UploadValidationResult] mustBe expectedResult
     }
   }
 

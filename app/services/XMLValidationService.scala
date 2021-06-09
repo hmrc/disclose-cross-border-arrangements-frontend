@@ -16,50 +16,48 @@
 
 package services
 
-import java.net.URL
-
 import com.google.inject.ImplementedBy
+
+import java.net.URL
 import javax.inject.Inject
 import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import models.SaxParseError
-import org.xml.sax.SAXParseException
-import org.xml.sax.helpers.DefaultHandler
-
-import scala.collection.mutable.ListBuffer
 import scala.xml.Elem
 
-class XMLValidationService @Inject() (xmlValidationParser: XMLValidationParser) {
+class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
 
-  def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
-    val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
+  // TODO - Remove Validation here - DAC6-858
 
-    trait AccumulatorState extends DefaultHandler {
-      override def warning(e: SAXParseException): Unit    = list += SaxParseError(e.getLineNumber, e.getMessage)
-      override def error(e: SAXParseException): Unit      = list += SaxParseError(e.getLineNumber, e.getMessage)
-      override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
-    }
+//  def validateXml(downloadSrc: String): (Elem, ListBuffer[SaxParseError]) = {
+//    val list: ListBuffer[SaxParseError] = new ListBuffer[SaxParseError]
+//
+//    trait AccumulatorState extends DefaultHandler {
+//      override def warning(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+//      override def error(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+//      override def fatalError(e: SAXParseException): Unit = list += SaxParseError(e.getLineNumber, e.getMessage)
+//    }
+//
+//    val elem = new scala.xml.factory.XMLLoader[scala.xml.Elem] {
+//      override def parser: SAXParser = xmlValidationParser.validatingParser
+//      override def adapter =
+//        new scala.xml.parsing.NoBindingFactoryAdapter
+//          with AccumulatorState
+//
+//
+//    }.load(new URL(downloadSrc))
+//
+//   (elem, list)
+//  }
 
-    val elem = new scala.xml.factory.XMLLoader[scala.xml.Elem] {
-      override def parser: SAXParser = xmlValidationParser.validatingParser
-      override def adapter =
-        new scala.xml.parsing.NoBindingFactoryAdapter with AccumulatorState
-
-    }.load(new URL(downloadSrc))
-
-    (elem, list)
-  }
-
-  def loadXML(downloadSrc: String): Elem =
+  def loadXML(downloadSrc: String): Elem = {
     new scala.xml.factory.XMLLoader[scala.xml.Elem] {
       override def parser: SAXParser = xmlValidationParser.validatingParser
-
       override def adapter =
         new scala.xml.parsing.NoBindingFactoryAdapter
     }.load(new URL(downloadSrc))
-
+  }
 }
 
 @ImplementedBy(classOf[XMLDacXSDValidationParser])
@@ -67,11 +65,12 @@ trait XMLValidationParser {
   def validatingParser: SAXParser
 }
 
+
 class XMLDacXSDValidationParser extends XMLValidationParser {
-  val schemaLang: String            = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
-  val isoXsdUrl: URL                = getClass.getResource("/schemas/IsoTypes_v1.01.xsd")
-  val ukDAC6XsdUrl: URL             = getClass.getResource("/schemas/UKDac6XSD_v0.5.xsd")
-  val isoXsdStream: StreamSource    = new StreamSource(isoXsdUrl.openStream())
+  val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
+  val isoXsdUrl: URL = getClass.getResource("/schemas/IsoTypes_v1.01.xsd")
+  val ukDAC6XsdUrl: URL = getClass.getResource("/schemas/UKDac6XSD_v0.5.xsd")
+  val isoXsdStream: StreamSource = new StreamSource(isoXsdUrl.openStream())
   val ukDAC6XsdStream: StreamSource = new StreamSource(ukDAC6XsdUrl.openStream())
 
   //IsoTypes xsd is referenced by UKDac6XSD so must come first in the array

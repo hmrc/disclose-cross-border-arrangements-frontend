@@ -16,18 +16,16 @@
 
 package services
 
-import java.text.SimpleDateFormat
-import java.util.{Calendar, Date, GregorianCalendar}
-
 import cats.data.ReaderT
 import cats.implicits._
 import connectors.CrossBorderArrangementsConnector
-import javax.inject.Inject
 import models.{Dac6MetaData, Validation}
 import org.slf4j.LoggerFactory
-import services.BusinessRuleValidationService.disclosureID
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.text.SimpleDateFormat
+import java.util.{Calendar, Date, GregorianCalendar}
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
