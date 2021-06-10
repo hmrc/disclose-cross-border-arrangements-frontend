@@ -19,6 +19,7 @@ package controllers
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
+
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
 import navigation.Navigator

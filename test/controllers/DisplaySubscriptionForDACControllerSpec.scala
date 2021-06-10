@@ -50,9 +50,9 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
 
           reset(mockRenderer, mockSubscriptionConnector)
 
-          val jsonPayload = displaySubscriptionPayload(
-            JsString(safeID), JsString("FirstName"), JsString("Secondary contact name"),
-            JsString(email), JsString(secondaryEmail), JsString(phone))
+          val jsonPayload = displaySubscriptionPayloadNoSecondary(
+            JsString(safeID), JsString("FirstName"), JsString("LastName"),
+            JsString(email), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get
 
@@ -79,6 +79,45 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase
           templateCaptor.getValue mustEqual "displaySubscriptionForDAC.njk"
 
           application.stop()
+      }
+    }
+
+    "return OK and the correct view for a GET and there are two contacts & subscription details available" in {
+
+      forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
+      (safeID, email, secondaryEmail, phone) =>
+
+      reset(mockRenderer, mockSubscriptionConnector)
+
+      val jsonPayload = displaySubscriptionPayload(
+      JsString(safeID), JsString("FirstName"), JsString("Secondary contact name"),
+      JsString(email), JsString(secondaryEmail), JsString(phone))
+
+      val displaySubscriptionDetails = Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get
+
+      when(mockRenderer.render(any(), any())(any()))
+      .thenReturn(Future.successful(Html("")))
+
+      when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+      .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
+
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+      .overrides(
+      bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+      ).build()
+
+      val request = FakeRequest(GET, routes.DisplaySubscriptionForDACController.onPageLoad().url)
+      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
+
+      val result = route(application, request).value
+
+      status(result) mustEqual OK
+
+      verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
+
+      templateCaptor.getValue mustEqual "displaySubscriptionForDAC.njk"
+
+      application.stop()
       }
     }
 
