@@ -18,25 +18,22 @@ package connectors
 
 import config.FrontendAppConfig
 import models.{Dac6MetaData, GenericError, UploadValidationResult, ValidationFailure, ValidationSuccess}
-import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.Elem
 
 class ValidationConnector @Inject()(http: HttpClient, config: FrontendAppConfig) {
 
   val url = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/validate-upload-submission"
 
-  private val headers = Seq(
-    HeaderNames.CONTENT_TYPE -> "application/xml"
-  )
+//  private val headers = Seq(
+//    HeaderNames.CONTENT_TYPE -> "application/xml"
+//  )
 
   //Sends XML for validation in backend - DAC6-858
-  def sendForValidation(xml: Elem)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[GenericError], Dac6MetaData]] = {
-
-    http.POSTString[UploadValidationResult](url, xml.mkString, headers).map {
+  def sendForValidation(downloadURL: String)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[GenericError], Dac6MetaData]] = {
+    http.POSTString[UploadValidationResult](url, downloadURL).map {
       case ValidationSuccess(a) => Right(a)
       case ValidationFailure(a) => Left(a)
     }

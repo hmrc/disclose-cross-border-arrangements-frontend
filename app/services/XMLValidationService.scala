@@ -65,7 +65,6 @@ trait XMLValidationParser {
   def validatingParser: SAXParser
 }
 
-
 class XMLDacXSDValidationParser extends XMLValidationParser {
   val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
   val isoXsdUrl: URL = getClass.getResource("/schemas/IsoTypes_v1.01.xsd")
