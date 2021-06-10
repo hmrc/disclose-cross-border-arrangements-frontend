@@ -53,7 +53,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration,  servicesConfig
   lazy val countdownSeconds: String = configuration.get[String]("session.countdownSeconds")
 
   val upscanInitiateHost: String = servicesConfig.baseUrl("upscan")
-  //ToDo this host maybe different without the stubs
   val upscanBucketHost: String = servicesConfig.baseUrl("upscan")
   val upscanProtocol: String = servicesConfig.getConfString("upscan.protocol", "https")
   val upscanRedirectBase: String = configuration.get[String]("microservice.services.upscan.redirect-base")
