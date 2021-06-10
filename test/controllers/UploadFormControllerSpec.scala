@@ -105,6 +105,7 @@ class UploadFormControllerSpec extends SpecBase
 
       verifyResult(InProgress, OK)
       verifyResult(Quarantined)
+      verifyResult(Rejected)
       verifyResult(Failed, INTERNAL_SERVER_ERROR)
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 

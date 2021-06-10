@@ -42,7 +42,7 @@ class CreateConfirmationControllerSpec extends SpecBase with MockitoSugar {
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
-        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", None, None, true, true, "GBD20200701AA0002"))
+        .set(Dac6MetaDataPage, Dac6MetaData("DAC6DEL", None, None, disclosureInformationPresent = true, initialDisclosureMA = true, "GBD20200701AA0002"))
         .success
         .value
         .set(GeneratedIDPage, GeneratedIDs(Some("GBA20200701AAAB00"), Some("GBD20200701AA0001")))
