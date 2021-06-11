@@ -53,7 +53,6 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
   def findNoOfPreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[Long] =
   httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
 
-  //TODO: should have paging to support large no of filings
   def retrievePreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
   httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
 

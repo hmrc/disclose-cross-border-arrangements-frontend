@@ -28,7 +28,6 @@ class FakeUpscanConnector @Inject()(configuration: FrontendAppConfig,
                                     httpClient: HttpClient)(implicit ec: ExecutionContext)
   extends UpscanConnector(configuration, httpClient, "name"){
 
-  //TODO: I know!
   var statusBuffer: Option[UploadStatus] = None
   var detailsBuffer: Option[UploadSessionDetails] = None
 
