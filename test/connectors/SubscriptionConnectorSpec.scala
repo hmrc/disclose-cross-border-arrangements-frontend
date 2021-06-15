@@ -19,7 +19,6 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import controllers.Assets.SERVICE_UNAVAILABLE
 import generators.Generators
 import helpers.JsonFixtures._
 import models.UserAnswers
@@ -28,7 +27,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.contactdetails.ContactNamePage
 import play.api.Application
-import play.api.http.Status.OK
+import play.api.http.Status.{OK, SERVICE_UNAVAILABLE}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsString
 import uk.gov.hmrc.http.HttpClient

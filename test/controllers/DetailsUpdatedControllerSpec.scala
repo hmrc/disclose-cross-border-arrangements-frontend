@@ -18,16 +18,14 @@ package controllers
 
 import base.SpecBase
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class DetailsUpdatedControllerSpec extends SpecBase with MockitoSugar {
+class DetailsUpdatedControllerSpec extends SpecBase {
 
   "DetailsUpdated Controller" - {
 

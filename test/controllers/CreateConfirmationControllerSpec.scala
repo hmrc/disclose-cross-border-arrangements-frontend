@@ -17,22 +17,19 @@
 package controllers
 
 import base.SpecBase
-import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
+import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
+import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
-import models.{ContactDetails, Dac6MetaData, GeneratedIDs, UserAnswers}
-import pages.{Dac6MetaDataPage, GeneratedIDPage}
-import play.api.inject.bind
+
 import scala.concurrent.Future
 
-class CreateConfirmationControllerSpec extends SpecBase with MockitoSugar {
+class CreateConfirmationControllerSpec extends SpecBase {
 
   "CreateConfirmation Controller" - {
 

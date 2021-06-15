@@ -21,8 +21,7 @@ import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import matchers.JsonMatchers
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.any
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest

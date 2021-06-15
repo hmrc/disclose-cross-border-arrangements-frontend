@@ -22,10 +22,8 @@ import helpers.FakeUpscanConnector
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{Dac6MetaData, GenericError, UserAnswers, ValidationFailure, ValidationSuccess}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when, _}
+import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar
 import org.xml.sax.SAXParseException
 import pages.UploadIDPage
 import play.api.inject.bind
@@ -39,7 +37,7 @@ import services.{ValidationEngine, XMLValidationService}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class FileValidationControllerSpec extends SpecBase with MockitoSugar with BeforeAndAfterEach {
+class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
   val mockValidationEngine: ValidationEngine = mock[ValidationEngine]
   val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
@@ -79,7 +77,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
                                    messageRefId = "GB0000000XXX")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
+      when(mockValidationEngine.validateFile(any[String](), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
       fakeUpscanConnector.setDetails(uploadDetails)
@@ -104,7 +102,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
       fakeUpscanConnector.setDetails(uploadDetails)
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
+      when(mockValidationEngine.validateFile(any[String](), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -125,7 +123,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
       val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
 
       fakeUpscanConnector.setDetails(uploadDetails)
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
+      when(mockValidationEngine.validateFile(any[String], any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationFailure(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -144,7 +142,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
 
       fakeUpscanConnector.setDetails(uploadDetails)
       //noinspection ScalaStyle
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
+      when(mockValidationEngine.validateFile(any[String], any(), any())(any(), any()))
         .thenReturn(Future.successful(Left(new SAXParseException("", null))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
@@ -168,7 +166,7 @@ class FileValidationControllerSpec extends SpecBase with MockitoSugar with Befor
     "must return an Exception when meta data cannot be found" in {
 
       fakeUpscanConnector.setDetails(uploadDetails)
-      when(mockValidationEngine.validateFile(org.mockito.Matchers.anyString(), any(), any())(any(), any()))
+      when(mockValidationEngine.validateFile(any[String](), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, None))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 

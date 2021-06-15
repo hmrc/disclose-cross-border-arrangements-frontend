@@ -16,8 +16,6 @@
 
 package controllers
 
-import java.time.LocalDateTime
-
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
 import forms.SearchDisclosuresFormProvider
@@ -25,8 +23,7 @@ import matchers.JsonMatchers
 import models.{SubmissionDetails, SubmissionHistory}
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
 import play.api.data.Form
 import play.api.inject.bind
 import play.api.libs.json.{JsObject, Json}
@@ -37,6 +34,7 @@ import play.twirl.api.Html
 import repositories.SessionRepository
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 
+import java.time.LocalDateTime
 import scala.concurrent.Future
 
 class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatchers {

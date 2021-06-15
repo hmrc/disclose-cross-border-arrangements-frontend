@@ -22,8 +22,7 @@ import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
 import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
 import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
 import play.api.http.Status.OK

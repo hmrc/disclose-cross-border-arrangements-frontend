@@ -16,23 +16,20 @@
 
 package services
 
-import java.time.LocalDateTime
-import java.util.{Calendar, GregorianCalendar}
-
 import base.SpecBase
 import connectors.CrossBorderArrangementsConnector
 import fixtures.XMLFixture
 import models.{Dac6MetaData, SubmissionDetails, Validation}
-import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.IntegrationPatience
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 
+import java.time.LocalDateTime
+import java.util.{Calendar, GregorianCalendar}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class BusinessRuleValidationServiceSpec extends SpecBase with MockitoSugar with IntegrationPatience {
+class BusinessRuleValidationServiceSpec extends SpecBase with IntegrationPatience {
 
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 

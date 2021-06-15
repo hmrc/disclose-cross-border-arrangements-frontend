@@ -25,9 +25,7 @@ import models.UserAnswers
 import models.subscription.DisplaySubscriptionForDACResponse
 import navigation.{FakeNavigator, Navigator}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.ContactEmailAddressPage
@@ -43,7 +41,6 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 import scala.concurrent.Future
 
 class ContactEmailAddressControllerSpec extends SpecBase
-  with MockitoSugar
   with NunjucksSupport
   with JsonMatchers
   with ScalaCheckPropertyChecks

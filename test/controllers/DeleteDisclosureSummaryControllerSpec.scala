@@ -22,9 +22,7 @@ import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
 import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
 import play.api.inject.bind
 import play.api.libs.json.JsObject
@@ -36,7 +34,7 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
-class DeleteDisclosureSummaryControllerSpec extends SpecBase with MockitoSugar {
+class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
   "DeleteDisclosureSummaryController" - {
 

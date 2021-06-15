@@ -21,7 +21,6 @@ import generators.Generators
 import helpers.JsonFixtures.{displaySubscriptionPayload, displaySubscriptionPayloadNoSecondary}
 import models.subscription._
 import models.{GenericError, SubmissionDetails, SubmissionHistory, UserAnswers}
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks.forAll
 import pages.DisplaySubscriptionDetailsPage
 import pages.contactdetails.{ContactNamePage, HaveContactPhonePage, HaveSecondaryContactPhonePage, SecondaryContactNamePage}
@@ -32,9 +31,7 @@ import uk.gov.hmrc.viewmodels.{Html, Table, _}
 
 import java.time.LocalDateTime
 
-class ViewHelperSpec extends SpecBase
-  with MockitoSugar
-  with Generators {
+class ViewHelperSpec extends SpecBase with Generators {
 
   val viewHelper = new ViewHelper
   val mockURL: JsValue = Json.toJson("www.test.com")

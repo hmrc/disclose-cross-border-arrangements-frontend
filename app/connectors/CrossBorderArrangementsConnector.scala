@@ -17,9 +17,8 @@
 package connectors
 
 import config.FrontendAppConfig
-import controllers.Assets.NO_CONTENT
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
-import play.api.http.HeaderNames
+import play.api.http.{HeaderNames, Status}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import utils.SubmissionUtil._
@@ -61,7 +60,7 @@ class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfi
 
   def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
     httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map { response =>
-      response.status == NO_CONTENT
+      response.status == Status.NO_CONTENT
     }
 
   def getSubmissionHistory(enrolmentId: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {

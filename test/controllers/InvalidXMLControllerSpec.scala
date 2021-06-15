@@ -19,9 +19,7 @@ package controllers
 import base.SpecBase
 import models.{GenericError, UserAnswers}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import pages.{GenericErrorPage, InvalidXMLPage}
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
@@ -30,7 +28,7 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class InvalidXMLControllerSpec extends SpecBase with MockitoSugar {
+class InvalidXMLControllerSpec extends SpecBase {
 
   "InvalidXMLController" - {
 

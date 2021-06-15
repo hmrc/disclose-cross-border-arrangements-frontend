@@ -22,9 +22,7 @@ import generators.Generators
 import helpers.JsonFixtures._
 import models.subscription.{DisplaySubscriptionDetailsAndStatus, DisplaySubscriptionForDACResponse}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.inject.bind
 import play.api.libs.json.{JsString, Json}
@@ -35,7 +33,6 @@ import play.twirl.api.Html
 import scala.concurrent.Future
 
 class DisplaySubscriptionForDACControllerSpec extends SpecBase
-  with MockitoSugar
   with ScalaCheckPropertyChecks
   with Generators {
 
