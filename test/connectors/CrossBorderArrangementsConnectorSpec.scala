@@ -114,9 +114,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       val json = Json.obj(
         "details" -> JsArray(Seq(Json.obj(
           "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> Json.obj(
-            "$date" -> 1196676930000L
-          ),
+          "submissionTime" -> 1196676930000L,
           "fileName" -> "fileName",
           "importInstruction" -> "New",
           "initialDisclosureMA" -> false,
@@ -159,9 +157,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       "should return the submission details for the first disclosure from backend" in {
         val json = Json.obj(
           "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> Json.obj(
-            "$date" -> 1589476200000L
-          ),
+          "submissionTime" -> 1589476200000L,
           "fileName" -> "fileName",
           "arrangementID" -> arrangementID,
           "disclosureID" -> disclosureID,
