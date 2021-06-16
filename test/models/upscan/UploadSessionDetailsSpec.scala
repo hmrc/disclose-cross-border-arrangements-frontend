@@ -33,7 +33,7 @@ class UploadSessionDetailsSpec extends SpecBase {
     bytes
   }
 
-  val objetId: ObjectId = new ObjectId(str2Hex("111111111111111111111111"))
+  val objectId: ObjectId = new ObjectId(str2Hex("111111111111111111111111"))
 
   "Upload Session Details" - {
     "must be able to be marshalled correctly for status: NotStarted" in {
@@ -48,7 +48,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         NotStarted
@@ -59,7 +59,7 @@ class UploadSessionDetailsSpec extends SpecBase {
 
     "must be able to be written correctly for status: NotStarted" in {
       val uploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         NotStarted
@@ -90,7 +90,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -111,7 +111,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -132,7 +132,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -153,7 +153,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -176,7 +176,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "downloadUrl")
@@ -199,7 +199,7 @@ class UploadSessionDetailsSpec extends SpecBase {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        objetId,
+        objectId,
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "downloadUrl")
