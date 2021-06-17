@@ -36,11 +36,9 @@ import base.SpecBase
 import fixtures.XMLFixture
 import models.{Dac6MetaData, GenericError}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.ArgumentMatchers.any
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks._
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.inject.bind
 import play.api.libs.json.Json
@@ -49,8 +47,7 @@ import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.Future
 
-class AuditServiceSpec extends SpecBase
-  with MockitoSugar {
+class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
   val auditConnector: AuditConnector = mock[AuditConnector]
 
   val application: Application = applicationBuilder(None)

@@ -19,8 +19,7 @@ package controllers
 import base.SpecBase
 import matchers.JsonMatchers.containJson
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
+import org.mockito.ArgumentMatchers.any
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

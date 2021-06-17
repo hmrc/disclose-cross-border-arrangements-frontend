@@ -16,13 +16,10 @@
 
 package connectors
 
-import java.time.LocalDateTime
-
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, post, urlEqualTo}
 import models.{GeneratedIDs, SubmissionDetails, SubmissionHistory}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.Status._
@@ -31,9 +28,10 @@ import play.api.libs.json.{JsArray, Json}
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import utils.WireMockHelper
 
+import java.time.LocalDateTime
+
 class CrossBorderArrangementsConnectorSpec extends SpecBase
   with GuiceOneAppPerSuite
-  with MockitoSugar
   with WireMockHelper
   with ScalaFutures {
 

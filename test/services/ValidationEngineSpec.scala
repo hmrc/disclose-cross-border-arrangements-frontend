@@ -22,24 +22,17 @@ import cats.implicits._
 import connectors.CrossBorderArrangementsConnector
 import helpers.{BusinessRulesErrorMessageHelper, XmlErrorMessageHelper}
 import models.{Dac6MetaData, GenericError, SaxParseError, Validation, ValidationFailure, ValidationSuccess}
-import org.mockito.Matchers._
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.ExecutionContext
-import scala.xml.{Elem, NodeSeq}
-import scala.concurrent.ExecutionContext.Implicits._
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
-import org.mockito.Matchers.any
-import org.mockito.Mockito._
+import scala.xml.{Elem, NodeSeq}
 
-class ValidationEngineSpec  extends SpecBase with MockitoSugar {
+class ValidationEngineSpec  extends SpecBase {
 
   val xsdError = "xsd-error"
   val defaultError = "There is a problem with this line number"

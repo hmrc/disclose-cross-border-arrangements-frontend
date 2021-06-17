@@ -24,8 +24,6 @@ import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
 import models.SaxParseError
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.inject.bind
 
@@ -33,7 +31,7 @@ import scala.collection.mutable.ListBuffer
 
 
 
-class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
+class XMLValidationServiceSpec extends SpecBase {
 
   val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
   val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
@@ -41,7 +39,7 @@ class XMLValidationServiceSpec extends SpecBase with MockitoSugar {
   val invalidXmlUrl: String = getClass.getResource("/invalid.txt").toString
 
   val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-    bind[XMLDacXSDValidationParser].toInstance(MockitoSugar.mock[XMLDacXSDValidationParser])
+    bind[XMLDacXSDValidationParser].toInstance(mock[XMLDacXSDValidationParser])
   ).build()
 
   trait SitemapParserSetup {

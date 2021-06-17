@@ -19,9 +19,7 @@ package controllers
 import base.SpecBase
 import models.UserAnswers
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import pages.InvalidXMLPage
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -29,7 +27,7 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class FileErrorControllerSpec extends SpecBase with MockitoSugar {
+class FileErrorControllerSpec extends SpecBase {
 
   "FileError Controller" - {
 

@@ -19,9 +19,8 @@ package controllers.actions
 import base.SpecBase
 import com.google.inject.Inject
 import controllers.routes
-import org.mockito.Matchers._
-import org.mockito.Mockito._
-import play.api.mvc.{Action, AnyContent, BodyParsers, MessagesControllerComponents, Results}
+import org.mockito.ArgumentMatchers.any
+import play.api.mvc._
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate

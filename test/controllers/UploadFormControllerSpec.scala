@@ -24,9 +24,7 @@ import matchers.JsonMatchers
 import models.UserAnswers
 import models.upscan._
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import pages.UploadIDPage
 import play.api.inject.bind
@@ -40,7 +38,6 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 import scala.concurrent.Future
 
 class UploadFormControllerSpec extends SpecBase
-  with MockitoSugar
   with NunjucksSupport
   with ScalaCheckPropertyChecks
   with JsonMatchers

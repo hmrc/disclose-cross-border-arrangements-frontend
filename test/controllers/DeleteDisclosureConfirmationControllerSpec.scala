@@ -21,9 +21,7 @@ import controllers.actions.{ContactRetrievalAction, FakeContactRetrievalAction}
 import matchers.JsonMatchers
 import models.{ContactDetails, Dac6MetaData, UserAnswers}
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchers.any
 import pages.Dac6MetaDataPage
 import play.api.inject.bind
 import play.api.test.FakeRequest
@@ -32,7 +30,7 @@ import play.twirl.api.Html
 
 import scala.concurrent.Future
 
-class DeleteDisclosureConfirmationControllerSpec extends SpecBase with MockitoSugar with JsonMatchers {
+class DeleteDisclosureConfirmationControllerSpec extends SpecBase with JsonMatchers {
 
   "DeleteDisclosureConfirmation Controller" - {
 

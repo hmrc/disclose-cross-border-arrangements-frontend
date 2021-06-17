@@ -19,10 +19,11 @@ package base
 import config.FrontendAppConfig
 import controllers.actions._
 import models.UserAnswers
-import org.mockito.Mockito
+import org.mockito.{Mockito, MockitoSugar}
 import org.scalatest._
+import org.scalatest.matchers.must.Matchers
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.play.guice._
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -33,7 +34,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nunjucks.NunjucksRenderer
 
-trait SpecBase extends FreeSpec with MustMatchers with GuiceOneAppPerSuite with OptionValues with TryValues
+trait SpecBase extends AnyFreeSpec with Matchers with GuiceOneAppPerSuite with OptionValues with TryValues
   with ScalaFutures with IntegrationPatience with MockitoSugar with BeforeAndAfterEach {
 
   override def beforeEach {

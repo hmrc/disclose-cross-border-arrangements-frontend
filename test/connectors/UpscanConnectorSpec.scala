@@ -20,7 +20,6 @@ import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import models.upscan.{PreparedUpload, Reference, UploadForm, UpscanInitiateRequest}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK, SERVICE_UNAVAILABLE}
@@ -31,7 +30,6 @@ import utils.WireMockHelper
 
 class UpscanConnectorSpec extends SpecBase
   with GuiceOneAppPerSuite
-  with MockitoSugar
   with WireMockHelper
   with ScalaFutures {
 
