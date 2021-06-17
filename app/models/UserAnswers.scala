@@ -16,11 +16,11 @@
 
 package models
 
-import java.time.LocalDateTime
-
 import pages._
 import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
+import java.time.LocalDateTime
 import scala.util.{Failure, Success, Try}
 
 final case class UserAnswers(
@@ -67,6 +67,10 @@ final case class UserAnswers(
 
 object UserAnswers {
 
+  val format: OFormat[UserAnswers] = OFormat(reads, writes)
+
+  import MongoJavatimeFormats.Implicits._
+
   implicit lazy val reads: Reads[UserAnswers] = {
 
     import play.api.libs.functional.syntax._
@@ -74,7 +78,7 @@ object UserAnswers {
     (
       (__ \ "_id").read[String] and
       (__ \ "data").read[JsObject] and
-      (__ \ "lastUpdated").read(MongoDateTimeFormats.localDateTimeRead)
+      (__ \ "lastUpdated").read[LocalDateTime]
     ) (UserAnswers.apply _)
   }
 
@@ -85,7 +89,7 @@ object UserAnswers {
     (
       (__ \ "_id").write[String] and
       (__ \ "data").write[JsObject] and
-      (__ \ "lastUpdated").write(MongoDateTimeFormats.localDateTimeWrite)
+      (__ \ "lastUpdated").write[LocalDateTime]
     ) (unlift(UserAnswers.unapply))
   }
 }
