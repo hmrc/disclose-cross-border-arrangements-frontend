@@ -55,6 +55,9 @@ class FileValidationController @Inject()(
         uploadSessions <- upscanConnector.getUploadDetails(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
         xml = validationService.loadXML(downloadUrl)
+        res = println(s"\n\n$downloadUrl")
+        res2 = println(s"\n\n\n$xml")
+        res3 = println(s"\n\n\n${xml.namespace}")
         validation: Either[Seq[GenericError], Dac6MetaData] <- validationConnector.sendForValidation(xml)
       } yield {
         //TODO - Send file here to backend for validation - DAC6-858

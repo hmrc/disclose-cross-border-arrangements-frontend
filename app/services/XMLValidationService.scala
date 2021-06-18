@@ -17,6 +17,8 @@
 package services
 
 import com.google.inject.ImplementedBy
+import models.SaxParseError
+import org.xml.sax.helpers.DefaultHandler
 
 import java.net.URL
 import javax.inject.Inject
@@ -24,7 +26,8 @@ import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import javax.xml.transform.Source
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.{Schema, SchemaFactory}
-import scala.xml.Elem
+import scala.collection.mutable.ListBuffer
+import scala.xml.{Elem, SAXParseException}
 
 class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
 
@@ -54,8 +57,9 @@ class XMLValidationService @Inject()(xmlValidationParser: XMLValidationParser){
   def loadXML(downloadSrc: String): Elem = {
     new scala.xml.factory.XMLLoader[scala.xml.Elem] {
       override def parser: SAXParser = xmlValidationParser.validatingParser
-      override def adapter =
+      override def adapter = {
         new scala.xml.parsing.NoBindingFactoryAdapter
+      }
     }.load(new URL(downloadSrc))
   }
 }
