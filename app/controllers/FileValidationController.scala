@@ -31,6 +31,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.xml.{NamespaceBinding, TopScope}
 
 class FileValidationController @Inject()(
   override val messagesApi: MessagesApi,
@@ -50,11 +51,12 @@ class FileValidationController @Inject()(
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async{
     implicit request =>
     {
+      val ns = new NamespaceBinding(null, "urn:ukdac6:v0.1", TopScope)
       for {
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- upscanConnector.getUploadDetails(uploadId)
         (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        xml = validationService.loadXML(downloadUrl)
+        xml = validationService.loadXML(downloadUrl).copy(scope = ns)
         res = println(s"\n\n$downloadUrl")
         res2 = println(s"\n\n\n$xml")
         res3 = println(s"\n\n\n${xml.namespace}")
