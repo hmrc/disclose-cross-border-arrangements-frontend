@@ -20,7 +20,7 @@ import scala.xml.PrettyPrinter
 
 class BusinessRulesErrorMessageHelper {
 
-  val WIDTH = 80
+  val WIDTH = 1000000
   val STEP = 2
 
   import models.{GenericError, Validation}
