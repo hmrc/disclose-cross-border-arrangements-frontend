@@ -45,57 +45,40 @@ object GenericError {
   implicit val format = Json.format[GenericError]
 }
 
-sealed trait UploadValidationResult
-
-object UploadValidationResult {
-
-  implicit val validationWrites = new Format[UploadValidationResult] {
-    override def reads(json: JsValue): JsResult[UploadValidationResult] =
-      json.validate[ValidationSuccess].orElse(
-        json.validate[ValidationFailure]
+sealed trait UploadSubmissionValidationResult
+object UploadSubmissionValidationResult {
+  implicit val validationWrites = new Format[UploadSubmissionValidationResult] {
+    override def reads(json: JsValue): JsResult[UploadSubmissionValidationResult] =
+      json.validate[UploadSubmissionValidationSuccess].orElse(
+        json.validate[UploadSubmissionValidationFailure]
       )
 
-    override def writes(o: UploadValidationResult): JsValue = o match {
-      case ValidationSuccess(metaData) => Json.obj(
-        "metaData" -> metaData
-      )
+    override def writes(o: UploadSubmissionValidationResult): JsValue = o match {
+      case m@UploadSubmissionValidationSuccess(_) => UploadSubmissionValidationSuccess.format.writes(m)
+      case m@UploadSubmissionValidationFailure(_) => UploadSubmissionValidationFailure.format.writes(m)
+    }
 
-      case ValidationFailure(errors) => Json.obj(
-        "error" -> JsArray(errors.map(Json.toJson[GenericError](_)))
-      )
-  }
-
-//  implicit val reads = new Reads[UploadValidationResult] {
-//    override def reads(json: JsValue): JsResult[UploadValidationResult] = {
-//      json \ "downloadUrl" match {
-//        case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
-//        case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
-//      }
+//    override def writes(o: UploadSubmissionValidationResult): JsValue = o match {
+//      case UploadSubmissionValidationSuccess(metaData) => Json.obj(
+//        "metaData" -> metaData
+//      )
+//      case UploadSubmissionValidationFailure(errors) => Json.obj(
+//        "error" -> JsArray(errors.map(Json.toJson[String](_)))
+//      )
 //    }
+
   }
-
-//  implicit val writes: Writes[UploadValidationResult] = Writes[UploadValidationResult] {
-//    case ValidationSuccess(downloadUrl, metaData) => Json.obj(
-//      "downloadUrl" -> downloadUrl,
-//      "metaData" -> metaData,
-//      "_type" -> "ValidationSuccess")
-//
-//    case ValidationFailure (error) => Json.obj(
-//      "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
-//      "_type" -> "ValidationFailure"
-//    )
-//  }
 }
 
-case class ValidationFailure (errors: Seq[GenericError]) extends UploadValidationResult
+case class UploadSubmissionValidationFailure (errors: Seq[String]) extends UploadSubmissionValidationResult
 
-object ValidationFailure {
-  implicit val format: OFormat[ValidationFailure] = Json.format[ValidationFailure]
+object UploadSubmissionValidationFailure {
+  implicit val format: OFormat[UploadSubmissionValidationFailure] = Json.format[UploadSubmissionValidationFailure]
 }
 
-case class ValidationSuccess(metaData: Dac6MetaData) extends UploadValidationResult
+case class UploadSubmissionValidationSuccess(metaData: Dac6MetaData) extends UploadSubmissionValidationResult
 
-object ValidationSuccess {
-  implicit val format: OFormat[ValidationSuccess] = Json.format[ValidationSuccess]
+object UploadSubmissionValidationSuccess {
+  implicit val format: OFormat[UploadSubmissionValidationSuccess] = Json.format[UploadSubmissionValidationSuccess]
 }
 

@@ -344,4 +344,21 @@ object JsonFixtures {
     )
   )
 
+  def xmlValidationResponseJson(importInstruction: JsString,
+                                arrangementID:JsString,
+                                disclosureID:JsString,
+                                messageRefId: JsString): String = {
+    s"""
+       |{
+       |  "Dac6MetaData": {
+       |  "importInstruction": $importInstruction,
+       |  "arrangementID": $arrangementID,
+       |  "disclosureID": $disclosureID,
+       |  "disclosureInformationPresent": true,
+       |  "initialDisclosureMA": true,
+       |  "messageRefId": $messageRefId
+       |  }
+       |}""".stripMargin
+  }
+
 }
