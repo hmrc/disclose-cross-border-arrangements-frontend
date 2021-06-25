@@ -16,19 +16,25 @@
 
 package helpers
 
+import scala.xml.PrettyPrinter
+
 class BusinessRulesErrorMessageHelper {
+
+  val WIDTH = 1000000
+  val STEP = 2
 
   import models.{GenericError, Validation}
 
   import scala.xml.Elem
 
     def convertToGenericErrors(validations: Seq[Validation], xml: Elem): Seq[GenericError] = {
-      val xmlArray = xml.toString().split("\n")
+      val prettyPrinter = new PrettyPrinter(WIDTH, STEP)
+
+      val xmlArray = prettyPrinter.formatNodes(xml).split("\n")
 
       val valsWithLineNumber =  validations.map(validation => validation.setLineNumber(xmlArray))
 
       valsWithLineNumber.map(validation => validation.toGenericError)
-
     }
 
 }
