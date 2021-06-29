@@ -27,9 +27,8 @@ object HttpUrlFormat {
   implicit val format = new Format[URL] {
 
     override def reads(json: JsValue): JsResult[URL] = json match {
-      case JsString(s) => {
+      case JsString(s) =>
         parseUrl(s).map(JsSuccess(_)).getOrElse(JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.url")))))
-      }
       case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.url"))))
     }
 
@@ -38,4 +37,3 @@ object HttpUrlFormat {
     override def writes(o: URL): JsValue = JsString(o.toString)
   }
 }
-

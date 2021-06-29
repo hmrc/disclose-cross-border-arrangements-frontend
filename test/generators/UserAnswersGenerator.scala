@@ -21,7 +21,17 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.TryValues
 import pages._
-import pages.contactdetails.{ContactEmailAddressPage, ContactNamePage, ContactTelephoneNumberPage, HaveContactPhonePage, HaveSecondContactPage, HaveSecondaryContactPhonePage, SecondaryContactEmailAddressPage, SecondaryContactNamePage, SecondaryContactTelephoneNumberPage}
+import pages.contactdetails.{
+  ContactEmailAddressPage,
+  ContactNamePage,
+  ContactTelephoneNumberPage,
+  HaveContactPhonePage,
+  HaveSecondContactPage,
+  HaveSecondaryContactPhonePage,
+  SecondaryContactEmailAddressPage,
+  SecondaryContactNamePage,
+  SecondaryContactTelephoneNumberPage
+}
 import play.api.libs.json.{JsValue, Json}
 
 trait UserAnswersGenerator extends TryValues {
@@ -29,15 +39,15 @@ trait UserAnswersGenerator extends TryValues {
 
   val generators: Seq[Gen[(QuestionPage[_], JsValue)]] =
     arbitrary[(HaveContactPhonePage.type, JsValue)] ::
-    arbitrary[(HaveSecondaryContactPhonePage.type, JsValue)] ::
-    arbitrary[(HaveSecondContactPage.type, JsValue)] ::
-    arbitrary[(SecondaryContactTelephoneNumberPage.type, JsValue)] ::
-    arbitrary[(SecondaryContactEmailAddressPage.type, JsValue)] ::
-    arbitrary[(SecondaryContactNamePage.type, JsValue)] ::
-    arbitrary[(ContactTelephoneNumberPage.type, JsValue)] ::
-    arbitrary[(ContactEmailAddressPage.type, JsValue)] ::
-    arbitrary[(ContactNamePage.type, JsValue)] ::
-    Nil
+      arbitrary[(HaveSecondaryContactPhonePage.type, JsValue)] ::
+      arbitrary[(HaveSecondContactPage.type, JsValue)] ::
+      arbitrary[(SecondaryContactTelephoneNumberPage.type, JsValue)] ::
+      arbitrary[(SecondaryContactEmailAddressPage.type, JsValue)] ::
+      arbitrary[(SecondaryContactNamePage.type, JsValue)] ::
+      arbitrary[(ContactTelephoneNumberPage.type, JsValue)] ::
+      arbitrary[(ContactEmailAddressPage.type, JsValue)] ::
+      arbitrary[(ContactNamePage.type, JsValue)] ::
+      Nil
 
   implicit lazy val arbitraryUserData: Arbitrary[UserAnswers] = {
 
@@ -45,12 +55,12 @@ trait UserAnswersGenerator extends TryValues {
 
     Arbitrary {
       for {
-        id      <- nonEmptyString
-        data    <- generators match {
+        id <- nonEmptyString
+        data <- generators match {
           case Nil => Gen.const(Map[QuestionPage[_], JsValue]())
           case _   => Gen.mapOf(oneOf(generators))
         }
-      } yield UserAnswers (
+      } yield UserAnswers(
         id = id,
         data = data.foldLeft(Json.obj()) {
           case (obj, (path, value)) =>

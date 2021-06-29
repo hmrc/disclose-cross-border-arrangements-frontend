@@ -26,7 +26,7 @@ class JsonMatchersSpec extends FreeSpec with MustMatchers with JsonMatchers with
 
     "must return Succeeded when expected Json is an empty Json object" in {
 
-      val json = Json.obj("foo" -> "bar")
+      val json         = Json.obj("foo" -> "bar")
       val expectedJson = Json.obj()
 
       val result = json must containJson(expectedJson)
@@ -62,7 +62,7 @@ class JsonMatchersSpec extends FreeSpec with MustMatchers with JsonMatchers with
 
     "must throw a Test Failed Exception when expected Json contains a key not present in the left Json" in {
 
-      val json = Json.obj("foo" -> 1)
+      val json         = Json.obj("foo" -> 1)
       val expectedJson = Json.obj("bar" -> "baz")
 
       val ex = intercept[TestFailedException] {
@@ -74,7 +74,7 @@ class JsonMatchersSpec extends FreeSpec with MustMatchers with JsonMatchers with
 
     "must throw a Test Failed Exception when expected Json contains a different value for a key in the left Json" in {
 
-      val json = Json.obj("foo" -> 1)
+      val json         = Json.obj("foo" -> 1)
       val expectedJson = Json.obj("foo" -> 2)
 
       val ex = intercept[TestFailedException] {

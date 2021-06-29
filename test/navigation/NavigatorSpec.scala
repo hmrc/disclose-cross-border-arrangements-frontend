@@ -39,8 +39,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
         forAll(arbitrary[UserAnswers]) {
           answers =>
-
-            navigator.nextPage(UnknownPage, NormalMode, answers)
+            navigator
+              .nextPage(UnknownPage, NormalMode, answers)
               .mustBe(routes.IndexController.onPageLoad())
         }
       }
@@ -54,11 +54,11 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(InvalidXMLPage, "fileName.xml")
                 .success
                 .value
-            navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(InvalidXMLPage, NormalMode, updatedAnswers)
               .mustBe(routes.InvalidXMLController.onPageLoad())
         }
       }
-
 
       "must go from file validation page to 'Check your answer before sending file' page if XML is Valid" in {
 
@@ -69,7 +69,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(ValidXMLPage, "fileName.xml")
                 .success
                 .value
-            navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(ValidXMLPage, NormalMode, updatedAnswers)
               .mustBe(routes.CheckYourAnswersController.onPageLoad())
         }
       }
@@ -83,7 +84,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(HistoryPage, "fileName.xml")
                 .success
                 .value
-            navigator.nextPage(HistoryPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(HistoryPage, NormalMode, updatedAnswers)
               .mustBe(routes.SearchHistoryResultsController.onPageLoad())
         }
       }
@@ -97,7 +99,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(ContactNamePage, "Name")
                 .success
                 .value
-            navigator.nextPage(ContactNamePage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(ContactNamePage, NormalMode, updatedAnswers)
               .mustBe(controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad())
         }
       }
@@ -111,19 +114,21 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(ContactEmailAddressPage, email)
                 .success
                 .value
-            navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers)
               .mustBe(controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad())
         }
       }
 
       "must go from Do they have a telephone number? page to What is your telephone number? page if answer is 'Yes'" in {
-          val updatedAnswers =
-            UserAnswers(userAnswersId)
-              .set(HaveContactPhonePage, true)
-              .success
-              .value
-          navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
-            .mustBe(controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad())
+        val updatedAnswers =
+          UserAnswers(userAnswersId)
+            .set(HaveContactPhonePage, true)
+            .success
+            .value
+        navigator
+          .nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
+          .mustBe(controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad())
       }
 
       "must go from Do they have a telephone number? page to Check your contact details page if answer is 'No'" in {
@@ -132,7 +137,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
             .set(HaveContactPhonePage, false)
             .success
             .value
-        navigator.nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
+        navigator
+          .nextPage(HaveContactPhonePage, NormalMode, updatedAnswers)
           .mustBe(routes.ContactDetailsController.onPageLoad())
       }
 
@@ -145,47 +151,51 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(ContactTelephoneNumberPage, phone)
                 .success
                 .value
-            navigator.nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(ContactTelephoneNumberPage, NormalMode, updatedAnswers)
               .mustBe(routes.ContactDetailsController.onPageLoad())
         }
       }
 
       "must go from Is there someone else we can contact if your first contact is not available? page to " +
         "What is the name of the individual or team we should contact? page if answer is 'Yes'" in {
-        val updatedAnswers =
-          UserAnswers(userAnswersId)
-            .set(HaveSecondContactPage, true)
-            .success
-            .value
-        navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
-          .mustBe(controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad())
-      }
+          val updatedAnswers =
+            UserAnswers(userAnswersId)
+              .set(HaveSecondContactPage, true)
+              .success
+              .value
+          navigator
+            .nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
+            .mustBe(controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad())
+        }
 
       "must go from Is there someone else we can contact if your first contact is not available? page to " +
         "Check your contact details page if answer is 'No'" in {
-        val updatedAnswers =
-          UserAnswers(userAnswersId)
-            .set(HaveSecondContactPage, false)
-            .success
-            .value
-        navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
-          .mustBe(routes.ContactDetailsController.onPageLoad())
-      }
+          val updatedAnswers =
+            UserAnswers(userAnswersId)
+              .set(HaveSecondContactPage, false)
+              .success
+              .value
+          navigator
+            .nextPage(HaveSecondContactPage, NormalMode, updatedAnswers)
+            .mustBe(routes.ContactDetailsController.onPageLoad())
+        }
 
       "must go from What is the name of the individual or team we should contact? page to " +
         "Check your contact details page - Secondary contact" in {
 
-        forAll(arbitrary[UserAnswers], validOrganisationName) {
-          (answers, orgName) =>
-            val updatedAnswers =
-              answers
-                .set(SecondaryContactNamePage, orgName)
-                .success
-                .value
-            navigator.nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers)
-              .mustBe(controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad())
+          forAll(arbitrary[UserAnswers], validOrganisationName) {
+            (answers, orgName) =>
+              val updatedAnswers =
+                answers
+                  .set(SecondaryContactNamePage, orgName)
+                  .success
+                  .value
+              navigator
+                .nextPage(SecondaryContactNamePage, NormalMode, updatedAnswers)
+                .mustBe(controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad())
+          }
         }
-      }
 
       "must go from What is the email address for your second contact? page to Check your contact details page" in {
 
@@ -196,7 +206,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(SecondaryContactEmailAddressPage, email)
                 .success
                 .value
-            navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers)
               .mustBe(controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad())
         }
       }
@@ -207,7 +218,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
             .set(HaveSecondaryContactPhonePage, true)
             .success
             .value
-        navigator.nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
+        navigator
+          .nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
           .mustBe(controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad())
       }
 
@@ -217,7 +229,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
             .set(HaveSecondaryContactPhonePage, false)
             .success
             .value
-        navigator.nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
+        navigator
+          .nextPage(HaveSecondaryContactPhonePage, NormalMode, updatedAnswers)
           .mustBe(routes.ContactDetailsController.onPageLoad())
       }
 
@@ -230,7 +243,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .set(SecondaryContactTelephoneNumberPage, phone)
                 .success
                 .value
-            navigator.nextPage(SecondaryContactTelephoneNumberPage, NormalMode, updatedAnswers)
+            navigator
+              .nextPage(SecondaryContactTelephoneNumberPage, NormalMode, updatedAnswers)
               .mustBe(routes.ContactDetailsController.onPageLoad())
         }
       }
@@ -244,8 +258,8 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
 
         forAll(arbitrary[UserAnswers]) {
           answers =>
-
-            navigator.nextPage(UnknownPage, CheckMode, answers)
+            navigator
+              .nextPage(UnknownPage, CheckMode, answers)
               .mustBe(routes.CheckYourAnswersController.onPageLoad())
         }
       }

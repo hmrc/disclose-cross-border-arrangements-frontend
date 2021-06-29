@@ -27,47 +27,52 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EmailService @Inject()(emailConnector: EmailConnector)(implicit executionContext: ExecutionContext) {
+class EmailService @Inject() (emailConnector: EmailConnector)(implicit executionContext: ExecutionContext) {
 
-  def sendEmail(contacts: Option[ContactDetails],
-                ids: GeneratedIDs,
-                importInstruction: String,
-                messageRefID: String)(implicit hc: HeaderCarrier): Future[Option[HttpResponse]] = {
-
+  def sendEmail(contacts: Option[ContactDetails], ids: GeneratedIDs, importInstruction: String, messageRefID: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Option[HttpResponse]] =
     contacts match {
       case Some(contactDetails) =>
-        val emailAddress = contactDetails.contactEmail
-        val primaryContactName = contactDetails.contactName
+        val emailAddress          = contactDetails.contactEmail
+        val primaryContactName    = contactDetails.contactName
         val secondaryEmailAddress = contactDetails.secondEmail
-        val secondaryName = contactDetails.secondContactName
+        val secondaryName         = contactDetails.secondContactName
 
         (ids.arrangementID, ids.disclosureID) match {
           case (Some(arrangementID), Some(disclosureID)) =>
-            val dateSubmitted = DateTimeFormat.forPattern("hh:mma 'on' d MMMM yyyy")
+            val dateSubmitted = DateTimeFormat
+              .forPattern("hh:mma 'on' d MMMM yyyy")
               .print(new LocalDateTime())
               .replace("AM", "am")
-              .replace("PM","pm")
+              .replace("PM", "pm")
 
             for {
               primaryResponse <- emailAddress
                 .filter(EmailAddress.isValid)
                 .fold(Future.successful(Option.empty[HttpResponse])) {
                   email =>
-                    emailConnector.sendEmail(EmailRequest.sendConfirmation(email, importInstruction, arrangementID, disclosureID,
-                      dateSubmitted, messageRefID, primaryContactName)).map(Some.apply)
+                    emailConnector
+                      .sendEmail(
+                        EmailRequest.sendConfirmation(email, importInstruction, arrangementID, disclosureID, dateSubmitted, messageRefID, primaryContactName)
+                      )
+                      .map(Some.apply)
                 }
 
               _ <- secondaryEmailAddress
                 .filter(EmailAddress.isValid)
                 .fold(Future.successful(Option.empty[HttpResponse])) {
                   secondaryEmailAddress =>
-                    emailConnector.sendEmail(EmailRequest.sendConfirmation(secondaryEmailAddress, importInstruction, arrangementID,
-                      disclosureID, dateSubmitted, messageRefID, secondaryName)).map(Some.apply)
+                    emailConnector
+                      .sendEmail(
+                        EmailRequest
+                          .sendConfirmation(secondaryEmailAddress, importInstruction, arrangementID, disclosureID, dateSubmitted, messageRefID, secondaryName)
+                      )
+                      .map(Some.apply)
                 }
             } yield primaryResponse
           case _ => Future.successful(None)
         }
       case _ => Future.successful(None)
     }
-  }
 }

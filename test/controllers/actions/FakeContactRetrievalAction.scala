@@ -26,6 +26,6 @@ class FakeContactRetrievalAction(dataToReturn: UserAnswers, contactDetails: Opti
   override protected def transform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] =
     Future(DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, dataToReturn, contactDetails))
 
-  override protected implicit val executionContext: ExecutionContext =
+  implicit override protected val executionContext: ExecutionContext =
     scala.concurrent.ExecutionContext.Implicits.global
 }

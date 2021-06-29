@@ -25,21 +25,21 @@ import play.api.mvc.Call
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class Navigator @Inject()() {
+class Navigator @Inject() () {
 
   private val normalRoutes: Page => UserAnswers => Call = {
     case InvalidXMLPage => _ => routes.InvalidXMLController.onPageLoad()
-    case ValidXMLPage => _ => routes.CheckYourAnswersController.onPageLoad()
-    case HistoryPage => _ => routes.SearchHistoryResultsController.onPageLoad()
+    case ValidXMLPage   => _ => routes.CheckYourAnswersController.onPageLoad()
+    case HistoryPage    => _ => routes.SearchHistoryResultsController.onPageLoad()
 
-    case ContactNamePage => _ => controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad()
-    case ContactEmailAddressPage => _ => controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad()
-    case HaveContactPhonePage => haveContactPhoneRoutes
-    case ContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
-    case HaveSecondContactPage => haveSecondContactRoutes
-    case SecondaryContactNamePage => _ => controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad()
-    case SecondaryContactEmailAddressPage => _ => controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad()
-    case HaveSecondaryContactPhonePage => haveSecondaryContactPhoneRoutes
+    case ContactNamePage                     => _ => controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad()
+    case ContactEmailAddressPage             => _ => controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad()
+    case HaveContactPhonePage                => haveContactPhoneRoutes
+    case ContactTelephoneNumberPage          => _ => routes.ContactDetailsController.onPageLoad()
+    case HaveSecondContactPage               => haveSecondContactRoutes
+    case SecondaryContactNamePage            => _ => controllers.contactdetails.routes.SecondaryContactEmailAddressController.onPageLoad()
+    case SecondaryContactEmailAddressPage    => _ => controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad()
+    case HaveSecondaryContactPhonePage       => haveSecondaryContactPhoneRoutes
     case SecondaryContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
 
     case _ => _ => routes.IndexController.onPageLoad()
@@ -49,33 +49,29 @@ class Navigator @Inject()() {
     case _ => _ => routes.CheckYourAnswersController.onPageLoad()
   }
 
-  private def haveSecondContactRoutes(ua: UserAnswers): Call = {
+  private def haveSecondContactRoutes(ua: UserAnswers): Call =
     ua.get(HaveSecondContactPage) match {
       case Some(true) => controllers.contactdetails.routes.SecondaryContactNameController.onPageLoad()
-      case _ => routes.ContactDetailsController.onPageLoad()
+      case _          => routes.ContactDetailsController.onPageLoad()
     }
-  }
 
-  private def haveContactPhoneRoutes(ua: UserAnswers): Call = {
+  private def haveContactPhoneRoutes(ua: UserAnswers): Call =
     ua.get(HaveContactPhonePage) match {
       case Some(true) => controllers.contactdetails.routes.ContactTelephoneNumberController.onPageLoad()
-      case _ => routes.ContactDetailsController.onPageLoad()
+      case _          => routes.ContactDetailsController.onPageLoad()
     }
-  }
 
-  private def haveSecondaryContactPhoneRoutes(ua: UserAnswers): Call = {
+  private def haveSecondaryContactPhoneRoutes(ua: UserAnswers): Call =
     ua.get(HaveSecondaryContactPhonePage) match {
       case Some(true) => controllers.contactdetails.routes.SecondaryContactTelephoneNumberController.onPageLoad()
-      case _ => routes.ContactDetailsController.onPageLoad()
+      case _          => routes.ContactDetailsController.onPageLoad()
     }
-  }
 
-  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call = {
+  def nextPage(page: Page, mode: Mode, userAnswers: UserAnswers): Call =
     mode match {
       case NormalMode =>
         normalRoutes(page)(userAnswers)
       case CheckMode =>
         checkRouteMap(page)(userAnswers)
     }
-  }
 }

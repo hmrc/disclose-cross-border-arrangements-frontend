@@ -43,13 +43,16 @@ class ReplaceConfirmationControllerSpec extends SpecBase {
         .success
         .value
 
-      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+      val fakeDataRetrieval =
+        new FakeContactRetrievalAction(userAnswers,
+                                       Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com")))
+        )
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
-      val request = FakeRequest(GET, routes.ReplaceConfirmationController.onPageLoad().url)
+          .overrides(bind[ContactRetrievalAction].toInstance(fakeDataRetrieval))
+          .build()
+      val request        = FakeRequest(GET, routes.ReplaceConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value

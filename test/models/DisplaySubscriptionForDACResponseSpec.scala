@@ -25,41 +25,49 @@ import play.api.libs.json.{JsString, Json}
 
 class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
 
-  val responseCommon: ResponseCommon = ResponseCommon(
-    status = "OK",
-    statusText = None,
-    processingDate = "2020-08-09T11:23:45Z",
-    returnParameters = None)
+  val responseCommon: ResponseCommon = ResponseCommon(status = "OK", statusText = None, processingDate = "2020-08-09T11:23:45Z", returnParameters = None)
 
   "DisplaySubscriptionForDACResponse" - {
     "must deserialise DisplaySubscriptionForDACResponse" in {
 
       forAll(validDacID, validOrganisationName, validPersonalName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, organisationName, secondaryName, primaryEmail, secondaryEmail, phoneNumber) =>
+          val primaryContact: PrimaryContact = PrimaryContact(
+            Seq(
+              ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = organisationName),
+                                                email = primaryEmail,
+                                                phone = None,
+                                                mobile = None
+              )
+            )
+          )
+          val secondaryContact: SecondaryContact = SecondaryContact(
+            Seq(
+              ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = secondaryName),
+                                                email = secondaryEmail,
+                                                phone = Some(phoneNumber),
+                                                mobile = None
+              )
+            )
+          )
 
-          val primaryContact: PrimaryContact = PrimaryContact(Seq(
-            ContactInformationForOrganisation(
-              organisation = OrganisationDetails(organisationName = organisationName),
-              email = primaryEmail, phone = None, mobile = None)
-          ))
-          val secondaryContact: SecondaryContact = SecondaryContact(Seq(
-            ContactInformationForOrganisation(
-              organisation = OrganisationDetails(organisationName = secondaryName),
-              email = secondaryEmail, phone = Some(phoneNumber), mobile = None)
-          ))
+          val responseDetail: ResponseDetail = ResponseDetail(subscriptionID = safeID,
+                                                              tradingName = Some("Trading Name"),
+                                                              isGBUser = true,
+                                                              primaryContact = primaryContact,
+                                                              secondaryContact = Some(secondaryContact)
+          )
 
-          val responseDetail: ResponseDetail = ResponseDetail(
-            subscriptionID = safeID,
-            tradingName = Some("Trading Name"),
-            isGBUser = true,
-            primaryContact = primaryContact,
-            secondaryContact = Some(secondaryContact))
+          val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+            DisplaySubscriptionForDACResponse(SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
-          val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse = DisplaySubscriptionForDACResponse(
-            SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
-
-          val jsonPayload = displaySubscriptionPayload(
-            JsString(safeID), JsString(organisationName), JsString(secondaryName), JsString(primaryEmail), JsString(secondaryEmail), JsString(phoneNumber))
+          val jsonPayload = displaySubscriptionPayload(JsString(safeID),
+                                                       JsString(organisationName),
+                                                       JsString(secondaryName),
+                                                       JsString(primaryEmail),
+                                                       JsString(secondaryEmail),
+                                                       JsString(phoneNumber)
+          )
 
           Json.parse(jsonPayload).validate[DisplaySubscriptionForDACResponse].get mustBe displaySubscriptionForDACResponse
       }
@@ -69,27 +77,34 @@ class DisplaySubscriptionForDACResponseSpec extends SpecBase with ScalaCheckProp
 
       forAll(validDacID, validPersonalName, validOrganisationName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, name, organisationName, primaryEmail, secondaryEmail, phoneNumber) =>
+          val primaryContact: PrimaryContact = PrimaryContact(
+            Seq(
+              ContactInformationForIndividual(individual = IndividualDetails(firstName = name, lastName = name, middleName = None),
+                                              email = primaryEmail,
+                                              phone = Some(phoneNumber),
+                                              mobile = Some(phoneNumber)
+              )
+            )
+          )
+          val secondaryContact: SecondaryContact = SecondaryContact(
+            Seq(
+              ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = organisationName),
+                                                email = secondaryEmail,
+                                                phone = None,
+                                                mobile = None
+              )
+            )
+          )
 
-          val primaryContact: PrimaryContact = PrimaryContact(Seq(
-            ContactInformationForIndividual(
-              individual = IndividualDetails(firstName = name, lastName = name, middleName = None),
-              email = primaryEmail, phone = Some(phoneNumber), mobile = Some(phoneNumber))
-          ))
-          val secondaryContact: SecondaryContact = SecondaryContact(Seq(
-            ContactInformationForOrganisation(
-              organisation = OrganisationDetails(organisationName = organisationName),
-              email = secondaryEmail, phone = None, mobile = None)
-          ))
+          val responseDetail: ResponseDetail = ResponseDetail(subscriptionID = safeID,
+                                                              tradingName = Some("Trading Name"),
+                                                              isGBUser = true,
+                                                              primaryContact = primaryContact,
+                                                              secondaryContact = Some(secondaryContact)
+          )
 
-          val responseDetail: ResponseDetail = ResponseDetail(
-            subscriptionID = safeID,
-            tradingName = Some("Trading Name"),
-            isGBUser = true,
-            primaryContact = primaryContact,
-            secondaryContact = Some(secondaryContact))
-
-          val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse = DisplaySubscriptionForDACResponse(
-            SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
+          val displaySubscriptionForDACResponse: DisplaySubscriptionForDACResponse =
+            DisplaySubscriptionForDACResponse(SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail))
 
           val json = jsonForDisplaySubscription(safeID, name, name, organisationName, primaryEmail, secondaryEmail, phoneNumber)
 

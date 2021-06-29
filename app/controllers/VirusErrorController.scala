@@ -27,18 +27,19 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class VirusErrorController @Inject()(
-                                      override val messagesApi: MessagesApi,
-                                      identify: IdentifierAction,
-                                      getData: DataRetrievalAction,
-                                      val controllerComponents: MessagesControllerComponents,
-                                      renderer: Renderer,
-                                      appConfig: FrontendAppConfig
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class VirusErrorController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  appConfig: FrontendAppConfig
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async { implicit request =>
-
-    renderer.render("virusError.njk",
-      Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))).map(Ok(_))
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
+    implicit request =>
+      renderer.render("virusError.njk", Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))).map(Ok(_))
   }
 }

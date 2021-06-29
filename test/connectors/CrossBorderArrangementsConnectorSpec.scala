@@ -30,15 +30,13 @@ import utils.WireMockHelper
 
 import java.time.LocalDateTime
 
-class CrossBorderArrangementsConnectorSpec extends SpecBase
-  with GuiceOneAppPerSuite
-  with WireMockHelper
-  with ScalaFutures {
+class CrossBorderArrangementsConnectorSpec extends SpecBase with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures {
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder()
     .configure(
       "microservice.services.cross-border-arrangements.port" -> server.port()
-    ).build()
+    )
+    .build()
 
   lazy val connector: CrossBorderArrangementsConnector = app.injector.instanceOf[CrossBorderArrangementsConnector]
 
@@ -47,9 +45,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
       "when the backend returns a valid successful response" in {
         val json = Json.obj(
           "arrangementID" -> "GBA20200601AAA000",
-          "disclosureID" -> "GBD20200601AAA001"
+          "disclosureID"  -> "GBD20200601AAA001"
         )
-
 
         server.stubFor(
           post(urlEqualTo("/disclose-cross-border-arrangements/submit"))
@@ -62,7 +59,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
 
         val xml = <test></test>
 
-        whenReady(connector.submitDocument("test-file.xml", "enrolmentID", xml)){
+        whenReady(connector.submitDocument("test-file.xml", "enrolmentID", xml)) {
           result =>
             result mustBe GeneratedIDs(Some("GBA20200601AAA000"), Some("GBD20200601AAA001"))
         }
@@ -79,13 +76,14 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-        val xml = <test></test>
-        val result = connector.submitDocument("test-file.xml","enrolmentID", xml)
+        val xml    = <test></test>
+        val result = connector.submitDocument("test-file.xml", "enrolmentID", xml)
 
-        whenReady(result.failed){ e =>
-          e mustBe a[UpstreamErrorResponse]
-          val error = e.asInstanceOf[UpstreamErrorResponse]
-          error.statusCode mustBe BAD_REQUEST
+        whenReady(result.failed) {
+          e =>
+            e mustBe a[UpstreamErrorResponse]
+            val error = e.asInstanceOf[UpstreamErrorResponse]
+            error.statusCode mustBe BAD_REQUEST
         }
       }
 
@@ -98,26 +96,31 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-        val xml = <test></test>
+        val xml    = <test></test>
         val result = connector.submitDocument("test-file.xml", "enrolmentID", xml)
-        whenReady(result.failed){ e =>
-          e mustBe an[UpstreamErrorResponse]
-          val error = e.asInstanceOf[UpstreamErrorResponse]
-          error.statusCode mustBe SERVICE_UNAVAILABLE
+        whenReady(result.failed) {
+          e =>
+            e mustBe an[UpstreamErrorResponse]
+            val error = e.asInstanceOf[UpstreamErrorResponse]
+            error.statusCode mustBe SERVICE_UNAVAILABLE
         }
       }
     }
 
     "should return a submission details returned from backend" in {
       val json = Json.obj(
-        "details" -> JsArray(Seq(Json.obj(
-          "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> 1196676930000L,
-          "fileName" -> "fileName",
-          "importInstruction" -> "New",
-          "initialDisclosureMA" -> false,
-          "messageRefId" -> "GB0000000XXX"
-        )))
+        "details" -> JsArray(
+          Seq(
+            Json.obj(
+              "enrolmentID"         -> "enrolmentID",
+              "submissionTime"      -> 1196676930000L,
+              "fileName"            -> "fileName",
+              "importInstruction"   -> "New",
+              "initialDisclosureMA" -> false,
+              "messageRefId"        -> "GB0000000XXX"
+            )
+          )
+        )
       )
 
       server.stubFor(
@@ -150,18 +153,18 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
 
     "retrieveFirstDisclosureForArrangementID" - {
       val arrangementID = "GBA20200904AAAAAA"
-      val disclosureID = "GBD20200904AAAAAA"
+      val disclosureID  = "GBD20200904AAAAAA"
 
       "should return the submission details for the first disclosure from backend" in {
         val json = Json.obj(
-          "enrolmentID" -> "enrolmentID",
-          "submissionTime" -> 1589476200000L,
-          "fileName" -> "fileName",
-          "arrangementID" -> arrangementID,
-          "disclosureID" -> disclosureID,
-          "importInstruction" -> "New",
+          "enrolmentID"         -> "enrolmentID",
+          "submissionTime"      -> 1589476200000L,
+          "fileName"            -> "fileName",
+          "arrangementID"       -> arrangementID,
+          "disclosureID"        -> disclosureID,
+          "importInstruction"   -> "New",
           "initialDisclosureMA" -> true,
-          "messageRefId" -> "GB0000000XXX"
+          "messageRefId"        -> "GB0000000XXX"
         )
 
         server.stubFor(
@@ -188,22 +191,23 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
               )
         }
       }
-      
+
       "return throw an exception when call to backend fails" in {
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/history/first-disclosure/$arrangementID"))
             .willReturn(
-            aResponse()
+              aResponse()
                 .withStatus(NOT_FOUND)
-          )
+            )
         )
 
         val result = connector.retrieveFirstDisclosureForArrangementID(arrangementID)
 
-        whenReady(result.failed){ e =>
-          e mustBe an[UpstreamErrorResponse]
-          val error = e.asInstanceOf[UpstreamErrorResponse]
-          error.statusCode mustBe NOT_FOUND
+        whenReady(result.failed) {
+          e =>
+            e mustBe an[UpstreamErrorResponse]
+            val error = e.asInstanceOf[UpstreamErrorResponse]
+            error.statusCode mustBe NOT_FOUND
         }
       }
     }
@@ -211,7 +215,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
     "verify ArrangementIDs" - {
       "should return true when arrangement Id is one issued by HMRC" in {
 
-       val arrangementId = "GBA20200601AAA000"
+        val arrangementId = "GBA20200601AAA000"
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
             .willReturn(
@@ -220,17 +224,16 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-       whenReady(connector.verifyArrangementId(arrangementId)){
+        whenReady(connector.verifyArrangementId(arrangementId)) {
           result =>
             result mustBe true
         }
-
 
       }
 
       "should return false when arrangement Id is one issued by HMRC" in {
 
-       val arrangementId = "GBA20200601AAA000"
+        val arrangementId = "GBA20200601AAA000"
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"))
             .willReturn(
@@ -239,18 +242,18 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-       whenReady(connector.verifyArrangementId(arrangementId)){
+        whenReady(connector.verifyArrangementId(arrangementId)) {
           result =>
             result mustBe false
         }
-     }
+      }
     }
-    "Get history" -{
+    "Get history" - {
       "return submission history" in {
 
-        val enrolmentId= "123456"
+        val enrolmentId = "123456"
 
-        val submissionDetails =  SubmissionDetails(
+        val submissionDetails = SubmissionDetails(
           enrolmentID = "enrolmentID",
           submissionTime = LocalDateTime.now(),
           fileName = "fileName.xml",
@@ -258,7 +261,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           disclosureID = Some("GBD20200601AAA000"),
           importInstruction = "DAC6ADD",
           initialDisclosureMA = false,
-          messageRefId = "GB0000000XXX")
+          messageRefId = "GB0000000XXX"
+        )
 
         val submissionHistory = SubmissionHistory(Seq(submissionDetails))
 
@@ -271,17 +275,16 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-        whenReady(connector.getSubmissionHistory(enrolmentId)){
+        whenReady(connector.getSubmissionHistory(enrolmentId)) {
           result =>
             result mustBe submissionHistory
         }
-
 
       }
 
       "return empty history when call to backend fails" in {
 
-        val enrolmentId= "123456"
+        val enrolmentId = "123456"
 
         server.stubFor(
           get(urlEqualTo(s"/disclose-cross-border-arrangements/get-history/$enrolmentId"))
@@ -291,11 +294,10 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
             )
         )
 
-        whenReady(connector.getSubmissionHistory(enrolmentId)){
+        whenReady(connector.getSubmissionHistory(enrolmentId)) {
           result =>
             result mustBe SubmissionHistory(List())
         }
-
 
       }
 
@@ -304,7 +306,7 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
     "searchDisclosures" - {
       "return submission history for search criteria" in {
         val search = "fileName.xml"
-        val submissionDetails =  SubmissionDetails(
+        val submissionDetails = SubmissionDetails(
           enrolmentID = "enrolmentID",
           submissionTime = LocalDateTime.now(),
           fileName = search,
@@ -312,7 +314,8 @@ class CrossBorderArrangementsConnectorSpec extends SpecBase
           disclosureID = Some("GBD20200601AAA000"),
           importInstruction = "Add",
           initialDisclosureMA = false,
-          messageRefId = "GB0000000XXX")
+          messageRefId = "GB0000000XXX"
+        )
 
         val submissionHistory = SubmissionHistory(Seq(submissionDetails))
 

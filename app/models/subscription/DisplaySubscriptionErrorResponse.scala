@@ -18,23 +18,20 @@ package models.subscription
 
 import play.api.libs.json.{Json, OFormat}
 
-
 case class SourceFaultDetail(detail: Seq[String])
+
 object SourceFaultDetail {
   implicit val format: OFormat[SourceFaultDetail] = Json.format[SourceFaultDetail]
 }
 
-case class ErrorDetail(timestamp: String,
-                       correlationId: String,
-                       errorCode: String,
-                       errorMessage: String,
-                       source: String,
-                       sourceFaultDetail: SourceFaultDetail)
+case class ErrorDetail(timestamp: String, correlationId: String, errorCode: String, errorMessage: String, source: String, sourceFaultDetail: SourceFaultDetail)
+
 object ErrorDetail {
   implicit val format: OFormat[ErrorDetail] = Json.format[ErrorDetail]
 }
 
 case class DisplaySubscriptionErrorResponse(errorDetail: ErrorDetail)
+
 object DisplaySubscriptionErrorResponse {
   implicit val format: OFormat[DisplaySubscriptionErrorResponse] = Json.format[DisplaySubscriptionErrorResponse]
 }

@@ -38,7 +38,7 @@ trait TestXml {
       </DAC6Disclosures>
     </DAC6_Arrangement>
 
-  val initialDisclosureNoRelevantTaxpyersXml   =
+  val initialDisclosureNoRelevantTaxpyersXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
       <Header>
         <MessageRefId>GB0000000XXX</MessageRefId>
@@ -50,9 +50,8 @@ trait TestXml {
       </DAC6Disclosures>
     </DAC6_Arrangement>
 
-
-      val relevantTaxPayerDiscloserXml =
-      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+  val relevantTaxPayerDiscloserXml =
+    <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
         <Header>
           <MessageRefId>GB0000000XXX</MessageRefId>
           <Timestamp>2020-05-14T17:10:00</Timestamp>
@@ -73,9 +72,8 @@ trait TestXml {
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
-
   val invalidDatesOfBirthXml =
-      <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
+    <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
         <Header>
           <MessageRefId>GB0000000XXX</MessageRefId>
           <Timestamp>2020-05-14T17:10:00</Timestamp>
@@ -135,8 +133,6 @@ trait TestXml {
         </DAC6Disclosures>
       </DAC6_Arrangement>
 
-
-
   val intermediaryDiscloserXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">
       <Header>
@@ -185,7 +181,6 @@ trait TestXml {
         </Disclosing>
       </DAC6Disclosures>
     </DAC6_Arrangement>
-
 
   val importInstructionErrorXml =
     <DAC6_Arrangement version="First" xmlns="urn:ukdac6:v0.1">

@@ -25,7 +25,8 @@ object JsonFixtures {
                                  secondaryContactName: JsString,
                                  primaryEmail: JsString,
                                  secondaryEmail: JsString,
-                                 phone: JsString): String = {
+                                 phone: JsString
+  ): String =
     s"""
       |{
       |  "displaySubscriptionForDACResponse": {
@@ -57,13 +58,13 @@ object JsonFixtures {
       |    }
       |  }
       |}""".stripMargin
-  }
 
   def displaySubscriptionPayloadNoSecondary(subscriptionID: JsString,
-                                            firstName:JsString,
-                                            lastName:JsString,
+                                            firstName: JsString,
+                                            lastName: JsString,
                                             primaryEmail: JsString,
-                                            phone: JsString): String = {
+                                            phone: JsString
+  ): String =
     s"""
        |{
        |  "displaySubscriptionForDACResponse": {
@@ -88,7 +89,6 @@ object JsonFixtures {
        |    }
        |  }
        |}""".stripMargin
-  }
 
   def jsonForDisplaySubscription(safeID: String,
                                  firstName: String,
@@ -96,23 +96,24 @@ object JsonFixtures {
                                  organisationName: String,
                                  primaryEmail: String,
                                  secondaryEmail: String,
-                                 phone: String): JsObject = {
+                                 phone: String
+  ): JsObject =
     Json.obj(
       "displaySubscriptionForDACResponse" -> Json.obj(
         "responseCommon" -> Json.obj(
-          "status" -> "OK",
+          "status"         -> "OK",
           "processingDate" -> "2020-08-09T11:23:45Z"
         ),
         "responseDetail" -> Json.obj(
           "subscriptionID" -> safeID,
-          "tradingName" -> "Trading Name",
-          "isGBUser" -> true,
+          "tradingName"    -> "Trading Name",
+          "isGBUser"       -> true,
           "primaryContact" -> Json.obj(
-            "email" -> primaryEmail,
-            "phone" -> phone,
+            "email"  -> primaryEmail,
+            "phone"  -> phone,
             "mobile" -> phone,
             "individual" -> Json.obj(
-              "lastName" -> lastName,
+              "lastName"  -> lastName,
               "firstName" -> firstName
             )
           ),
@@ -125,7 +126,6 @@ object JsonFixtures {
         )
       )
     )
-  }
 
   val jsonPayloadForDisplaySubscriptionRequest: String =
     s"""
@@ -148,22 +148,20 @@ object JsonFixtures {
   val jsonForDisplaySubscriptionRequest: JsObject = Json.obj(
     "displaySubscriptionForDACRequest" -> Json.obj(
       "requestCommon" -> Json.obj(
-        "regime" -> "DAC",
-        "conversationID" -> "bffaa447-b500-49e0-9c73-bfd81db9242f",
-        "receiptDate" -> "2020-09-23T16:12:11Z",
+        "regime"                   -> "DAC",
+        "conversationID"           -> "bffaa447-b500-49e0-9c73-bfd81db9242f",
+        "receiptDate"              -> "2020-09-23T16:12:11Z",
         "acknowledgementReference" -> "Abc12345",
-        "originatingSystem" -> "MDTP"
+        "originatingSystem"        -> "MDTP"
       ),
       "requestDetail" -> Json.obj(
-        "IDType" -> "DAC",
+        "IDType"   -> "DAC",
         "IDNumber" -> "1234567890"
       )
     )
   )
 
-  def updateDetailsPayloadNoSecondContact(firstName: JsString,
-                                          lastName: JsString,
-                                          primaryEmail: JsString): String = {
+  def updateDetailsPayloadNoSecondContact(firstName: JsString, lastName: JsString, primaryEmail: JsString): String =
     s"""
        |{
        |  "updateSubscriptionForDACRequest": {
@@ -192,14 +190,14 @@ object JsonFixtures {
        |  }
        |}
        |""".stripMargin
-  }
 
   def updateDetailsPayload(firstName: JsString,
                            lastName: JsString,
                            email: JsString,
                            organisationName: JsString,
                            secondaryEmail: JsString,
-                           phone: JsString): String = {
+                           phone: JsString
+  ): String =
     s"""
        |{
        |  "updateSubscriptionForDACRequest": {
@@ -235,87 +233,81 @@ object JsonFixtures {
        |  }
        |}
        |""".stripMargin
-  }
 
-  def updateDetailsJsonNoSecondContact(firstName: String,
-                                       lastName: String,
-                                       primaryEmail: String): JsObject = {
+  def updateDetailsJsonNoSecondContact(firstName: String, lastName: String, primaryEmail: String): JsObject =
     Json.obj(
       "updateSubscriptionForDACRequest" -> Json.obj(
         "requestCommon" -> Json.obj(
-          "regime" -> "DAC",
-          "receiptDate" -> "2020-09-23T16:12:11Z",
+          "regime"                   -> "DAC",
+          "receiptDate"              -> "2020-09-23T16:12:11Z",
           "acknowledgementReference" -> "AB123c",
-          "originatingSystem" -> "MDTP",
+          "originatingSystem"        -> "MDTP",
           "requestParameters" -> Json.arr(
             Json.obj(
-              "paramName" -> "Name",
+              "paramName"  -> "Name",
               "paramValue" -> "Value"
             )
           )
         ),
         "requestDetail" -> Json.obj(
-          "IDType" -> "SAFE",
+          "IDType"   -> "SAFE",
           "IDNumber" -> "IDNumber",
           "isGBUser" -> true,
-          "primaryContact" -> Json.arr(Json.obj(
-            "individual" -> Json.obj(
-              "firstName" -> firstName,
-              "lastName" -> lastName
-            ),
-            "email" -> primaryEmail
-          ))
-
+          "primaryContact" -> Json.arr(
+            Json.obj(
+              "individual" -> Json.obj(
+                "firstName" -> firstName,
+                "lastName"  -> lastName
+              ),
+              "email" -> primaryEmail
+            )
+          )
         )
       )
     )
-  }
 
-  def updateDetailsJson(firstName: String,
-                        lastName: String,
-                        email: String,
-                        organisationName: String,
-                        secondaryEmail: String,
-                        phone: String): JsObject = {
+  def updateDetailsJson(firstName: String, lastName: String, email: String, organisationName: String, secondaryEmail: String, phone: String): JsObject =
     Json.obj(
       "updateSubscriptionForDACRequest" -> Json.obj(
         "requestCommon" -> Json.obj(
-          "regime" -> "DAC",
-          "receiptDate" -> "2020-09-23T16:12:11Z",
+          "regime"                   -> "DAC",
+          "receiptDate"              -> "2020-09-23T16:12:11Z",
           "acknowledgementReference" -> "AB123c",
-          "originatingSystem" -> "MDTP",
+          "originatingSystem"        -> "MDTP",
           "requestParameters" -> Json.arr(
             Json.obj(
-              "paramName" -> "Name",
+              "paramName"  -> "Name",
               "paramValue" -> "Value"
             )
           )
         ),
         "requestDetail" -> Json.obj(
-          "IDType" -> "SAFE",
+          "IDType"   -> "SAFE",
           "IDNumber" -> "IDNumber",
           "isGBUser" -> false,
-          "primaryContact" -> Json.arr(Json.obj(
-            "individual" -> Json.obj(
-              "firstName" -> firstName,
-              "lastName" -> lastName
-            ),
-            "email" -> email
-          )),
-          "secondaryContact" -> Json.arr(Json.obj(
-            "organisation" -> Json.obj(
-              "organisationName" -> organisationName
-            ),
-            "email" -> secondaryEmail,
-            "phone" -> phone
-          ))
-
+          "primaryContact" -> Json.arr(
+            Json.obj(
+              "individual" -> Json.obj(
+                "firstName" -> firstName,
+                "lastName"  -> lastName
+              ),
+              "email" -> email
+            )
+          ),
+          "secondaryContact" -> Json.arr(
+            Json.obj(
+              "organisation" -> Json.obj(
+                "organisationName" -> organisationName
+              ),
+              "email" -> secondaryEmail,
+              "phone" -> phone
+            )
+          )
         )
       )
     )
-  }
 
-  def updateSubscriptionResponsePayload(safeID: JsString): String = {
+  def updateSubscriptionResponsePayload(safeID: JsString): String =
     s"""
       |{
       |  "updateSubscriptionForDACResponse": {
@@ -333,16 +325,15 @@ object JsonFixtures {
       |  }
       |}
       |""".stripMargin
-  }
 
   def updateSubscriptionResponseJson(safeID: String): JsObject = Json.obj(
     "updateSubscriptionForDACResponse" -> Json.obj(
       "responseCommon" -> Json.obj(
-        "status" -> "OK",
+        "status"         -> "OK",
         "processingDate" -> "2020-09-23T16:12:11Z",
         "returnParameters" -> Json.arr(
           Json.obj(
-            "paramName" -> "Name",
+            "paramName"  -> "Name",
             "paramValue" -> "Value"
           )
         )

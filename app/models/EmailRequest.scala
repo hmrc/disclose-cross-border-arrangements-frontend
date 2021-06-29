@@ -16,7 +16,6 @@
 
 package models
 
-
 import play.api.libs.json.{Json, OFormat}
 
 case class EmailRequest(to: List[String], templateId: String, parameters: Map[String, String])
@@ -30,7 +29,8 @@ object EmailRequest {
                        disclosureID: String,
                        dateSubmitted: String,
                        messageRefID: String,
-                       name: Option[String]): EmailRequest = {
+                       name: Option[String]
+  ): EmailRequest = {
 
     val templateID = importInstruction match {
       case "DAC6NEW" => "dac6_new_disclosure_confirmation"
@@ -42,12 +42,16 @@ object EmailRequest {
     EmailRequest(
       List(email),
       templateID,
-      name.map(n => "name" -> n).toMap ++
+      name
+        .map(
+          n => "name" -> n
+        )
+        .toMap ++
         Map(
           "arrangementID" -> arrangementID,
-          "disclosureID" -> disclosureID,
+          "disclosureID"  -> disclosureID,
           "dateSubmitted" -> dateSubmitted,
-          "messageRefID" -> messageRefID
+          "messageRefID"  -> messageRefID
         )
     )
   }

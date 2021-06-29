@@ -40,25 +40,30 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
     "return OK and the correct view for a GET" in {
 
-
-      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA001"),
-                                  disclosureInformationPresent = true, initialDisclosureMA = false,
-                                  messageRefId = "GB0000000XXX")
+      val metaData = Dac6MetaData("DAC6DEL",
+                                  Some("GBA20200601AAA000"),
+                                  Some("GBD20200601AAA001"),
+                                  disclosureInformationPresent = true,
+                                  initialDisclosureMA = false,
+                                  messageRefId = "GB0000000XXX"
+      )
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")
-        .success.value
+        .success
+        .value
         .set(Dac6MetaDataPage, metaData)
-        .success.value
+        .success
+        .value
 
       val application = applicationBuilder(Some(userAnswers)).build()
 
-      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
-      val result = route(application, request).value
+      val request        = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val result         = route(application, request).value
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       status(result) mustEqual OK
 
@@ -88,7 +93,6 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
     }
 
-
     "must redirect to Session Expired for a GET if no existing data is found" in {
 
       val application = applicationBuilder(userAnswers = None).build()
@@ -112,7 +116,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
       val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
-      val result = route(application, request).value
+      val result  = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
 
@@ -123,7 +127,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
     }
 
     "when submitted the uploaded file must be submitted to the backend" in {
-      val mockEmailService: EmailService = mock[EmailService]
+      val mockEmailService: EmailService                   = mock[EmailService]
       val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
       val metaData: Dac6MetaData =
         Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = false, initialDisclosureMA = false, "GB0000000XXX")
@@ -139,8 +143,8 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
         .success
         .value
 
-      val mockXmlValidationService =  mock[XMLValidationService]
-      val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+      val mockXmlValidationService             = mock[XMLValidationService]
+      val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
@@ -149,12 +153,11 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
+        )
+        .build()
 
-      when(mockXmlValidationService.loadXML(any[String]())).
-        thenReturn(<test><value>Success</value></test>)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
-        thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
@@ -174,7 +177,6 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
       application.stop()
     }
 
-
     "when submitted the uploaded file must be submitted to the backend with no email when toggled off" in {
       val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
       val metaData: Dac6MetaData =
@@ -191,8 +193,8 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
         .success
         .value
 
-      val mockXmlValidationService =  mock[XMLValidationService]
-      val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+      val mockXmlValidationService             = mock[XMLValidationService]
+      val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
@@ -200,12 +202,11 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
+        )
+        .build()
 
-      when(mockXmlValidationService.loadXML(any[String]())).
-        thenReturn(<test><value>Success</value></test>)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
-        thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(false)
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))

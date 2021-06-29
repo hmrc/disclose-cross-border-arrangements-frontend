@@ -31,7 +31,7 @@ object SubmissionUtil {
 
     new RuleTransformer(new RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
-        case elem : Elem if elem.label == "file" =>
+        case elem: Elem if elem.label == "file" =>
           elem.copy(child = document)
         case other => other
       }

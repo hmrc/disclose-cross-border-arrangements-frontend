@@ -27,15 +27,23 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.play.guice._
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.inject.{Injector, bind}
+import play.api.inject.{bind, Injector}
 import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nunjucks.NunjucksRenderer
 
-trait SpecBase extends AnyFreeSpec with Matchers with GuiceOneAppPerSuite with OptionValues with TryValues
-  with ScalaFutures with IntegrationPatience with MockitoSugar with BeforeAndAfterEach {
+trait SpecBase
+    extends AnyFreeSpec
+    with Matchers
+    with GuiceOneAppPerSuite
+    with OptionValues
+    with TryValues
+    with ScalaFutures
+    with IntegrationPatience
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   override def beforeEach {
     Mockito.reset(mockRenderer)
@@ -55,7 +63,7 @@ trait SpecBase extends AnyFreeSpec with Matchers with GuiceOneAppPerSuite with O
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  val mockRenderer: NunjucksRenderer = mock[NunjucksRenderer]
+  val mockRenderer: NunjucksRenderer   = mock[NunjucksRenderer]
   val mockAppConfig: FrontendAppConfig = mock[FrontendAppConfig]
 
   implicit def messages: Messages = messagesApi.preferred(fakeRequest)

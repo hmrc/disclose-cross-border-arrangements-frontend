@@ -17,10 +17,10 @@
 package utils
 
 object EnrolmentConstants {
-  final val dac6EnrolmentKey = "HMRC-DAC6-ORG"
-  final val dac6IdentifierKey = "DAC6ID"
-  final val contactNameKey = "CONTACTNAME"
-  final val contactEmailKey = "EMAIL"
-  final val secondContactNameKey = "SECCONTACTNAME"
+  final val dac6EnrolmentKey      = "HMRC-DAC6-ORG"
+  final val dac6IdentifierKey     = "DAC6ID"
+  final val contactNameKey        = "CONTACTNAME"
+  final val contactEmailKey       = "EMAIL"
+  final val secondContactNameKey  = "SECCONTACTNAME"
   final val secondContactEmailKey = "SECEMAIL"
 }

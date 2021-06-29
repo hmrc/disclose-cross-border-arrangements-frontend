@@ -38,7 +38,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UploadFormController @Inject()(
+class UploadFormController @Inject() (
   override val messagesApi: MessagesApi,
   val controllerComponents: MessagesControllerComponents,
   appConfig: FrontendAppConfig,
@@ -49,16 +49,17 @@ class UploadFormController @Inject()(
   sessionRepository: SessionRepository,
   renderer: Renderer,
   errorHandler: ErrorHandler
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with NunjucksSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
-
-
       val form: Form[String] = new Mappings {
-        val apply: Form[String] = Form( "file" -> text() )
+        val apply: Form[String] = Form("file" -> text())
       }.apply
 
       {
@@ -68,47 +69,48 @@ class UploadFormController @Inject()(
           updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
           _                      <- sessionRepository.set(updatedAnswers)
         } yield {
-          val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
-            form.withError("file", "upload_form.error.file.invalid")
+          val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form) {
+            _ =>
+              form.withError("file", "upload_form.error.file.invalid")
           }
           //The view for this controller does not contain a crsf token as Upscan cannot function with it
-          renderer.render(
-            "upload-form.njk",
-            Json.obj(
-              "form" -> formWithErrors,
-              "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
-              "status" -> Json.toJson(0))
-          ).map(Ok(_))
+          renderer
+            .render(
+              "upload-form.njk",
+              Json.obj("form" -> formWithErrors, "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse), "status" -> Json.toJson(0))
+            )
+            .map(Ok(_))
         }
       }.flatten
   }
 
   def showResult: Action[AnyContent] = Action.async {
-    implicit uploadResponse => {
-      renderer.render(
-        "upload-result.njk").map (Ok (_))
-      }
-    }
+    implicit uploadResponse =>
+      renderer.render("upload-result.njk").map(Ok(_))
+  }
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
-    implicit request => errorCode match {
-      case "EntityTooLarge" =>
-        renderer.render(
-          "fileTooLargeError.njk",
-          Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
-        ).map (Ok (_))
-      case _ =>
-          renderer.render (
-          "error.njk",
-          Json.obj ("pageTitle" -> "Upload Error",
-          "heading" -> errorMessage,
-          "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-          ).map (Ok (_) )
-    }
+    implicit request =>
+      errorCode match {
+        case "EntityTooLarge" =>
+          renderer
+            .render(
+              "fileTooLargeError.njk",
+              Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
+            )
+            .map(Ok(_))
+        case _ =>
+          renderer
+            .render(
+              "error.njk",
+              Json.obj("pageTitle" -> "Upload Error", "heading" -> errorMessage, "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
+            )
+            .map(Ok(_))
+      }
   }
 
   def getStatus: Action[AnyContent] = (identify andThen getData andThen requireData).async {
-    implicit request => {
+    implicit request =>
       logger.debug("Show status called")
 
       request.userAnswers.get(UploadIDPage) match {
@@ -130,8 +132,6 @@ class UploadFormController @Inject()(
         case None =>
           errorHandler.onServerError(request, new Throwable("UploadId not found"))
       }
-    }
   }
-
 
 }

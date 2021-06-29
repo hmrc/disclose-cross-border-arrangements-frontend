@@ -29,7 +29,6 @@ import scala.concurrent.Future
 
 class SessionExpiredControllerSpec extends SpecBase {
 
-
   "Session Expired Controller" - {
 
     "must return OK and the correct view for a GET" in {
@@ -44,7 +43,7 @@ class SessionExpiredControllerSpec extends SpecBase {
       val result = route(application, request).value
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       status(result) mustEqual OK
 

@@ -30,21 +30,19 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
-class EmailServiceSpec extends SpecBase
-  with Generators
-  with ScalaCheckPropertyChecks {
+class EmailServiceSpec extends SpecBase with Generators with ScalaCheckPropertyChecks {
 
   override def beforeEach: Unit =
     reset(
       mockEmailConnector
     )
 
-  val ids: GeneratedIDs = GeneratedIDs(Some("123"),Some("345"))
+  val ids: GeneratedIDs = GeneratedIDs(Some("123"), Some("345"))
   val importInstruction = "DAC6NEW"
-  val messageRefID = "GB0000000XXX"
+  val messageRefID      = "GB0000000XXX"
 
   val mockEmailConnector: EmailConnector = mock[EmailConnector]
-  val emailService: EmailService = injector.instanceOf[EmailService]
+  val emailService: EmailService         = injector.instanceOf[EmailService]
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .overrides(
@@ -62,10 +60,11 @@ class EmailServiceSpec extends SpecBase
         )
       val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
-      whenReady(result) { result =>
-        result.map(_.status) mustBe Some(OK)
+      whenReady(result) {
+        result =>
+          result.map(_.status) mustBe Some(OK)
 
-        verify(mockEmailConnector, times(1)).sendEmail(any())(any())
+          verify(mockEmailConnector, times(1)).sendEmail(any())(any())
       }
     }
 
@@ -79,10 +78,11 @@ class EmailServiceSpec extends SpecBase
 
       val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
-      whenReady(result) { result =>
-        result.map(_.status) mustBe Some(OK)
+      whenReady(result) {
+        result =>
+          result.map(_.status) mustBe Some(OK)
 
-        verify(mockEmailConnector, times(2)).sendEmail(any())(any())
+          verify(mockEmailConnector, times(2)).sendEmail(any())(any())
       }
     }
 
@@ -96,8 +96,9 @@ class EmailServiceSpec extends SpecBase
 
       val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)
 
-      whenReady(result) { result =>
-        result.map(_.status) mustBe None
+      whenReady(result) {
+        result =>
+          result.map(_.status) mustBe None
       }
     }
   }

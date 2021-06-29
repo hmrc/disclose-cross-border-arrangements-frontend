@@ -16,21 +16,20 @@
 
 package models
 
-import play.api.libs.json.{Reads, Writes, __}
+import play.api.libs.json.{__, Reads, Writes}
 
 case class GeneratedIDs(arrangementID: Option[String], disclosureID: Option[String])
 
 object GeneratedIDs {
   import play.api.libs.functional.syntax._
 
-  implicit val reads: Reads[GeneratedIDs] = {
+  implicit val reads: Reads[GeneratedIDs] =
     ((__ \ "arrangementID").readNullable[String] and
       (__ \ "disclosureID").readNullable[String])(GeneratedIDs.apply _)
-  }
 
   implicit lazy val writes: Writes[GeneratedIDs] =
     (
       (__ \ "arrangementID").writeNullable[String] and
         (__ \ "disclosureID").writeNullable[String]
-      )(unlift(GeneratedIDs.unapply))
+    )(unlift(GeneratedIDs.unapply))
 }

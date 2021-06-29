@@ -17,25 +17,26 @@
 package models.subscription
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, Writes, __}
+import play.api.libs.json.{__, Reads, Writes}
 
 import java.time.LocalDateTime
 
 case class CreateSubscriptionForDACRequest(
-                                            createSubscriptionForDACRequest: UpdateSubscriptionDetails,
-                                            subscriptionID: String,
-                                            lastUpdated: LocalDateTime = LocalDateTime.now
-                                          )
+  createSubscriptionForDACRequest: UpdateSubscriptionDetails,
+  subscriptionID: String,
+  lastUpdated: LocalDateTime = LocalDateTime.now
+)
 
 object CreateSubscriptionForDACRequest {
+
   implicit lazy val reads: Reads[CreateSubscriptionForDACRequest] = {
     import play.api.libs.functional.syntax._
     (
       (__ \\ "createSubscriptionForDACRequest").read[UpdateSubscriptionDetails] and
         (__ \\ "subscriptionID").read[String] and
         (__ \\ "lastUpdated").readNullable[LocalDateTime]
-      )((subscription, subscriptionID, lastUpdated) =>
-      CreateSubscriptionForDACRequest(subscription, subscriptionID, lastUpdated.getOrElse(LocalDateTime.now))
+    )(
+      (subscription, subscriptionID, lastUpdated) => CreateSubscriptionForDACRequest(subscription, subscriptionID, lastUpdated.getOrElse(LocalDateTime.now))
     )
   }
 
@@ -43,5 +44,7 @@ object CreateSubscriptionForDACRequest {
     (__ \ "createSubscriptionForDACRequest").write[UpdateSubscriptionDetails] and
       (__ \ "subscriptionID").write[String] and
       (__ \ "lastUpdated").write[LocalDateTime]
-    )(r => (r.createSubscriptionForDACRequest, r.subscriptionID, r.lastUpdated))
+  )(
+    r => (r.createSubscriptionForDACRequest, r.subscriptionID, r.lastUpdated)
+  )
 }

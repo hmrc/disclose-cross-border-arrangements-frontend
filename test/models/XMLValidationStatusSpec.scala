@@ -53,7 +53,8 @@ class XMLValidationStatusSpec extends SpecBase {
         Seq(
           GenericError(50, "It's an error"),
           GenericError(52, "Oh no!")
-        ))
+        )
+      )
 
       Json.parse(json).as[XMLValidationStatus] mustBe expectedResult
     }

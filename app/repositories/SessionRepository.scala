@@ -33,29 +33,36 @@ object DefaultSessionRepository {
 
   def cacheTtl(config: Configuration): Int = config.get[Int]("mongodb.timeToLiveInSeconds")
 
-  def indexes(config: Configuration) = Seq(IndexModel(ascending("lastUpdated")
-    , IndexOptions().name("user-answers-last-updated-index").expireAfter(cacheTtl(config), TimeUnit.SECONDS) ))
+  def indexes(config: Configuration) = Seq(
+    IndexModel(ascending("lastUpdated"), IndexOptions().name("user-answers-last-updated-index").expireAfter(cacheTtl(config), TimeUnit.SECONDS))
+  )
 }
 
-class DefaultSessionRepository @Inject()(mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext
-) extends PlayMongoRepository[UserAnswers] (
-  mongoComponent = mongo,
-  collectionName = "user-answers",
-  domainFormat   = UserAnswers.format,
-  indexes        = DefaultSessionRepository.indexes(config),
-  replaceIndexes = true
-) with SessionRepository {
+class DefaultSessionRepository @Inject() (mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[UserAnswers](
+      mongoComponent = mongo,
+      collectionName = "user-answers",
+      domainFormat = UserAnswers.format,
+      indexes = DefaultSessionRepository.indexes(config),
+      replaceIndexes = true
+    )
+    with SessionRepository {
 
   override def get(id: String): Future[Option[UserAnswers]] =
     collection.find(equal("_id", id)).first().toFutureOption()
 
   override def set(userAnswers: UserAnswers): Future[Boolean] = {
 
-    val filter = equal("_id", userAnswers.id)
-    val data = userAnswers copy (lastUpdated = LocalDateTime.now)
+    val filter  = equal("_id", userAnswers.id)
+    val data    = userAnswers copy (lastUpdated = LocalDateTime.now)
     val options = ReplaceOptions().upsert(true)
 
-    collection.replaceOne(filter, data, options).toFuture.map(_ => true)
+    collection
+      .replaceOne(filter, data, options)
+      .toFuture
+      .map(
+        _ => true
+      )
   }
 }
 

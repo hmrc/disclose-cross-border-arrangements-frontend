@@ -24,7 +24,7 @@ import play.api.mvc._
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.Predicate
-import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
+import uk.gov.hmrc.auth.core.retrieve.{~, Retrieval}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -33,19 +33,22 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionSpec extends SpecBase {
 
-  private implicit class HelperOps[A](a: A) {
+  implicit private class HelperOps[A](a: A) {
     def ~[B](b: B) = new ~(a, b)
   }
 
   lazy val mockMcc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
-  val bodyParsers: BodyParsers.Default = app.injector.instanceOf[BodyParsers.Default]
+  val bodyParsers: BodyParsers.Default           = app.injector.instanceOf[BodyParsers.Default]
 
   object Harness {
-    sealed class Harness(authAction: IdentifierAction, controllerComponents: MessagesControllerComponents = mockMcc)
-      extends FrontendController(controllerComponents) {
-      def onPageLoad(): Action[AnyContent] = authAction { request => Results.Ok(s"Identifier: ${request.identifier}, EnrolmentID: ${request.enrolmentID}") }
-    }
 
+    sealed class Harness(authAction: IdentifierAction, controllerComponents: MessagesControllerComponents = mockMcc)
+        extends FrontendController(controllerComponents) {
+
+      def onPageLoad(): Action[AnyContent] = authAction {
+        request => Results.Ok(s"Identifier: ${request.identifier}, EnrolmentID: ${request.enrolmentID}")
+      }
+    }
 
     def fromAction(action: IdentifierAction): Harness =
       new Harness(action)
@@ -66,7 +69,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to log in " in {
         val controller = Harness.failure(new MissingBearerToken)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -78,7 +81,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to log in " in {
         val controller = Harness.failure(new BearerTokenExpired)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -90,7 +93,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
         val controller = Harness.failure(new InsufficientEnrolments)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -102,7 +105,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
         val controller = Harness.failure(new InsufficientConfidenceLevel)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -114,7 +117,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
         val controller = Harness.failure(new UnsupportedAuthProvider)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -126,7 +129,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
         val controller = Harness.failure(new UnsupportedAffinityGroup)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -138,7 +141,7 @@ class AuthActionSpec extends SpecBase {
 
       "must redirect the user to the unauthorised page" in {
         val controller = Harness.failure(new UnsupportedCredentialRole)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe SEE_OTHER
 
@@ -151,7 +154,7 @@ class AuthActionSpec extends SpecBase {
         val retrievals = Some("internalID") ~ Enrolments(Set(Enrolment("DAC6", Seq(EnrolmentIdentifier("EnrolmentID", "thisismyenrolmentID")), "ACTIVE")))
 
         val controller = Harness.successful(retrievals)
-        val result = controller.onPageLoad()(fakeRequest)
+        val result     = controller.onPageLoad()(fakeRequest)
 
         status(result) mustBe OK
         contentAsString(result) mustBe "Identifier: internalID, EnrolmentID: thisismyenrolmentID"
@@ -160,9 +163,7 @@ class AuthActionSpec extends SpecBase {
   }
 }
 
-
-
-class FakeFailingAuthConnector @Inject()(exceptionToReturn: Throwable) extends AuthConnector {
+class FakeFailingAuthConnector @Inject() (exceptionToReturn: Throwable) extends AuthConnector {
   val serviceUrl: String = ""
 
   override def authorise[A](predicate: Predicate, retrieval: Retrieval[A])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[A] =

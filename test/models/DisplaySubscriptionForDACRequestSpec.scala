@@ -54,7 +54,7 @@ class DisplaySubscriptionForDACRequestSpec extends SpecBase {
 
     "must comply with request common in spec" in {
       val requestCommon = RequestCommon.createRequestCommon
-      val ackRefLength = requestCommon.acknowledgementReference.length
+      val ackRefLength  = requestCommon.acknowledgementReference.length
       ackRefLength >= 1 && ackRefLength <= 32 mustBe true
 
       requestCommon.regime mustBe "DAC"

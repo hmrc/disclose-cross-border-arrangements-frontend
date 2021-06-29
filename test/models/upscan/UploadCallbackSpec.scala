@@ -69,5 +69,4 @@ class UploadCallbackSpec extends SpecBase {
     }
   }
 
-
 }

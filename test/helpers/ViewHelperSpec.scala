@@ -33,21 +33,31 @@ import java.time.LocalDateTime
 
 class ViewHelperSpec extends SpecBase with Generators {
 
-  val viewHelper = new ViewHelper
+  val viewHelper       = new ViewHelper
   val mockURL: JsValue = Json.toJson("www.test.com")
 
   val contactInformationForInd: ContactInformationForIndividual =
-    ContactInformationForIndividual(
-      individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
-      email = "email@email.com", phone = Some("07111222333"), mobile = None)
+    ContactInformationForIndividual(individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
+                                    email = "email@email.com",
+                                    phone = Some("07111222333"),
+                                    mobile = None
+    )
 
   val contactInformationForOrg: ContactInformationForOrganisation =
     ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Organisation name"),
-      email = "email@email.com", phone = Some("07111123333"), mobile = None)
+                                      email = "email@email.com",
+                                      phone = Some("07111123333"),
+                                      mobile = None
+    )
 
   val jsonPayload: String = displaySubscriptionPayload(
-    JsString("subscriptionID"), JsString("Organisation Name"), JsString("Secondary contact name"),
-    JsString("email@email.com"), JsString("email2@email.com"), JsString("07111222333"))
+    JsString("subscriptionID"),
+    JsString("Organisation Name"),
+    JsString("Secondary contact name"),
+    JsString("email@email.com"),
+    JsString("email2@email.com"),
+    JsString("07111222333")
+  )
 
   val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
@@ -55,8 +65,10 @@ class ViewHelperSpec extends SpecBase with Generators {
 
     "must return the correct go to home page content" in {
 
-      viewHelper.linkToHomePageText(mockURL) mustBe Html(s"<a id='homepage-link' href=$mockURL class='govuk-link'>" +
-        s"Disclose a cross-border arrangement</a>.")
+      viewHelper.linkToHomePageText(mockURL) mustBe Html(
+        s"<a id='homepage-link' href=$mockURL class='govuk-link'>" +
+          s"Disclose a cross-border arrangement</a>."
+      )
 
     }
   }
@@ -65,8 +77,10 @@ class ViewHelperSpec extends SpecBase with Generators {
 
     "must return the correct beta feedback content" in {
 
-      viewHelper.surveyLinkText(mockURL) mustBe Html(s"<a id='feedback-link' href=$mockURL class='govuk-link'>" +
-        s"What did you think of this service?</a> (takes 30 seconds)")
+      viewHelper.surveyLinkText(mockURL) mustBe Html(
+        s"<a id='feedback-link' href=$mockURL class='govuk-link'>" +
+          s"What did you think of this service?</a> (takes 30 seconds)"
+      )
 
     }
   }
@@ -84,10 +98,12 @@ class ViewHelperSpec extends SpecBase with Generators {
 
       viewHelper.mapErrorsToTable(mockSingleError) mustBe Table(
         head = head,
-        rows = Seq(Seq(
-          Cell(msg"11", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_11")),
-          Cell(msg"Enter your cats name in meow format", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_11"))
-        )),
+        rows = Seq(
+          Seq(
+            Cell(msg"11", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_11")),
+            Cell(msg"Enter your cats name in meow format", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_11"))
+          )
+        ),
         caption = Some(msg"invalidXML.h3"),
         attributes = Map("id" -> "errorTable")
       )
@@ -96,19 +112,20 @@ class ViewHelperSpec extends SpecBase with Generators {
     "must return a table containing multiple rows with line numbers & errors when a given Generic Error" in {
 
       val mockMultiError: Seq[GenericError] =
-        Seq(GenericError(22, "Enter cat years only"),
-          GenericError(33,"Incorrect number of cat legs"))
+        Seq(GenericError(22, "Enter cat years only"), GenericError(33, "Incorrect number of cat legs"))
 
       viewHelper.mapErrorsToTable(mockMultiError) mustBe Table(
         head = head,
-        rows = Seq(Seq(
-          Cell(msg"22", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_22")),
-          Cell(msg"Enter cat years only", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_22"))
-        ),
+        rows = Seq(
+          Seq(
+            Cell(msg"22", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_22")),
+            Cell(msg"Enter cat years only", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_22"))
+          ),
           Seq(
             Cell(msg"33", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_33")),
             Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_33"))
-          )),
+          )
+        ),
         caption = Some(msg"invalidXML.h3"),
         attributes = Map("id" -> "errorTable")
       )
@@ -117,22 +134,24 @@ class ViewHelperSpec extends SpecBase with Generators {
     "must return a table containing multiple rows in correct order with line numbers & errors when a given Generic Error" in {
 
       val mockMultiError: Seq[GenericError] =
-        Seq(GenericError(33,"Incorrect number of cat legs"),
-          GenericError(48, "You gotta be kitten me"),
-          GenericError(22,"Enter cat years only"))
+        Seq(GenericError(33, "Incorrect number of cat legs"), GenericError(48, "You gotta be kitten me"), GenericError(22, "Enter cat years only"))
 
       viewHelper.mapErrorsToTable(mockMultiError) mustBe Table(
         head = head,
-        rows = Seq(Seq(
-          Cell(msg"22", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_22")),
-          Cell(msg"Enter cat years only", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_22"))),
+        rows = Seq(
+          Seq(
+            Cell(msg"22", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_22")),
+            Cell(msg"Enter cat years only", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_22"))
+          ),
           Seq(
             Cell(msg"33", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_33")),
-            Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_33"))),
+            Cell(msg"Incorrect number of cat legs", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_33"))
+          ),
           Seq(
             Cell(msg"48", classes = Seq("govuk-table__cell", "govuk-table__cell--numeric"), attributes = Map("id" -> "lineNumber_48")),
             Cell(msg"You gotta be kitten me", classes = Seq("govuk-table__cell"), attributes = Map("id" -> "errorMessage_48"))
-          )),
+          )
+        ),
         caption = Some(msg"invalidXML.h3"),
         attributes = Map("id" -> "errorTable")
       )
@@ -151,12 +170,26 @@ class ViewHelperSpec extends SpecBase with Generators {
 
       val mockSubmissionHistory = SubmissionHistory(
         List(
-          SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-01T10:23:30"),
-            "fileName", Some("arrangementID"), Some("disclosureID"), "New",
-            initialDisclosureMA = false, messageRefId = "GBXADAC0001234567AAA00101"),
-          SubmissionDetails("enrolmentID", LocalDateTime.parse("2020-07-02T20:23:30"),
-            "fileName2", Some("arrangementID2"), Some("disclosureID2"), "Add",
-             initialDisclosureMA = false, messageRefId = "GBXADAC0001234567AAA00102"),
+          SubmissionDetails(
+            "enrolmentID",
+            LocalDateTime.parse("2020-07-01T10:23:30"),
+            "fileName",
+            Some("arrangementID"),
+            Some("disclosureID"),
+            "New",
+            initialDisclosureMA = false,
+            messageRefId = "GBXADAC0001234567AAA00101"
+          ),
+          SubmissionDetails(
+            "enrolmentID",
+            LocalDateTime.parse("2020-07-02T20:23:30"),
+            "fileName2",
+            Some("arrangementID2"),
+            Some("disclosureID2"),
+            "Add",
+            initialDisclosureMA = false,
+            messageRefId = "GBXADAC0001234567AAA00102"
+          )
         )
       )
 
@@ -187,98 +220,96 @@ class ViewHelperSpec extends SpecBase with Generators {
   "buildDisplaySubscription" - {
     "must return the rows containing the subscription details" in {
 
-      val primaryContact: PrimaryContact = PrimaryContact(Seq(
-        ContactInformationForIndividual(
-          individual = IndividualDetails(firstName = "John", lastName = "Business", middleName = None),
-          email = "email@email.com", phone = Some("07111222333"), mobile = Some("07111222333"))
-      ))
+      val primaryContact: PrimaryContact = PrimaryContact(
+        Seq(
+          ContactInformationForIndividual(
+            individual = IndividualDetails(firstName = "John", lastName = "Business", middleName = None),
+            email = "email@email.com",
+            phone = Some("07111222333"),
+            mobile = Some("07111222333")
+          )
+        )
+      )
 
-      val secondaryContact: SecondaryContact = SecondaryContact(Seq(
-        ContactInformationForOrganisation(
-          organisation = OrganisationDetails(organisationName = "Organisation Name"),
-          email = "email2@email.com", phone = None, mobile = None)
-      ))
+      val secondaryContact: SecondaryContact = SecondaryContact(
+        Seq(
+          ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Organisation Name"),
+                                            email = "email2@email.com",
+                                            phone = None,
+                                            mobile = None
+          )
+        )
+      )
 
-      val responseDetail: ResponseDetail = ResponseDetail(
-        subscriptionID = "XE0001234567890",
-        tradingName = Some("Trading Name"),
-        isGBUser = true,
-        primaryContact = primaryContact,
-        secondaryContact = Some(secondaryContact))
+      val responseDetail: ResponseDetail = ResponseDetail(subscriptionID = "XE0001234567890",
+                                                          tradingName = Some("Trading Name"),
+                                                          isGBUser = true,
+                                                          primaryContact = primaryContact,
+                                                          secondaryContact = Some(secondaryContact)
+      )
 
       val expectedRows = Seq(
         Seq(
           Cell(msg"displaySubscriptionForDAC.subscriptionID", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"XE0001234567890", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "subscriptionID"))
+          Cell(msg"XE0001234567890", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "subscriptionID"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.tradingName", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"Trading Name", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "tradingName"))
+          Cell(msg"Trading Name", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "tradingName"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.isGBUser", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"true", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "isGBUser"))
+          Cell(msg"true", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "isGBUser"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.individualContact", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"John Business", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "individualContact"))
+          Cell(msg"John Business", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "individualContact"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.individualEmail", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"email@email.com", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "individualEmail"))
+          Cell(msg"email@email.com", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "individualEmail"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.individualPhone", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "individualPhone"))
+          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "individualPhone"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.individualMobile", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "individualMobile"))
+          Cell(msg"07111222333", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "individualMobile"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.organisationContact", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"Organisation Name", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "organisationContact"))
+          Cell(msg"Organisation Name", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "organisationContact"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.organisationEmail", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"email2@email.com", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "organisationEmail"))
+          Cell(msg"email2@email.com", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "organisationEmail"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.organisationPhone", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"None", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "organisationPhone"))
+          Cell(msg"None", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "organisationPhone"))
         ),
         Seq(
           Cell(msg"displaySubscriptionForDAC.organisationMobile", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"None", classes = Seq("govuk-!-width-one-third"),
-            attributes = Map("id" -> "organisationMobile"))
+          Cell(msg"None", classes = Seq("govuk-!-width-one-third"), attributes = Map("id" -> "organisationMobile"))
         )
       )
 
       val result = viewHelper.buildDisplaySubscription(responseDetail, hasSecondContact = true)
 
-      result mustBe Table(
-        head = Seq(
-          Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
-          Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
-        ),
-        rows = expectedRows)
+      result mustBe Table(head = Seq(
+                            Cell(msg"Information", classes = Seq("govuk-!-width-one-third")),
+                            Cell(msg"Value", classes = Seq("govuk-!-width-one-third"))
+                          ),
+                          rows = expectedRows
+      )
     }
   }
 
   "primaryContactPhoneExists" - {
     "must return value from HaveContactPhonePage if it exists" in {
       val userAnswers = UserAnswers(userAnswersId).set(HaveContactPhonePage, true).success.value
-      val result = viewHelper.primaryContactPhoneExists(Seq(), userAnswers)
+      val result      = viewHelper.primaryContactPhoneExists(Seq(), userAnswers)
 
       result mustBe true
     }
@@ -293,7 +324,7 @@ class ViewHelperSpec extends SpecBase with Generators {
   "secondaryContactPhoneExists" - {
     "must return value from HaveSecondaryContactPhonePage if it exists" in {
       val userAnswers = UserAnswers(userAnswersId).set(HaveSecondaryContactPhonePage, true).success.value
-      val result = viewHelper.secondaryContactPhoneExists(Seq(), userAnswers)
+      val result      = viewHelper.secondaryContactPhoneExists(Seq(), userAnswers)
 
       result mustBe true
     }
@@ -364,14 +395,14 @@ class ViewHelperSpec extends SpecBase with Generators {
   "getPrimaryContactName" - {
     "must return the name stored in ContactNamePage if available" in {
       val userAnswers = UserAnswers(userAnswersId).set(ContactNamePage, "Contact name").success.value
-      val result = viewHelper.getPrimaryContactName(userAnswers)
+      val result      = viewHelper.getPrimaryContactName(userAnswers)
 
       result mustBe "Contact name"
     }
 
     "must return the name from contact details stored in DisplaySubscriptionDetailsPage" in {
       val userAnswers = UserAnswers(userAnswersId).set(DisplaySubscriptionDetailsPage, displaySubscriptionDetails).success.value
-      val result = viewHelper.getPrimaryContactName(userAnswers)
+      val result      = viewHelper.getPrimaryContactName(userAnswers)
 
       result mustBe "Organisation Name"
     }
@@ -386,14 +417,14 @@ class ViewHelperSpec extends SpecBase with Generators {
   "getSecondaryContactName" - {
     "must return the name stored in SecondaryContactNamePage if available" in {
       val userAnswers = UserAnswers(userAnswersId).set(SecondaryContactNamePage, "Contact name").success.value
-      val result = viewHelper.getSecondaryContactName(userAnswers)
+      val result      = viewHelper.getSecondaryContactName(userAnswers)
 
       result mustBe "Contact name"
     }
 
     "must return the name from contact details stored in DisplaySubscriptionDetailsPage" in {
       val userAnswers = UserAnswers(userAnswersId).set(DisplaySubscriptionDetailsPage, displaySubscriptionDetails).success.value
-      val result = viewHelper.getSecondaryContactName(userAnswers)
+      val result      = viewHelper.getSecondaryContactName(userAnswers)
 
       result mustBe "Secondary contact name"
     }
@@ -410,30 +441,33 @@ class ViewHelperSpec extends SpecBase with Generators {
     "must create row for Contact name" in {
       forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
-        val expectedRow =
-          Row(
-            key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
-            value = Value(lit"Contact name"),
-            actions = List(
-              Action(
-                content = msg"site.edit",
-                href = controllers.contactdetails.routes.ContactNameController.onPageLoad().url,
-                visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
-                attributes = Map("id" -> "change-primary-contact-name")
+          val expectedRow =
+            Row(
+              key = Key(msg"contactDetails.primaryContactName.checkYourAnswersLabel", classes = Seq("govuk-!-width-one-third")),
+              value = Value(lit"Contact name"),
+              actions = List(
+                Action(
+                  content = msg"site.edit",
+                  href = controllers.contactdetails.routes.ContactNameController.onPageLoad().url,
+                  visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"contactDetails.primaryContactName.checkYourAnswersLabel")),
+                  attributes = Map("id" -> "change-primary-contact-name")
+                )
               )
             )
+
+          val displayPayload: String = displaySubscriptionPayload(JsString(safeID),
+                                                                  JsString("Contact name"),
+                                                                  JsString("Secondary contact name"),
+                                                                  JsString(email),
+                                                                  JsString(secondaryEmail),
+                                                                  JsString(phone)
           )
+          val displaySubscriptionDetails: DisplaySubscriptionForDACResponse =
+            Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-        val displayPayload: String = displaySubscriptionPayload(
-          JsString(safeID), JsString("Contact name"), JsString("Secondary contact name"), JsString(email),
-          JsString(secondaryEmail), JsString(phone))
-        val displaySubscriptionDetails: DisplaySubscriptionForDACResponse =
-          Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
+          val result = viewHelper.primaryContactName(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
-        val result = viewHelper.primaryContactName(
-          displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
-
-        result mustBe Some(expectedRow)
+          result mustBe Some(expectedRow)
       }
     }
 
@@ -454,13 +488,13 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displayPayloadNoSecondaryContact: String =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
           val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
             Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.primaryContactEmail(
-            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result =
+            viewHelper.primaryContactEmail(displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -483,13 +517,13 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displayPayloadNoSecondaryContact: String =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
           val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
             Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.haveContactPhoneNumber(
-            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result =
+            viewHelper.haveContactPhoneNumber(displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -512,13 +546,13 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displayPayloadNoSecondaryContact: String =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
           val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
             Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.primaryPhoneNumber(
-            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result =
+            viewHelper.primaryPhoneNumber(displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe Some(expectedRow)
       }
@@ -527,12 +561,11 @@ class ViewHelperSpec extends SpecBase with Generators {
     "must not create row for telephone if it doesn't exist" in {
       forAll(validDacID, validOrganisationName, validPersonalName, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, orgName, secondaryName, email, secondaryEmail, phone) =>
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
+          val displayPayload: String =
+            displaySubscriptionPayload(JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.primaryPhoneNumber(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.primaryPhoneNumber(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe None
       }
@@ -555,13 +588,13 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayloadNoSecondaryContact: String = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
+          val displayPayloadNoSecondaryContact: String =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("Kit"), JsString("Kat"), JsString(email), JsString(phone))
           val displaySubscriptionDetailsNoSecondaryContact: DisplaySubscriptionForDACResponse =
             Json.parse(displayPayloadNoSecondaryContact).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.haveSecondaryContact(
-            displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result =
+            viewHelper.haveSecondaryContact(displaySubscriptionDetailsNoSecondaryContact.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -584,12 +617,11 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
+          val displayPayload: String =
+            displaySubscriptionPayload(JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.secondaryContactName(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.secondaryContactName(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -612,13 +644,16 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(orgName), JsString(secondaryContactName), JsString(email),
-            JsString(secondaryEmail), JsString(phone))
+          val displayPayload: String = displaySubscriptionPayload(JsString(safeID),
+                                                                  JsString(orgName),
+                                                                  JsString(secondaryContactName),
+                                                                  JsString(email),
+                                                                  JsString(secondaryEmail),
+                                                                  JsString(phone)
+          )
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.secondaryContactEmail(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.secondaryContactEmail(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -641,12 +676,11 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
+          val displayPayload: String =
+            displaySubscriptionPayload(JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.haveSecondaryContactPhone(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.haveSecondaryContactPhone(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe expectedRow
       }
@@ -669,12 +703,11 @@ class ViewHelperSpec extends SpecBase with Generators {
               )
             )
 
-          val displayPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
+          val displayPayload: String =
+            displaySubscriptionPayload(JsString(safeID), JsString(orgName), JsString(secondaryName), JsString(email), JsString(secondaryEmail), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.secondaryPhoneNumber(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.secondaryPhoneNumber(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe Some(expectedRow)
       }
@@ -683,12 +716,10 @@ class ViewHelperSpec extends SpecBase with Generators {
     "must not create row for Secondary telephone if it's not available" in {
       forAll(validDacID, validPersonalName, validEmailAddress, validPhoneNumber) {
         (safeID, name, email, phone) =>
-          val displayPayload: String = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString(name), JsString(name), JsString(email), JsString(phone))
+          val displayPayload: String                                        = displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString(name), JsString(name), JsString(email), JsString(phone))
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(displayPayload).validate[DisplaySubscriptionForDACResponse].get
 
-          val result = viewHelper.secondaryPhoneNumber(
-            displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
+          val result = viewHelper.secondaryPhoneNumber(displaySubscriptionDetails.displaySubscriptionForDACResponse.responseDetail, emptyUserAnswers)
 
           result mustBe None
       }
