@@ -17,7 +17,7 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.{Dac6MetaData, UploadSubmissionValidationFailure, UploadSubmissionValidationResult, UploadSubmissionValidationSuccess}
+import models.{Dac6MetaData, GenericError, UploadSubmissionValidationFailure, UploadSubmissionValidationResult, UploadSubmissionValidationSuccess}
 import play.api.http.HeaderNames
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -33,11 +33,12 @@ class ValidationConnector @Inject()(http: HttpClient, config: FrontendAppConfig)
     HeaderNames.CONTENT_TYPE -> "application/xml"
   )
 
-  //Sends XML for validation in backend - DAC6-858
-  def sendForValidation(xml: Elem)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[String], Dac6MetaData]] = {
+  def sendForValidation(xml: Elem)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[GenericError], Dac6MetaData]] = {
     http.POSTString[UploadSubmissionValidationResult](url, xml.mkString, headers).map {
-      case UploadSubmissionValidationSuccess(a) => Right(a)
-      case UploadSubmissionValidationFailure(a) => Left(a)
+      case UploadSubmissionValidationSuccess(a) =>
+        Right(a)
+      case UploadSubmissionValidationFailure(a) =>
+        Left(a)
     }
   }
 }

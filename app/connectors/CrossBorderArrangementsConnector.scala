@@ -27,46 +27,51 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
-class CrossBorderArrangementsConnector @Inject() (configuration: FrontendAppConfig, httpClient: HttpClient)(implicit ec: ExecutionContext) {
+class CrossBorderArrangementsConnector @Inject()(configuration: FrontendAppConfig,
+                                                 httpClient: HttpClient)(implicit ec: ExecutionContext) {
 
-  val baseUrl   = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
+  val baseUrl = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
   val submitUrl = s"$baseUrl/submit"
 
-  def verificationUrl(arrangementId: String): String =
+  def verificationUrl(arrangementId: String): String = {
     s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/verify-arrangement-id/$arrangementId"
+  }
 
-  def historyUrl(enrolmentId: String): String =
+  def historyUrl(enrolmentId: String): String = {
     s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/get-history/$enrolmentId"
+  }
 
   private val headers = Seq(
-    HeaderNames.CONTENT_TYPE -> "application/xml"
+  HeaderNames.CONTENT_TYPE -> "application/xml"
   )
 
-  def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] =
+  def submitDocument(fileName: String, enrolmentID: String, xmlDocument: Elem)(implicit hc: HeaderCarrier): Future[GeneratedIDs] = {
     httpClient.POSTString[GeneratedIDs](submitUrl, constructSubmission(fileName, enrolmentID, xmlDocument).toString(), headers)
+  }
 
   def findNoOfPreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[Long] =
-    httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
+  httpClient.GET[Long](s"$baseUrl/history/count/$enrolmentID")
 
   def retrievePreviousSubmissions(enrolmentID: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
-    httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
+  httpClient.GET[SubmissionHistory](s"$baseUrl/history/submissions/$enrolmentID")
 
   def retrieveFirstDisclosureForArrangementID(arrangementID: String)(implicit hc: HeaderCarrier): Future[SubmissionDetails] =
-    httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
+  httpClient.GET[SubmissionDetails](s"$baseUrl/history/first-disclosure/$arrangementID")
 
   def verifyArrangementId(arrangementId: String)(implicit hc: HeaderCarrier): Future[Boolean] =
-    httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map {
-      response =>
-        response.status == Status.NO_CONTENT
+    httpClient.GET[HttpResponse](verificationUrl(arrangementId)).map { response =>
+      response.status == Status.NO_CONTENT
     }
 
-  def getSubmissionHistory(enrolmentId: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
+  def getSubmissionHistory(enrolmentId: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {
     httpClient.GET[SubmissionHistory](historyUrl(enrolmentId)).recover {
       case ex: Exception => SubmissionHistory(Seq())
     }
+  }
 
-  def searchDisclosures(searchCriteria: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] =
+  def searchDisclosures(searchCriteria: String)(implicit hc: HeaderCarrier): Future[SubmissionHistory] = {
     httpClient.GET[SubmissionHistory](s"$baseUrl/history/search-submissions/$searchCriteria").recover {
       case _ => SubmissionHistory(Seq())
     }
+  }
 }

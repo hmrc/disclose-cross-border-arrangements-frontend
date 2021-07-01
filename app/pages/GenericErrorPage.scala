@@ -23,5 +23,5 @@ object GenericErrorPage extends QuestionPage[Seq[GenericError]] {
 
   override def path: JsPath = JsPath \ toString
 
-  override def toString: String = "error"
+  override def toString: String = "errors"
 }

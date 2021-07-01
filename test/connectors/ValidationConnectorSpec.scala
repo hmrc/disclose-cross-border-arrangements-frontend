@@ -19,9 +19,10 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import controllers.Assets.BAD_REQUEST
 import generators.Generators
 import helpers.JsonFixtures
-import models.Dac6MetaData
+import models.{Dac6MetaData, GenericError}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.http.Status.OK
@@ -44,7 +45,7 @@ class ValidationConnectorSpec extends SpecBase
   lazy val connector: ValidationConnector = app.injector.instanceOf[ValidationConnector]
   val validationUrl = "/disclose-cross-border-arrangements/validate-upload-submission"
 
-  val successPayload = Dac6MetaData(
+  val successPayloadResult: Dac6MetaData = Dac6MetaData(
     importInstruction = "DAC6NEW",
     arrangementID = Some("A123"),
     disclosureID = Some("D123"),
@@ -53,72 +54,42 @@ class ValidationConnectorSpec extends SpecBase
     messageRefId = "messageRef"
   )
 
-  val failurePayload =
-    """
-      |{
-      | "errors": ["message1", "message2"]
-      |}""".stripMargin
-
+  val failurePayloadResult: Seq[GenericError] = Seq(GenericError(1, "some error"), GenericError(2, "another error"))
+  
   "Validation Connector" - {
+
     "must return a 200 and a Success Object when passing validation" in {
 
-      val expectedBody = JsonFixtures.xmlValidationResponseJson(JsString("DAC6NEW"), JsString("A123"), JsString("D123"), JsString("messageRef"))
+      val expectedBody = JsonFixtures.xmlValidationSuccessResponse(JsString("DAC6NEW"), JsString("A123"), JsString("D123"), JsString("messageRef"))
 
       stubResponse(validationUrl, OK, expectedBody)
 
       val result = connector.sendForValidation(<test></test>)
-      result.futureValue mustBe Right(successPayload)
+      result.futureValue mustBe Right(successPayloadResult)
     }
 
-//    "must return a 200 and a Failure Object when failing validation" in {
-//      stubResponse(validationUrl, OK, failurePayload)
-//
-//      val result = connector.sendForValidation(<test></test>)
-//      result.futureValue mustBe Left(Seq("message1", "message2"))
-//    }
+    "must return a 200 and a Failure Object when failing validation" in {
 
-//    "must throw an exception when validation returns a 400 (BAD_REQUEST) status" in {
-//      stubResponse(validationUrl, BAD_REQUEST, "Some error")
-//
-//      val result = connector.sendForValidation(<test></test>)
-//
-//      assertThrows[Exception] {
-//        result.futureValue
-//      }
+      val expectedBody = JsonFixtures.xmlValidationFailureResponse
+
+      stubResponse(validationUrl, OK, expectedBody)
+
+      val result = connector.sendForValidation(<test></test>)
+      result.futureValue mustBe Left(failurePayloadResult)
     }
 
-//    "must throw an exception when address lookup returns a 404 (NOT_FOUND) status" in {
-//      stubResponse(validationUrl, NOT_FOUND, "Some error")
-//
-//      val result = connector.sendForValidation(<test></test>)
-//
-//      assertThrows[Exception] {
-//        result.futureValue
-//      }
-//    }
-//
-//    "must throw an exception when validation returns a 405 (METHOD_NOT_ALLOWED) status" in {
-//      stubResponse(validationUrl, METHOD_NOT_ALLOWED, "Some error")
-//
-//      val result = connector.sendForValidation(<test></test>)
-//
-//      assertThrows[Exception] {
-//        result.futureValue
-//      }
-//    }
-//
-//    "must throw an exception when validation returns a 500 (INTERNAL_SERVER_ERROR) status" in {
-//      stubResponse(validationUrl, INTERNAL_SERVER_ERROR, "Some error")
-//
-//      val result = connector.sendForValidation(<test></test>)
-//
-//      assertThrows[Exception] {
-//        result.futureValue
-//      }
-//    }
-//  }
+    "must throw an exception when validation returns a 400 (BAD_REQUEST) status" in {
+      stubResponse(validationUrl, BAD_REQUEST, "Some error")
 
-  private def stubResponse(expectedUrl: String, expectedStatus: Int, expectedBody: String = ""): StubMapping =
+      val result = connector.sendForValidation(<test></test>)
+
+      assertThrows[Exception] {
+        result.futureValue
+      }
+    }
+  }
+
+  private def stubResponse(expectedUrl: String, expectedStatus: Int, expectedBody: String): StubMapping =
     server.stubFor(
       post(urlEqualTo(expectedUrl))
         .willReturn(

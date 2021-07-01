@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import helpers.XmlLoadHelper
 import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
@@ -31,7 +32,7 @@ import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.{EmailService, XMLValidationService}
+import services.EmailService
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
@@ -46,34 +47,34 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     .success
     .value
 
-  val mockXmlValidationService: XMLValidationService                         = mock[XMLValidationService]
-  val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
-  val mockEmailService: EmailService                                         = mock[EmailService]
-  val mockSubscriptionConnector: SubscriptionConnector                       = mock[SubscriptionConnector]
+  val mockXmlValidationService: XmlLoadHelper =  mock[XmlLoadHelper]
+  val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
+  val mockEmailService: EmailService = mock[EmailService]
+  val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
-  override def beforeEach: Unit = {
-    when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
-      .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
+   override def beforeEach: Unit = {
+     when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
+       .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
-    reset(mockEmailService)
-  }
+     reset(mockEmailService)
+   }
+
 
   "Check Your Answers Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val metaData = Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = "GB0000000XXX")
+      val metaData = Dac6MetaData("DAC6NEW", None, None, disclosureInformationPresent = true,
+                                  initialDisclosureMA = false, messageRefId = "GB0000000XXX")
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(ValidXMLPage, "file-name.xml")
-        .success
-        .value
+        .success.value
         .set(Dac6MetaDataPage, metaData)
-        .success
-        .value
+        .success.value
 
       val application = applicationBuilder(Some(userAnswers)).build()
 
@@ -84,7 +85,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       status(result) mustEqual OK
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
@@ -127,17 +128,18 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     "when submitted the uploaded file must be submitted to the backend and redirect to /upload if import instruction is missing" in {
 
       val application = applicationBuilder(Some(userAnswers))
-        .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[FrontendAppConfig].toInstance(mockAppConfig)
-        )
-        .build()
+      .overrides(
+        bind[XmlLoadHelper].toInstance(mockXmlValidationService),
+        bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
+        bind[FrontendAppConfig].toInstance(mockAppConfig)
+      ).build()
 
       when(mockAppConfig.sendEmailToggle).thenReturn(false)
 
-      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockXmlValidationService.loadXML(any[String]())).
+        thenReturn(<test><value>Success</value></test>)
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
 
       val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
 
@@ -166,16 +168,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        )
-        .build()
+        ).build()
 
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
@@ -198,13 +200,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        )
-        .build()
+        ).build()
 
       val xml =
         <DAC6_Arrangement version="First">
@@ -214,7 +215,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         </DAC6_Arrangement>
 
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
@@ -237,13 +239,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        )
-        .build()
+      ).build()
 
       val xml =
         <DAC6_Arrangement version="First">
@@ -253,7 +254,8 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         </DAC6_Arrangement>
 
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(xml)
-      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
+      when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
+        thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))

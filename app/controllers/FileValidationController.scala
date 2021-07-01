@@ -16,88 +16,96 @@
 
 package controllers
 
-import connectors.UpscanConnector
+import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import handlers.ErrorHandler
-
+import helpers.XmlLoadHelper
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers}
 import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.ValidationEngine
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FileValidationController @Inject() (
-  override val messagesApi: MessagesApi,
-  identify: IdentifierAction,
-  getData: DataRetrievalAction,
-  val sessionRepository: SessionRepository,
-  val controllerComponents: MessagesControllerComponents,
-  upscanConnector: UpscanConnector,
-  requireData: DataRequiredAction,
-  validationEngine: ValidationEngine,
-  errorHandler: ErrorHandler,
-  navigator: Navigator
-)(implicit ec: ExecutionContext)
-    extends FrontendBaseController
-    with I18nSupport {
+class FileValidationController @Inject()(
+                                          override val messagesApi: MessagesApi,
+                                          identify: IdentifierAction,
+                                          getData: DataRetrievalAction,
+                                          val sessionRepository: SessionRepository,
+                                          val controllerComponents: MessagesControllerComponents,
+                                          upscanConnector: UpscanConnector,
+                                          requireData: DataRequiredAction,
+                                          validationConnector: ValidationConnector,
+                                          errorHandler: ErrorHandler,
+                                          validationService: XmlLoadHelper,
+                                          navigator: Navigator
+)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
-    implicit request =>
-      {
-        for {
-          uploadId       <- getUploadId(request.userAnswers)
-          uploadSessions <- upscanConnector.getUploadDetails(uploadId)
-          (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-          validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
-        } yield validation match {
-          case Right(ValidationSuccess(_, Some(metaData))) =>
+
+  def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async{
+    implicit request => {
+      for {
+        uploadId <- getUploadId(request.userAnswers)
+        uploadSessions <- upscanConnector.getUploadDetails(uploadId)
+        (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
+        xml = validationService.loadXML(downloadUrl)
+        validation: Either[Seq[GenericError], Dac6MetaData] <- validationConnector.sendForValidation(xml)
+      } yield {
+        validation match  {
+          case Right(metaData) =>
             for {
-              updatedAnswers             <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithURL      <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
+              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
               updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
-              _                          <- sessionRepository.set(updatedAnswersWithMetaData)
-            } yield metaData.importInstruction match {
-              case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
-              case _         => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              _              <- sessionRepository.set(updatedAnswersWithMetaData)
+            } yield {
+              metaData.importInstruction match {
+                case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
+                case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
+              }
             }
-          case Right(ValidationFailure(errors: Seq[GenericError])) =>
+          case Left(errors: Seq[GenericError]) =>
             for {
-              updatedAnswers           <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
+              updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
-              _                        <- sessionRepository.set(updatedAnswersWithErrors)
-            } yield Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+              _              <- sessionRepository.set(updatedAnswersWithErrors)
+            } yield {
+              Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
           case Left(_) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               _              <- sessionRepository.set(updatedAnswers)
-            } yield Redirect(routes.FileErrorController.onPageLoad())
+            } yield {
+              Redirect(routes.FileErrorController.onPageLoad())
+            }
           case _ =>
             errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
         }
-      }.flatten
+      }
+    }.flatten
   }
 
-  private def getUploadId(userAnswers: UserAnswers): Future[UploadId] =
+  private def getUploadId(userAnswers: UserAnswers): Future[UploadId] = {
     userAnswers.get(UploadIDPage) match {
       case Some(uploadId) => Future.successful(uploadId)
-      case None           => throw new RuntimeException("Cannot find uploadId")
+      case None => throw new RuntimeException("Cannot find uploadId")
     }
+  }
 
-  private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) =
+  private def getDownloadUrl(uploadSessions: Option[UploadSessionDetails]) = {
     uploadSessions match {
-      case Some(uploadDetails) =>
-        uploadDetails.status match {
-          case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
-          case _                                       => throw new RuntimeException("File not uploaded successfully")
-        }
+      case Some(uploadDetails) => uploadDetails.status match {
+        case UploadedSuccessfully(name, downloadUrl) => (name, downloadUrl)
+        case _ => throw new RuntimeException("File not uploaded successfully")
+      }
       case _ => throw new RuntimeException("File not uploaded successfully")
     }
-
+  }
 }
+
