@@ -19,13 +19,12 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import controllers.Assets.BAD_REQUEST
 import generators.Generators
 import helpers.JsonFixtures
 import models.{Dac6MetaData, GenericError}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.OK
+import play.api.http.Status.{OK, BAD_REQUEST}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsString
 import utils.WireMockHelper

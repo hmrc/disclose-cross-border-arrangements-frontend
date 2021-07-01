@@ -20,12 +20,11 @@ import base.SpecBase
 import connectors.{UpscanConnector, ValidationConnector}
 import helpers.{FakeUpscanConnector, XmlLoadHelper}
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
-import org.bson.types.ObjectId
 import models.{Dac6MetaData, GenericError, UserAnswers}
+import org.bson.types.ObjectId
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
-import org.xml.sax.SAXParseException
 import pages.UploadIDPage
 import play.api.inject.bind
 import play.api.libs.json.Json

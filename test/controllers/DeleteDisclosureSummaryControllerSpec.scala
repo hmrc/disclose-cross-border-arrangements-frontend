@@ -192,18 +192,18 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
         .success
         .value
 
-      val mockXmlValidationService =  mock[XMLValidationService]
+      val mockXmlLoadHelper =  mock[XmlLoadHelper]
       val mockCrossBorderArrangementsConnector =  mock[CrossBorderArrangementsConnector]
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlLoadHelper),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
         ).build()
 
-      when(mockXmlValidationService.loadXML(any[String]())).
+      when(mockXmlLoadHelper.loadXML(any[String]())).
         thenReturn(<test><value>Success</value></test>)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).
         thenReturn(Future.successful(GeneratedIDs(None, None)))
