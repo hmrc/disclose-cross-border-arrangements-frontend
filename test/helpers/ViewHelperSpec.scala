@@ -178,7 +178,6 @@ class ViewHelperSpec extends SpecBase with Generators {
             Cell(msg"Add", attributes = Map("id" -> s"disclosureType_1"))
           )
         ),
-        caption = Some(msg"submissionHistory.caption"),
         attributes = Map("id" -> "disclosuresTable")
       )
     }
