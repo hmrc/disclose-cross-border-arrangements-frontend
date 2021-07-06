@@ -87,7 +87,6 @@ class ViewHelper @Inject()() {
         Cell(msg"submissionHistory.disclosureType.label")
       ),
       rows = rows,
-      caption = Some(msg"submissionHistory.caption"),
       attributes = Map("id" -> "disclosuresTable"))
   }
 
