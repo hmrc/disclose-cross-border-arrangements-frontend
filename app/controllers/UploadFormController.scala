@@ -22,15 +22,17 @@ import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierA
 import forms.mappings.Mappings
 import handlers.ErrorHandler
 import models.UserAnswers
+import models.requests.OptionalDataRequest
 import models.upscan._
 import org.slf4j.LoggerFactory
 import pages.UploadIDPage
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import renderer.Renderer
 import repositories.SessionRepository
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.NunjucksSupport
 
@@ -53,34 +55,36 @@ class UploadFormController @Inject()(
 
   private val logger = LoggerFactory.getLogger(getClass)
 
+  private[controllers] def form: Form[String] = new Mappings {
+    val apply: Form[String] = Form( "file" -> text() )
+  }.apply
+
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
     implicit request =>
 
+      val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
+        form.withError("file", "upload_form.error.file.invalid")
+      }
 
-      val form: Form[String] = new Mappings {
-        val apply: Form[String] = Form( "file" -> text() )
-      }.apply
+      toResponse(formWithErrors)
+  }
 
-      {
-        for {
-          upscanInitiateResponse <- upscanConnector.getUpscanFormData
-          uploadId               <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
-          updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
-          _                      <- sessionRepository.set(updatedAnswers)
-        } yield {
-          val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
-            form.withError("file", "upload_form.error.file.invalid")
-          }
-          //The view for this controller does not contain a crsf token as Upscan cannot function with it
-          renderer.render(
-            "upload-form.njk",
-            Json.obj(
-              "form" -> formWithErrors,
-              "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
-              "status" -> Json.toJson(0))
-          ).map(Ok(_))
-        }
-      }.flatten
+  private[controllers] def toResponse(preparedForm: Form[String])(implicit request: OptionalDataRequest[AnyContent], hc: HeaderCarrier): Future[Result] = {
+
+    def json(upscanInitiateResponse: UpscanInitiateResponse): JsObject = Json.obj(
+      "form" -> preparedForm,
+      "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
+      "status" -> Json.toJson(0))
+
+    (for {
+      upscanInitiateResponse <- upscanConnector.getUpscanFormData
+      uploadId <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
+      updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
+      _ <- sessionRepository.set(updatedAnswers)
+      html <- renderer.render("upload-form.njk", json(upscanInitiateResponse))
+    } yield {
+      html
+    }).map(Ok(_))
   }
 
   def showResult: Action[AnyContent] = Action.async {
@@ -90,21 +94,26 @@ class UploadFormController @Inject()(
       }
     }
 
-  def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action.async {
-    implicit request => errorCode match {
-      case "EntityTooLarge" =>
-        renderer.render(
-          "fileTooLargeError.njk",
-          Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
-        ).map (Ok (_))
-      case _ =>
+  def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = (identify andThen getData).async {
+    implicit request =>
+
+      errorCode match {
+        case "EntityTooLarge" =>
+          renderer.render(
+            "fileTooLargeError.njk",
+            Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
+          ).map (Ok (_))
+        case "InvalidArgument" =>
+          val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
+          toResponse(formWithErrors)
+        case _ =>
           renderer.render (
-          "error.njk",
-          Json.obj ("pageTitle" -> "Upload Error",
-          "heading" -> errorMessage,
-          "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
+            "error.njk",
+            Json.obj ("pageTitle" -> "Upload Error",
+              "heading" -> errorMessage,
+              "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
           ).map (Ok (_) )
-    }
+      }
   }
 
   def getStatus: Action[AnyContent] = (identify andThen getData andThen requireData).async {

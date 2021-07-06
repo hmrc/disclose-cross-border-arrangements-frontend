@@ -4,6 +4,7 @@
 {% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "macros/title.njk"                         import title %}
 {% from "govuk/components/file-upload/macro.njk"   import govukFileUpload %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block additionalHeaders %}
 <link href="/disclose-cross-border-arrangements/upload/assets/stylesheets/spinner.css" media="not speech" rel="stylesheet" type="text/css">
@@ -24,11 +25,18 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
 
-         <h1 class="govuk-heading-xl" id="heading">
-             {{ messages("upload_form.heading") }}
-         </h1>
+        {% if form.errors.length > 0 %}
+          {{ govukErrorSummary({
+            "titleText": messages("error.summary.title"),
+            "errorList": form.errors
+          }) }}
+        {% endif %}
 
-<form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data">
+        <h1 class="govuk-heading-xl" id="heading">
+           {{ messages("upload_form.heading") }}
+        </h1>
+
+<form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
 
     {% for key, value in upscanInitiateResponse.formFields %}
     <input type="hidden" name="{{key}}" value="{{value}}"/>
