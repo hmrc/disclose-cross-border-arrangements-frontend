@@ -35,39 +35,42 @@ import uk.gov.hmrc.viewmodels.{NunjucksSupport, Radios}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HaveSecondContactController @Inject()(
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    viewHelper: ViewHelper,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    formProvider: HaveSecondContactFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
+class HaveSecondContactController @Inject() (
+  override val messagesApi: MessagesApi,
+  sessionRepository: SessionRepository,
+  navigator: Navigator,
+  viewHelper: ViewHelper,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  formProvider: HaveSecondContactFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with NunjucksSupport {
 
   private val form = formProvider()
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       val preparedForm =
         (request.userAnswers.get(HaveSecondContactPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
           case (None, Some(displaySubscription)) =>
             val haveSecondContact =
               displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                .fold(Seq[ContactInformation]())(_.contactInformation).nonEmpty
+                .fold(Seq[ContactInformation]())(_.contactInformation)
+                .nonEmpty
 
             form.fill(haveSecondContact)
           case _ => form
         }
 
       val json = Json.obj(
-        "form"   -> preparedForm,
-        "radios" -> Radios.yesNo(preparedForm("value")),
+        "form"               -> preparedForm,
+        "radios"             -> Radios.yesNo(preparedForm("value")),
         "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
       )
 
@@ -76,36 +79,37 @@ class HaveSecondContactController @Inject()(
 
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
 
-      form.bindFromRequest().fold(
-        formWithErrors => {
+            val json = Json.obj(
+              "form"               -> formWithErrors,
+              "radios"             -> Radios.yesNo(formWithErrors("value")),
+              "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
+            )
 
-          val json = Json.obj(
-            "form"   -> formWithErrors,
-            "radios" -> Radios.yesNo(formWithErrors("value")),
-            "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
-          )
+            renderer.render("contactdetails/haveSecondContact.njk", json).map(BadRequest(_))
+          },
+          newValue =>
+            request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+              case Some(displaySubscription) =>
+                val haveSecondContact =
+                  displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
+                    .fold(Seq[ContactInformation]())(_.contactInformation)
+                    .nonEmpty
 
-          renderer.render("contactdetails/haveSecondContact.njk", json).map(BadRequest(_))
-        },
-        newValue => {
-          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
-            case Some(displaySubscription) =>
-              val haveSecondContact =
-                displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
-                  .fold(Seq[ContactInformation]())(_.contactInformation).nonEmpty
-
-              if ((newValue != haveSecondContact) || newValue) {
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, newValue))
-                  _ <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers))
-              } else {
-                Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
-              }
-            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
-          }
-        }
-      )
+                if ((newValue != haveSecondContact) || newValue) {
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(HaveSecondContactPage, newValue))
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield Redirect(navigator.nextPage(HaveSecondContactPage, NormalMode, updatedAnswers))
+                } else {
+                  Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+                }
+              case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+            }
+        )
   }
 }

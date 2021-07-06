@@ -30,41 +30,44 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class IndexController @Inject()(
-                                 sessionRepository: SessionRepository,
-                                 identify: IdentifierAction,
-                                 getData: DataRetrievalAction,
-                                 frontendAppConfig: FrontendAppConfig,
-                                 crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
-                                 val controllerComponents: MessagesControllerComponents,
-                                 renderer: Renderer
-                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class IndexController @Inject() (
+  sessionRepository: SessionRepository,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  frontendAppConfig: FrontendAppConfig,
+  crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async { implicit request =>
-    {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
+    implicit request =>
+      {
 
-      val userAnswers = request.userAnswers.getOrElse[UserAnswers](UserAnswers(request.internalId))
+        val userAnswers = request.userAnswers.getOrElse[UserAnswers](UserAnswers(request.internalId))
 
-      for {
-        noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
-        _                       <- sessionRepository.set(userAnswers)
-      } yield {
+        for {
+          noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
+          _                       <- sessionRepository.set(userAnswers)
+        } yield {
 
-        val enterUrl = if (frontendAppConfig.contactUsToggle) {
-          routes.ContactUsToUseManualServiceController.onPageLoad().url
-        } else {
-          frontendAppConfig.dacManualUrl
+          val enterUrl = if (frontendAppConfig.contactUsToggle) {
+            routes.ContactUsToUseManualServiceController.onPageLoad().url
+          } else {
+            frontendAppConfig.dacManualUrl
+          }
+
+          val context = Json.obj(
+            "hasSubmissions"          -> (noOfPreviousSubmissions > 0),
+            "contactDetailsToggle"    -> frontendAppConfig.contactDetailsToggle,
+            "enterUrl"                -> enterUrl,
+            "manualJourneyToggle"     -> frontendAppConfig.manualJourneyToggle,
+            "recruitmentBannerToggle" -> frontendAppConfig.recruitmentBannerToggle
+          )
+          renderer.render("index.njk", context).map(Ok(_))
         }
-
-        val context = Json.obj(
-          "hasSubmissions" -> (noOfPreviousSubmissions > 0),
-          "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle,
-          "enterUrl" -> enterUrl,
-          "manualJourneyToggle" -> frontendAppConfig.manualJourneyToggle,
-          "recruitmentBannerToggle" -> frontendAppConfig.recruitmentBannerToggle
-        )
-        renderer.render("index.njk", context).map(Ok(_))
-      }
-    }.flatten
+      }.flatten
   }
 }

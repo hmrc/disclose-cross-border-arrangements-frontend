@@ -33,9 +33,7 @@ import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
 
-class ContactDetailsControllerSpec extends SpecBase
-  with ScalaCheckPropertyChecks
-  with Generators {
+class ContactDetailsControllerSpec extends SpecBase with ScalaCheckPropertyChecks with Generators {
 
   val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
 
@@ -43,13 +41,12 @@ class ContactDetailsControllerSpec extends SpecBase
 
     "must return OK and the correct view for a GET if user is an Individual" in {
 
-      forAll(validDacID ,validEmailAddress, validPhoneNumber) {
+      forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
-
           reset(mockRenderer, mockSubscriptionConnector)
 
-          val jsonPayload = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
+          val jsonPayload =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
@@ -59,13 +56,15 @@ class ContactDetailsControllerSpec extends SpecBase
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
             .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-          ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .overrides(
+              bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+            )
+            .build()
 
-          val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+          val request        = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
           val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
           val result = route(application, request).value
 
@@ -73,7 +72,7 @@ class ContactDetailsControllerSpec extends SpecBase
 
           verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-          val json = jsonCaptor.getValue
+          val json           = jsonCaptor.getValue
           val contactDetails = (json \ "contactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
@@ -91,12 +90,15 @@ class ContactDetailsControllerSpec extends SpecBase
 
       forAll(validDacID, validEmailAddress, validEmailAddress, validPhoneNumber) {
         (safeID, email, secondaryEmail, phone) =>
-
           reset(mockRenderer, mockSubscriptionConnector)
 
-          val jsonPayload: String = displaySubscriptionPayload(
-            JsString(safeID), JsString("Organisation Name"), JsString("Secondary contact name"), JsString(email),
-            JsString(secondaryEmail), JsString(phone))
+          val jsonPayload: String = displaySubscriptionPayload(JsString(safeID),
+                                                               JsString("Organisation Name"),
+                                                               JsString("Secondary contact name"),
+                                                               JsString(email),
+                                                               JsString(secondaryEmail),
+                                                               JsString(phone)
+          )
 
           val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
@@ -106,13 +108,15 @@ class ContactDetailsControllerSpec extends SpecBase
           when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
             .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(Some(displaySubscriptionDetails))))
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-          ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .overrides(
+              bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+            )
+            .build()
 
-          val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+          val request        = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
           val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-          val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+          val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
           val result = route(application, request).value
 
@@ -120,8 +124,8 @@ class ContactDetailsControllerSpec extends SpecBase
 
           verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
-          val json = jsonCaptor.getValue
-          val contactDetails = (json \ "contactDetails").toString
+          val json                    = jsonCaptor.getValue
+          val contactDetails          = (json \ "contactDetails").toString
           val secondaryContactDetails = (json \ "secondaryContactDetails").toString
 
           templateCaptor.getValue mustEqual "contactDetails.njk"
@@ -144,9 +148,11 @@ class ContactDetailsControllerSpec extends SpecBase
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None, isLocked = true)))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+        )
+        .build()
       val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
 
       val result = route(application, request).value
@@ -165,10 +171,12 @@ class ContactDetailsControllerSpec extends SpecBase
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
-      val request = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+        )
+        .build()
+      val request        = FakeRequest(GET, routes.ContactDetailsController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -186,8 +194,8 @@ class ContactDetailsControllerSpec extends SpecBase
 
       forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
-          val jsonPayload = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
+          val jsonPayload =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
           val updateSubscriptionForDACResponse =
@@ -202,9 +210,11 @@ class ContactDetailsControllerSpec extends SpecBase
           when(mockSubscriptionConnector.cacheSubscription(any(), any())(any(), any()))
             .thenReturn(Future.successful(HttpResponse(OK, "")))
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-          ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .overrides(
+              bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+            )
+            .build()
 
           val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
 
@@ -221,8 +231,8 @@ class ContactDetailsControllerSpec extends SpecBase
 
       forAll(validDacID, validEmailAddress, validPhoneNumber) {
         (safeID, email, phone) =>
-          val jsonPayload = displaySubscriptionPayloadNoSecondary(
-            JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
+          val jsonPayload =
+            displaySubscriptionPayloadNoSecondary(JsString(safeID), JsString("FirstName"), JsString("LastName"), JsString(email), JsString(phone))
 
           val displaySubscriptionDetails = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
@@ -232,9 +242,11 @@ class ContactDetailsControllerSpec extends SpecBase
           when(mockSubscriptionConnector.updateSubscription(any(), any())(any(), any()))
             .thenReturn(Future.successful(None))
 
-          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-            bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-          ).build()
+          val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+            .overrides(
+              bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+            )
+            .build()
 
           val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
 
@@ -255,9 +267,11 @@ class ContactDetailsControllerSpec extends SpecBase
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-        bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
-      ).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[SubscriptionConnector].toInstance(mockSubscriptionConnector)
+        )
+        .build()
       val request = FakeRequest(POST, routes.ContactDetailsController.onPageLoad().url)
 
       val result = route(application, request).value

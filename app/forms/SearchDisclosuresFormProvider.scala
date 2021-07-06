@@ -22,10 +22,9 @@ import play.api.data.Form
 
 class SearchDisclosuresFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[String] = {
+  def apply(): Form[String] =
     Form(
       "searchBox" -> textNonWhitespaceOnly("submissionHistory.error")
     )
-  }
 
 }

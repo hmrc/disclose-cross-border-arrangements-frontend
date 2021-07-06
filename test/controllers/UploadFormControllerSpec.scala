@@ -37,24 +37,21 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 
 import scala.concurrent.Future
 
-class UploadFormControllerSpec extends SpecBase
-  with NunjucksSupport
-  with ScalaCheckPropertyChecks
-  with JsonMatchers
-  with Generators {
+class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaCheckPropertyChecks with JsonMatchers with Generators {
 
-  val fakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
+  val fakeUpscanConnector   = app.injector.instanceOf[FakeUpscanConnector]
   val mockSessionRepository = mock[SessionRepository]
 
   val userAnswers = UserAnswers(userAnswersId)
-    .set(UploadIDPage, UploadId("uploadId")).success.value
+    .set(UploadIDPage, UploadId("uploadId"))
+    .success
+    .value
 
   val application = applicationBuilder(userAnswers = Some(userAnswers))
     .overrides(
       bind[UpscanConnector].toInstance(fakeUpscanConnector)
     )
     .build()
-
 
   "upload form controller" - {
 
@@ -63,8 +60,8 @@ class UploadFormControllerSpec extends SpecBase
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val request = FakeRequest(GET, routes.UploadFormController.onPageLoad().url)
-      val result = route(application, request).value
+      val request        = FakeRequest(GET, routes.UploadFormController.onPageLoad().url)
+      val result         = route(application, request).value
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
@@ -125,7 +122,7 @@ class UploadFormControllerSpec extends SpecBase
       templateCaptor.getValue mustEqual "error.njk"
       val captured = argumentCaptor.getValue
       (captured \\ "pageTitle").head.as[String] mustEqual "Upload Error"
-      (captured \\ "heading").head.as[String]   mustEqual "errorMessage"
+      (captured \\ "heading").head.as[String] mustEqual "errorMessage"
       (captured \\ "message").head.as[String] mustEqual "Code: errorCode, RequestId: errorReqId"
     }
 
@@ -145,7 +142,8 @@ class UploadFormControllerSpec extends SpecBase
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
       templateCaptor.getValue mustEqual "fileTooLargeError.njk"
       val captured = argumentCaptor.getValue
-      (captured \\ "xmlTechnicalGuidanceUrl").head.as[String] mustEqual "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents"
+      (captured \\ "xmlTechnicalGuidanceUrl").head
+        .as[String] mustEqual "https://www.gov.uk/government/publications/cross-border-tax-arrangements-schema-and-supporting-documents"
     }
 
     "must display result page while file is successfully updated " in {
@@ -155,7 +153,7 @@ class UploadFormControllerSpec extends SpecBase
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val result = controller.showResult()(FakeRequest("", ""))
+      val result         = controller.showResult()(FakeRequest("", ""))
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
@@ -163,6 +161,6 @@ class UploadFormControllerSpec extends SpecBase
 
     }
 
-    }
+  }
 
 }

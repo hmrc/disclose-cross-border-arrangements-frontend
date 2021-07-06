@@ -25,11 +25,11 @@ class ContactNameFormProviderSpec extends StringFieldBehaviours {
 
   ".contactName" - {
 
-    val fieldName = "contactName"
+    val fieldName   = "contactName"
     val requiredKey = "contactName.error.required"
-    val invalidKey = "contactName.error.invalid"
-    val lengthKey = "contactName.error.length"
-    val maxLength = 35
+    val invalidKey  = "contactName.error.invalid"
+    val lengthKey   = "contactName.error.length"
+    val maxLength   = 35
 
     behave like fieldThatBindsValidData(
       form,

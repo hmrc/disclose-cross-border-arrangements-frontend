@@ -22,7 +22,6 @@ import models.upscan._
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{JsSuccess, Json}
 
-
 class CallbackBodySpec extends WordSpec with Matchers {
 
   "CallbackBody JSON reader" should {
@@ -82,7 +81,8 @@ class CallbackBodySpec extends WordSpec with Matchers {
               failureReason = "QUARANTINE",
               message = "e.g. This file has a virus"
             )
-          ))
+          )
+        )
 
     }
   }

@@ -39,8 +39,8 @@ import scala.concurrent.Future
 
 class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatchers {
 
-  def onwardRoute: Call = Call("GET", "/foo")
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  def onwardRoute: Call                                                      = Call("GET", "/foo")
+  val mockSessionRepository: SessionRepository                               = mock[SessionRepository]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
   val submissionHistory: SubmissionHistory = SubmissionHistory(
@@ -58,7 +58,7 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
     )
   )
 
-  val formProvider = new SearchDisclosuresFormProvider()
+  val formProvider       = new SearchDisclosuresFormProvider()
   val form: Form[String] = formProvider()
 
   "History Controller" - {
@@ -73,7 +73,8 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
-        ).build()
+        )
+        .build()
 
       val request = FakeRequest(GET, routes.HistoryController.onPageLoad().url)
 
@@ -99,7 +100,8 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
           .overrides(
             bind[Navigator].toInstance(new FakeNavigator(onwardRoute)),
             bind[SessionRepository].toInstance(mockSessionRepository)
-          ).build()
+          )
+          .build()
 
       val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
         .withFormUrlEncodedBody(("searchBox", "fileName.xml"))
@@ -123,13 +125,14 @@ class HistoryControllerSpec extends SpecBase with NunjucksSupport with JsonMatch
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
-        ).build()
+        )
+        .build()
 
       val request = FakeRequest(POST, routes.HistoryController.onSearch().url)
         .withFormUrlEncodedBody(("searchBox", ""))
-      val boundForm = form.bind(Map("searchBox" -> ""))
+      val boundForm      = form.bind(Map("searchBox" -> ""))
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       val result = route(application, request).value
 

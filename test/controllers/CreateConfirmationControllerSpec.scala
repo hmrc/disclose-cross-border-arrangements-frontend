@@ -46,14 +46,17 @@ class CreateConfirmationControllerSpec extends SpecBase {
         .success
         .value
 
-      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+      val fakeDataRetrieval =
+        new FakeContactRetrievalAction(userAnswers,
+                                       Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com")))
+        )
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
+          .overrides(bind[ContactRetrievalAction].toInstance(fakeDataRetrieval))
+          .build()
 
-      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -76,8 +79,8 @@ class CreateConfirmationControllerSpec extends SpecBase {
         .success
         .value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request        = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -102,8 +105,8 @@ class CreateConfirmationControllerSpec extends SpecBase {
         .success
         .value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request        = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -123,8 +126,8 @@ class CreateConfirmationControllerSpec extends SpecBase {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val request        = FakeRequest(GET, routes.CreateConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value

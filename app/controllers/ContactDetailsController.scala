@@ -37,25 +37,26 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ContactDetailsController @Inject()(
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    subscriptionConnector: SubscriptionConnector,
-    appConfig: FrontendAppConfig,
-    errorHandler: ErrorHandler,
-    viewHelper: ViewHelper,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class ContactDetailsController @Inject() (
+  override val messagesApi: MessagesApi,
+  sessionRepository: SessionRepository,
+  subscriptionConnector: SubscriptionConnector,
+  appConfig: FrontendAppConfig,
+  errorHandler: ErrorHandler,
+  viewHelper: ViewHelper,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
-
           if (details.isLocked) {
             Future.successful(Redirect(routes.DetailsAlreadyUpdatedController.onPageLoad()))
           } else {
@@ -66,20 +67,20 @@ class ContactDetailsController @Inject()(
               val json = {
                 if (isOrganisation) {
                   Json.obj(
-                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
-                    "additionalContact" -> true,
+                    "contactDetails"          -> buildPrimaryContactRows(responseDetail, request.userAnswers),
+                    "additionalContact"       -> true,
                     "secondaryContactDetails" -> buildSecondaryContactRows(responseDetail, request.userAnswers),
-                    "isOrganisation" -> isOrganisation,
-                    "homePageLink" -> appConfig.discloseArrangeLink,
-                    "changeProvided" -> changeProvided(request.userAnswers)
+                    "isOrganisation"          -> isOrganisation,
+                    "homePageLink"            -> appConfig.discloseArrangeLink,
+                    "changeProvided"          -> changeProvided(request.userAnswers)
                   )
                 } else {
                   Json.obj(
-                    "contactDetails" -> buildPrimaryContactRows(responseDetail, request.userAnswers),
+                    "contactDetails"    -> buildPrimaryContactRows(responseDetail, request.userAnswers),
                     "additionalContact" -> false,
-                    "isOrganisation" -> isOrganisation,
-                    "homePageLink" -> appConfig.discloseArrangeLink,
-                    "changeProvided" -> changeProvided(request.userAnswers)
+                    "isOrganisation"    -> isOrganisation,
+                    "homePageLink"      -> appConfig.discloseArrangeLink,
+                    "changeProvided"    -> changeProvided(request.userAnswers)
                   )
                 }
               }
@@ -105,14 +106,17 @@ class ContactDetailsController @Inject()(
 
               subscriptionConnector.updateSubscription(subscriptionDetails, request.userAnswers).flatMap {
                 case Some(updateResponse) =>
-                  subscriptionConnector.cacheSubscription(
-                    UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, request.userAnswers),
-                    updateResponse.updateSubscriptionForDACResponse.responseDetail.subscriptionID)
-                    .flatMap { _ =>
-                      for {
-                        updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
-                        _                  <- sessionRepository.set(updatedUserAnswers)
-                      } yield Redirect(routes.DetailsUpdatedController.onPageLoad())
+                  subscriptionConnector
+                    .cacheSubscription(
+                      UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, request.userAnswers),
+                      updateResponse.updateSubscriptionForDACResponse.responseDetail.subscriptionID
+                    )
+                    .flatMap {
+                      _ =>
+                        for {
+                          updatedUserAnswers <- Future.fromTry(cleanupAnswers(request.userAnswers))
+                          _                  <- sessionRepository.set(updatedUserAnswers)
+                        } yield Redirect(routes.DetailsUpdatedController.onPageLoad())
                     }
                 case None => Future.successful(Redirect(routes.DetailsNotUpdatedController.onPageLoad()))
               }
@@ -123,16 +127,15 @@ class ContactDetailsController @Inject()(
       }
   }
 
-  private def buildPrimaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
+  private def buildPrimaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] =
     Seq(
       viewHelper.primaryContactName(responseDetail, userAnswers),
       Some(viewHelper.primaryContactEmail(responseDetail, userAnswers)),
       Some(viewHelper.haveContactPhoneNumber(responseDetail, userAnswers)),
       viewHelper.primaryPhoneNumber(responseDetail, userAnswers)
     ).filter(_.isDefined).map(_.get)
-  }
 
-  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] = {
+  private def buildSecondaryContactRows(responseDetail: ResponseDetail, userAnswers: UserAnswers): Seq[SummaryList.Row] =
     userAnswers.get(HaveSecondContactPage) match {
       case Some(false) =>
         Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
@@ -147,14 +150,12 @@ class ContactDetailsController @Inject()(
           ).filter(_.isDefined).map(_.get)
         } else if (responseDetail.secondaryContact.isEmpty) {
           Seq(viewHelper.haveSecondaryContact(responseDetail, userAnswers))
-        }
-        else {
+        } else {
           Seq()
         }
     }
-  }
 
-  private def changeProvided(userAnswers: UserAnswers): Boolean = {
+  private def changeProvided(userAnswers: UserAnswers): Boolean =
     List(
       userAnswers.get(ContactNamePage).isDefined,
       userAnswers.get(ContactEmailAddressPage).isDefined,
@@ -164,12 +165,12 @@ class ContactDetailsController @Inject()(
       userAnswers.get(SecondaryContactNamePage).isDefined,
       userAnswers.get(SecondaryContactEmailAddressPage).isDefined,
       userAnswers.get(HaveSecondaryContactPhonePage).isDefined,
-      userAnswers.get(SecondaryContactTelephoneNumberPage).isDefined,
+      userAnswers.get(SecondaryContactTelephoneNumberPage).isDefined
     ).contains(true)
-  }
 
-  private def cleanupAnswers(userAnswers: UserAnswers): Try[UserAnswers] = {
-    userAnswers.remove(ContactNamePage)
+  private def cleanupAnswers(userAnswers: UserAnswers): Try[UserAnswers] =
+    userAnswers
+      .remove(ContactNamePage)
       .flatMap(_.remove(ContactEmailAddressPage))
       .flatMap(_.remove(HaveContactPhonePage))
       .flatMap(_.remove(ContactTelephoneNumberPage))
@@ -178,6 +179,5 @@ class ContactDetailsController @Inject()(
       .flatMap(_.remove(SecondaryContactEmailAddressPage))
       .flatMap(_.remove(HaveSecondaryContactPhonePage))
       .flatMap(_.remove(SecondaryContactTelephoneNumberPage))
-  }
 
 }

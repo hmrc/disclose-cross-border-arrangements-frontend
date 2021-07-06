@@ -34,23 +34,24 @@ class InvalidXMLControllerSpec extends SpecBase {
 
     "return OK and the correct view for a GET" in {
 
-      val mockErrors = Seq(GenericError(1, "test"))
+      val mockErrors   = Seq(GenericError(1, "test"))
       val mockfileName = "fileName.xml"
 
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
         .set(InvalidXMLPage, mockfileName)
-        .success.value
+        .success
+        .value
         .set(GenericErrorPage, mockErrors)
         .success
         .value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
-      val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       val result = route(application, request).value
 
@@ -70,9 +71,9 @@ class InvalidXMLControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-      val request = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val result = route(application, request).value
+      val result         = route(application, request).value
 
       an[RuntimeException] mustBe thrownBy {
         status(result) mustEqual OK

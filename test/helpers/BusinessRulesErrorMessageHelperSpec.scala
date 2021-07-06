@@ -24,7 +24,6 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
   val errorHelper = new BusinessRulesErrorMessageHelper
 
-
   "BusinessRulesErrorMessageHelper" - {
     "getErrorMessage" - {
 
@@ -47,15 +46,20 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), otherInfoPopulatedXml)
-        result mustBe List(GenericError(8, "The DisclosureInformation/ImplementingDate on which the first step in the implementation of the reportable cross-border arrangement has been made or will be made must be on or after 25 June 2018"))
+        result mustBe List(
+          GenericError(
+            8,
+            "The DisclosureInformation/ImplementingDate on which the first step in the implementation of the reportable cross-border arrangement has been made or will be made must be on or after 25 June 2018"
+          )
+        )
       }
 
       "must return correct error message when other initialDisclosureMa is false and no relevantTaxpayers provided" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.initialDisclosure.needRelevantTaxPayer",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.initialDisclosure.needRelevantTaxPayer",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
         result mustBe List(GenericError(8, "InitialDisclosureMA is false so there should be a RelevantTaxpayer"))
@@ -63,22 +67,21 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
       "must return correct error message when other initialDisclosureMa is true and importInstruction is DAC6ADD" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.addDisclosure.mustNotBeInitialDisclosureMA",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
         result mustBe List(GenericError(8, "InitialDisclosureMA is true so DisclosureImportInstruction cannot be DAC6ADD"))
       }
 
-
       "must  return correct error message when RelevantTaxpayerDiscloser does not have a RelevantTaxPayer" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.relevantTaxpayerDiscloser.needRelevantTaxPayer",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), relevantTaxPayerDiscloserXml)
         result mustBe List(GenericError(10, "RelevantTaxpayerDiscloser has been provided so there must be at least one RelevantTaxpayer"))
@@ -86,36 +89,37 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
 
       "must  return correct error message when IntermediaryDiscloser does not have an Intermediary" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.intermediaryDiscloser.needIntermediary",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.intermediaryDiscloser.needIntermediary",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), intermediaryDiscloserXml)
         result mustBe List(GenericError(10, "IntermediaryDiscloser has been provided so there must be at least one Intermediary"))
       }
 
-
       "must  return correct error message when implementingDates are not after start date" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.taxPayerImplementingDates.needToBeAfterStart",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.taxPayerImplementingDates.needToBeAfterStart",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), implementingDateAfterStartDateXml)
         result mustBe List(GenericError(15, "Check the TaxpayerImplementingDate for all arrangements is on or after 25 June 2018"))
       }
 
-     "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
+      "must  return correct error message when InitialDisclosure Ma is true and relevant taxpayers do not have implementing Date" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.initialDisclosureMA.missingRelevantTaxPayerDates",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(9, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
+        result mustBe List(
+          GenericError(9, "InitialDisclosureMA is true and there are RelevantTaxpayers so each RelevantTaxpayer must have a TaxpayerImplementingDate")
+        )
       }
 
       "must  return correct error message when InitialDisclosureMA is true in the Initial disclosure and relevant taxpayers do not have implementing Date" in {
@@ -126,34 +130,36 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(8, "ArrangementID relates to a previous initial disclosure where " +
-          "InitialDisclosureMA is true so each RelevantTaxpayer must have a TaxpayerImplementingDate"))
+        result mustBe List(
+          GenericError(
+            8,
+            "ArrangementID relates to a previous initial disclosure where " +
+              "InitialDisclosureMA is true so each RelevantTaxpayer must have a TaxpayerImplementingDate"
+          )
+        )
       }
 
-     "must  return correct error message when main benefit test does not have a specified hallmark" in {
+      "must  return correct error message when main benefit test does not have a specified hallmark" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.mainBenefitTest1.oneOfSpecificHallmarksMustBePresent",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), mainBenefitTestErrorXml)
         result mustBe List(GenericError(11, "MainBenefitTest1 is false or blank but the hallmarks A, B, C1bi, C1c and/or C1d have been selected"))
       }
 
-
       "must  return correct error message when IntitialDisclosureMA is true but arrangement/disclosure id's provided" in {
 
-      val failedValidation = Validation(
-        key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
-        value = false
-      )
+        val failedValidation = Validation(
+          key = "businessrules.newDisclosure.mustNotHaveArrangementIDOrDisclosureID",
+          value = false
+        )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
         result mustBe List(GenericError(7, "DisclosureImportInstruction is DAC6NEW so there should be no ArrangementID or DisclosureID"))
       }
-
-
 
       "must  return correct error message when DAC6ADD has disclosureID" in {
 
@@ -268,14 +274,14 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       "must  return correct error message when DisclosureInformation is not provided in a DAC6REP, " +
         "to replace the original arrangement details" in {
 
-        val failedValidation = Validation(
-          key = "metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW",
-          value = false
-        )
+          val failedValidation = Validation(
+            key = "metaDataRules.disclosureInformation.noInfoWhenReplacingDAC6NEW",
+            value = false
+          )
 
-        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(7, "Provide DisclosureInformation in this DAC6REP file, to replace the original arrangement details"))
-      }
+          val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
+          result mustBe List(GenericError(7, "Provide DisclosureInformation in this DAC6REP file, to replace the original arrangement details"))
+        }
 
       "must  return correct error message when DACREP file for non MA does not contain DisclosureInformation" in {
 
@@ -285,7 +291,9 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), missingTaxPayerImplementingDateXml)
-        result mustBe List(GenericError(7, "Provide DisclosureInformation in this DAC6REP file. This is a mandatory field for arrangements that are not marketable"))
+        result mustBe List(
+          GenericError(7, "Provide DisclosureInformation in this DAC6REP file. This is a mandatory field for arrangements that are not marketable")
+        )
       }
 
       "must  return correct error message when user tries to change the InitialDisclosureMA flag to true" in {
@@ -296,7 +304,12 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
-        result mustBe List(GenericError(8, "Change the InitialDisclosureMA to match the original declaration. If the arrangement has since become marketable, you will need to make a new report"))
+        result mustBe List(
+          GenericError(
+            8,
+            "Change the InitialDisclosureMA to match the original declaration. If the arrangement has since become marketable, you will need to make a new report"
+          )
+        )
       }
 
       "must  return correct error message when user tries to change the InitialDisclosureMA flag to false" in {
@@ -307,7 +320,12 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), initialDisclosureNoRelevantTaxpyersXml)
-        result mustBe List(GenericError(8, "Change the InitialDisclosureMA to match the original declaration. If the arrangement is no longer marketable, you will need to make a new report"))
+        result mustBe List(
+          GenericError(
+            8,
+            "Change the InitialDisclosureMA to match the original declaration. If the arrangement is no longer marketable, you will need to make a new report"
+          )
+        )
       }
 
       "must  return correct error message when DisclosureID does not match the ArrangementID provided" in {
@@ -332,7 +350,6 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(16, "DisclosureID has not been generated by this individual or organisation"))
       }
 
-
       "must  return correct error message when user does not Provide DisclosureInformation in a DAC6NEW file" in {
 
         val failedValidation = Validation(
@@ -347,15 +364,16 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
       "must  return correct error message when user does not provide DisclosureInformation for a DAC6ADD file" +
         "linked to a non marketable arrangement" in {
 
-        val failedValidation = Validation(
-          key = "metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD",
-          value = false
-        )
+          val failedValidation = Validation(
+            key = "metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD",
+            value = false
+          )
 
-        val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
-        result mustBe List(GenericError(8, "Provide DisclosureInformation in this DAC6ADD file. This is a mandatory field for arrangements that are not marketable"))
-      }
-
+          val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
+          result mustBe List(
+            GenericError(8, "Provide DisclosureInformation in this DAC6ADD file. This is a mandatory field for arrangements that are not marketable")
+          )
+        }
 
       "must  return correct error message when MessageRefID is in wrong format" in {
 
@@ -365,7 +383,12 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
-        result mustBe List(GenericError(3, "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less"))
+        result mustBe List(
+          GenericError(
+            3,
+            "The MessageRefID should start with GB, then your User ID, followed by identifying characters of your choice. It must be 200 characters or less"
+          )
+        )
       }
 
       "must  return correct error message when MessageRefID does not contain userId" in {
@@ -387,7 +410,12 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         )
 
         val result = errorHelper.convertToGenericErrors(Seq(failedValidation), importInstructionErrorXml)
-        result mustBe List(GenericError(3, "Check your MessageRefID is unique. It should start with GB, then your User ID, followed by unique identifying characters of your choice. It must be 200 characters or less"))
+        result mustBe List(
+          GenericError(
+            3,
+            "Check your MessageRefID is unique. It should start with GB, then your User ID, followed by unique identifying characters of your choice. It must be 200 characters or less"
+          )
+        )
       }
 
       "must  return correct error message when non D hallmark is provided" in {
@@ -412,7 +440,6 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(11, "Enter a category D hallmark only"))
       }
 
-
       "must  return correct default message for unexpected error key" in {
 
         val failedValidation = Validation(
@@ -424,12 +451,8 @@ class BusinessRulesErrorMessageHelperSpec extends SpecBase with TestXml {
         result mustBe List(GenericError(7, "There is a problem with this line number"))
       }
 
-
     }
 
-
   }
-
-
 
 }

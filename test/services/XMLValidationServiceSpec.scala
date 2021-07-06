@@ -29,24 +29,24 @@ import play.api.inject.bind
 
 import scala.collection.mutable.ListBuffer
 
-
-
 class XMLValidationServiceSpec extends SpecBase {
 
-  val sitemapUrl: String = getClass.getResource("/sitemap.xml").toString
-  val sitemap2Url: String = getClass.getResource("/sitemap2.xml").toString
-  val validXmlUrl: String = getClass.getResource("/valid.xml").toString
+  val sitemapUrl: String    = getClass.getResource("/sitemap.xml").toString
+  val sitemap2Url: String   = getClass.getResource("/sitemap2.xml").toString
+  val validXmlUrl: String   = getClass.getResource("/valid.xml").toString
   val invalidXmlUrl: String = getClass.getResource("/invalid.txt").toString
 
-  val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).overrides(
-    bind[XMLDacXSDValidationParser].toInstance(mock[XMLDacXSDValidationParser])
-  ).build()
+  val application: Application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+    .overrides(
+      bind[XMLDacXSDValidationParser].toInstance(mock[XMLDacXSDValidationParser])
+    )
+    .build()
 
   trait SitemapParserSetup {
-    val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
-    val testUrl: URL = getClass.getResource("/sitemap-v0.9.xsd")
+    val schemaLang: String       = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
+    val testUrl: URL             = getClass.getResource("/sitemap-v0.9.xsd")
     val testStream: StreamSource = new StreamSource(testUrl.openStream())
-    val schema: Schema = SchemaFactory.newInstance(schemaLang).newSchema(testStream)
+    val schema: Schema           = SchemaFactory.newInstance(schemaLang).newSchema(testStream)
 
     val factory: SAXParserFactory = SAXParserFactory.newInstance()
     factory.setNamespaceAware(true)
@@ -58,22 +58,22 @@ class XMLValidationServiceSpec extends SpecBase {
       application.injector.instanceOf[XMLValidationService]
     }
   }
-  val noErrors : ListBuffer[SaxParseError] = ListBuffer()
+  val noErrors: ListBuffer[SaxParseError] = ListBuffer()
 
   trait ActualSetup {
     val schemaLang: String = javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
     //val testUrl: URL = getClass.getResource("/sitemap-v0.9.xsd")
     val isoXsdUrl: URL = getClass.getResource("/schemas/IsoTypes_v1.01.xsd")
-    val xsdUrl: URL = getClass.getResource("/schemas/UKDac6XSD_v0.5.xsd")
+    val xsdUrl: URL    = getClass.getResource("/schemas/UKDac6XSD_v0.5.xsd")
 
-    val isoXsdStream: StreamSource = new StreamSource(isoXsdUrl.openStream())
+    val isoXsdStream: StreamSource    = new StreamSource(isoXsdUrl.openStream())
     val ukDAC6XsdStream: StreamSource = new StreamSource(xsdUrl.openStream())
 
     val streams: Array[Source] = Array(isoXsdStream, ukDAC6XsdStream)
 
     val schema: Schema = SchemaFactory.newInstance(schemaLang).newSchema(streams)
 
- //   val streams: Array[Source] = Array(isoXsdStream, ukDAC6XsdStream)
+    //   val streams: Array[Source] = Array(isoXsdStream, ukDAC6XsdStream)
 
     val factory: SAXParserFactory = SAXParserFactory.newInstance()
     factory.setNamespaceAware(true)

@@ -31,35 +31,36 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class SearchHistoryResultsController @Inject()(
-    override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
-    val controllerComponents: MessagesControllerComponents,
-    appConfig: FrontendAppConfig,
-    viewHelper: ViewHelper,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class SearchHistoryResultsController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+  val controllerComponents: MessagesControllerComponents,
+  appConfig: FrontendAppConfig,
+  viewHelper: ViewHelper,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       val searchCriteria = request.userAnswers.get(HistoryPage) match {
-        case None => ""
+        case None        => ""
         case Some(value) => value
       }
 
-      {for {
-        retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
-        context = Json.obj(
-          "disclosuresTable" -> viewHelper.buildDisclosuresTable(retrievedDetails),
-          "searchAgainPageLink" -> appConfig.searchAgainLink,
-          "homePageLink" -> appConfig.discloseArrangeLink
-        )
-      } yield {
-        renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
-      }}.flatten
+      {
+        for {
+          retrievedDetails <- crossBorderArrangementsConnector.searchDisclosures(searchCriteria)
+          context = Json.obj(
+            "disclosuresTable"    -> viewHelper.buildDisclosuresTable(retrievedDetails),
+            "searchAgainPageLink" -> appConfig.searchAgainLink,
+            "homePageLink"        -> appConfig.discloseArrangeLink
+          )
+        } yield renderer.render("submissionHistorySearchResults.njk", context).map(Ok(_))
+      }.flatten
   }
 }

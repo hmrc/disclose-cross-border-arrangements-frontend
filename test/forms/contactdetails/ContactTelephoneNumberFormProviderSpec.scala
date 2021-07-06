@@ -22,8 +22,8 @@ import play.api.data.FormError
 class ContactTelephoneNumberFormProviderSpec extends StringFieldBehaviours {
 
   val requiredKey = "contactTelephoneNumber.error.required"
-  val invalidKey = "contactTelephoneNumber.error.invalid"
-  val maxLength = 24
+  val invalidKey  = "contactTelephoneNumber.error.invalid"
+  val maxLength   = 24
 
   val form = new ContactTelephoneNumberFormProvider()()
 

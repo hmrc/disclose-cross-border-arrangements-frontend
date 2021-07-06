@@ -19,8 +19,5 @@ package models.requests
 import models.{ContactDetails, UserAnswers}
 import play.api.mvc.{Request, WrappedRequest}
 
-case class DataRequestWithContacts[A](request: Request[A],
-                                      internalId: String,
-                                      enrolmentID: String,
-                                      userAnswers: UserAnswers,
-                                      contacts: Option[ContactDetails]) extends WrappedRequest[A](request)
+case class DataRequestWithContacts[A](request: Request[A], internalId: String, enrolmentID: String, userAnswers: UserAnswers, contacts: Option[ContactDetails])
+    extends WrappedRequest[A](request)

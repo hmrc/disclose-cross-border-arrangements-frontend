@@ -28,9 +28,9 @@ import uk.gov.hmrc.play.HeaderCarrierConverter
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContactRetrievalActionImpl @Inject()(frontendAppConfig: FrontendAppConfig,
-                                           subscriptionConnector: SubscriptionConnector)
-                                          (implicit val executionContext: ExecutionContext) extends ContactRetrievalAction {
+class ContactRetrievalActionImpl @Inject() (frontendAppConfig: FrontendAppConfig, subscriptionConnector: SubscriptionConnector)(implicit
+  val executionContext: ExecutionContext
+) extends ContactRetrievalAction {
 
   override protected def transform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] = {
 
@@ -38,11 +38,9 @@ class ContactRetrievalActionImpl @Inject()(frontendAppConfig: FrontendAppConfig,
 
     if (!frontendAppConfig.sendEmailToggle) {
       Future.successful(DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, request.userAnswers, None))
-    }
-    else {
+    } else {
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).map {
         details =>
-
           val contacts = details.subscriptionDetails.map {
             details =>
               buildContactDetails(details)
@@ -58,23 +56,29 @@ class ContactRetrievalActionImpl @Inject()(frontendAppConfig: FrontendAppConfig,
 
     val (contactName, primaryEmail) = responseDetail.primaryContact.contactInformation.head match {
       case ContactInformationForIndividual(individual, email, _, _) =>
-        (s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}",
-          email)
+        (s"${individual.firstName} ${individual.middleName.fold("")(
+           mn => s"$mn "
+         )}${individual.lastName}",
+         email
+        )
       case ContactInformationForOrganisation(organisation, email, _, _) =>
         (s"${organisation.organisationName}", email)
     }
 
-    val secondaryContact = {
-      responseDetail.secondaryContact.map { secondaryContact =>
-        secondaryContact.contactInformation.head match {
-          case ContactInformationForIndividual(individual, email, _, _) =>
-            (s"${individual.firstName} ${individual.middleName.fold("")(mn => s"$mn ")}${individual.lastName}",
-              email)
-          case ContactInformationForOrganisation(organisation, email, _, _) =>
-            (s"${organisation.organisationName}", email)
-        }
+    val secondaryContact =
+      responseDetail.secondaryContact.map {
+        secondaryContact =>
+          secondaryContact.contactInformation.head match {
+            case ContactInformationForIndividual(individual, email, _, _) =>
+              (s"${individual.firstName} ${individual.middleName.fold("")(
+                 mn => s"$mn "
+               )}${individual.lastName}",
+               email
+              )
+            case ContactInformationForOrganisation(organisation, email, _, _) =>
+              (s"${organisation.organisationName}", email)
+          }
       }
-    }
 
     if (secondaryContact.isDefined) {
       ContactDetails(

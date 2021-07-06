@@ -31,54 +31,55 @@ import uk.gov.hmrc.viewmodels.Html
 
 import scala.concurrent.ExecutionContext
 
-class CreateConfirmationController @Inject()(
-    override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    contactRetrievalAction: ContactRetrievalAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer,
-    errorHandler: ErrorHandler,
-    viewHelper: ViewHelper,
-    appConfig: FrontendAppConfig
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class CreateConfirmationController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  contactRetrievalAction: ContactRetrievalAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  errorHandler: ErrorHandler,
+  viewHelper: ViewHelper,
+  appConfig: FrontendAppConfig
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
-
       val messageRef = request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(metaData) => metaData.messageRefId
-        case None => errorHandler.onServerError(request, new Exception("MessageRefID is missing"))
+        case None           => errorHandler.onServerError(request, new Exception("MessageRefID is missing"))
       }
 
       val emailMessage = request.contacts match {
-        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
-        case Some(contactDetails) => contactDetails.contactEmail.get
-        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined => contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails)                                         => contactDetails.contactEmail.get
+        case _                                                            => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
 
       request.userAnswers.get(GeneratedIDPage) match {
-        case Some(value) => (value.arrangementID, value.disclosureID) match {
-          case (Some(arrangementID), Some(disclosureID)) =>
+        case Some(value) =>
+          (value.arrangementID, value.disclosureID) match {
+            case (Some(arrangementID), Some(disclosureID)) =>
               val json = Json.obj(
-                "emailMessage" -> emailMessage.toString,
-                "messageRefID" -> messageRef.toString,
-                "disclosureID" -> disclosureID,
-                "arrangementID" -> confirmationPanelText(arrangementID),
-                "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
+                "emailMessage"       -> emailMessage.toString,
+                "messageRefID"       -> messageRef.toString,
+                "disclosureID"       -> disclosureID,
+                "arrangementID"      -> confirmationPanelText(arrangementID),
+                "homePageLink"       -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
                 "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
               )
               renderer.render("createConfirmation.njk", json).map(Ok(_))
-          case (None, Some(_)) => errorHandler.onServerError(request, new Exception("Arrangement ID is missing"))
-          case (Some(_), None) =>  errorHandler.onServerError(request, new Exception("Disclosure ID is missing"))
-          case (None, None) => errorHandler.onServerError(request, new Exception("Generated IDs present but empty"))
-        }
-      case _ => errorHandler.onServerError(request, new Exception("Generated IDs are missing"))
-     }
+            case (None, Some(_)) => errorHandler.onServerError(request, new Exception("Arrangement ID is missing"))
+            case (Some(_), None) => errorHandler.onServerError(request, new Exception("Disclosure ID is missing"))
+            case (None, None)    => errorHandler.onServerError(request, new Exception("Generated IDs present but empty"))
+          }
+        case _ => errorHandler.onServerError(request, new Exception("Generated IDs are missing"))
+      }
   }
 
-  private def confirmationPanelText(id: String)(implicit messages: Messages): Html = {
-    Html(s"${{ messages("createConfirmation.panel.html") }}<br><strong class='breakString'>$id</strong>")
-  }
+  private def confirmationPanelText(id: String)(implicit messages: Messages): Html =
+    Html(s"${messages("createConfirmation.panel.html")}<br><strong class='breakString'>$id</strong>")
 }

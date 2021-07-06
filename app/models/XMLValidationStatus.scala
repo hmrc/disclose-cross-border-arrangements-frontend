@@ -23,13 +23,14 @@ case class Dac6MetaData(importInstruction: String,
                         disclosureID: Option[String] = None,
                         disclosureInformationPresent: Boolean,
                         initialDisclosureMA: Boolean,
-                        messageRefId: String)
+                        messageRefId: String
+)
 
 object Dac6MetaData {
   implicit val format = Json.format[Dac6MetaData]
 }
 
-case class ValidationSuccess(downloadUrl : String, metaData: Option[Dac6MetaData] = None) extends XMLValidationStatus
+case class ValidationSuccess(downloadUrl: String, metaData: Option[Dac6MetaData] = None) extends XMLValidationStatus
 
 object ValidationSuccess {
   implicit val format = Json.format[ValidationSuccess]
@@ -46,12 +47,14 @@ case class GenericError(lineNumber: Int, messageKey: String)
 object GenericError {
 
   implicit def orderByLineNumber[A <: GenericError]: Ordering[A] =
-    Ordering.by(ge => (ge.lineNumber, ge.messageKey))
+    Ordering.by(
+      ge => (ge.lineNumber, ge.messageKey)
+    )
 
   implicit val format = Json.format[GenericError]
 }
 
-case class ValidationFailure (errors: Seq[GenericError]) extends XMLValidationStatus
+case class ValidationFailure(errors: Seq[GenericError]) extends XMLValidationStatus
 
 object ValidationFailure {
   implicit val format = Json.format[ValidationFailure]
@@ -60,25 +63,23 @@ object ValidationFailure {
 sealed trait XMLValidationStatus
 
 object XMLValidationStatus {
+
   implicit val reads = new Reads[XMLValidationStatus] {
-    override def reads(json: JsValue): JsResult[XMLValidationStatus] = {
+
+    override def reads(json: JsValue): JsResult[XMLValidationStatus] =
       json \ "downloadUrl" match {
-        case JsDefined(_) => implicitly[Reads[ValidationSuccess]].reads(json)
+        case JsDefined(_)  => implicitly[Reads[ValidationSuccess]].reads(json)
         case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
       }
-    }
   }
 
   implicit val writes: Writes[XMLValidationStatus] = Writes[XMLValidationStatus] {
-    case ValidationSuccess(downloadUrl, metaData) => Json.obj(
-      "downloadUrl" -> downloadUrl,
-      "metaData" -> metaData,
-      "_type" -> "ValidationSuccess")
+    case ValidationSuccess(downloadUrl, metaData) => Json.obj("downloadUrl" -> downloadUrl, "metaData" -> metaData, "_type" -> "ValidationSuccess")
 
-    case ValidationFailure (error) => Json.obj(
-      "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
-      "_type" -> "ValidationFailure"
-    )
+    case ValidationFailure(error) =>
+      Json.obj(
+        "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
+        "_type" -> "ValidationFailure"
+      )
   }
 }
-

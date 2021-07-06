@@ -39,20 +39,19 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
-  val mockValidationEngine: ValidationEngine = mock[ValidationEngine]
+  val mockValidationEngine: ValidationEngine         = mock[ValidationEngine]
   val mockXmlValidationService: XMLValidationService = mock[XMLValidationService]
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+  val mockSessionRepository: SessionRepository       = mock[SessionRepository]
 
   implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
-  override def beforeEach: Unit = {
+  override def beforeEach: Unit =
     reset(mockSessionRepository)
-  }
 
   val fakeUpscanConnector: FakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
 
   "FileValidationController" - {
-    val uploadId = UploadId("123")
+    val uploadId    = UploadId("123")
     val userAnswers = UserAnswers(userAnswersId).set(UploadIDPage, uploadId).success.value
     val application = applicationBuilder(userAnswers = Some(userAnswers))
       .overrides(
@@ -68,21 +67,20 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       new ObjectId(),
       UploadId("123"),
       Reference("123"),
-      UploadedSuccessfully("afile",downloadURL)
+      UploadedSuccessfully("afile", downloadURL)
     )
 
     "must redirect to Check your answers and present the correct view for a GET" in {
 
-      val metaData = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false,
-                                   messageRefId = "GB0000000XXX")
+      val metaData          = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = "GB0000000XXX")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
+      val expectedData      = Json.obj("validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
       when(mockValidationEngine.validateFile(any[String](), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
       fakeUpscanConnector.setDetails(uploadDetails)
 
-      val request = FakeRequest(GET, routes.FileValidationController.onPageLoad().url)
+      val request                = FakeRequest(GET, routes.FileValidationController.onPageLoad().url)
       val result: Future[Result] = route(application, request).value
 
       status(result) mustBe SEE_OTHER
@@ -92,21 +90,24 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       userAnswersCaptor.getValue.data mustEqual expectedData
     }
 
-
     "must redirect to Delete Disclosure Summary when import instruction is 'DAC6DEL' and present the correct view for a GET" in {
 
-      val metaData = Dac6MetaData("DAC6DEL", Some("GBA20200601AAA000"), Some("GBD20200601AAA000"),
-                                  disclosureInformationPresent = true, initialDisclosureMA = false,
-                                  messageRefId = "GB0000000XXX")
+      val metaData = Dac6MetaData("DAC6DEL",
+                                  Some("GBA20200601AAA000"),
+                                  Some("GBD20200601AAA000"),
+                                  disclosureInformationPresent = true,
+                                  initialDisclosureMA = false,
+                                  messageRefId = "GB0000000XXX"
+      )
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
+      val expectedData      = Json.obj("validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       fakeUpscanConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(any[String](), any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, Some(metaData)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-      val controller = application.injector.instanceOf[FileValidationController]
+      val controller             = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
@@ -119,15 +120,15 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
     "must redirect to invalid XML page if XML validation fails" in {
 
       val errors: Seq[GenericError] = Seq(GenericError(1, "error"))
-      val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("invalidXML"-> "afile", "error" -> errors)
+      val userAnswersCaptor         = ArgumentCaptor.forClass(classOf[UserAnswers])
+      val expectedData              = Json.obj("invalidXML" -> "afile", "error" -> errors)
 
       fakeUpscanConnector.setDetails(uploadDetails)
       when(mockValidationEngine.validateFile(any[String], any(), any())(any(), any()))
         .thenReturn(Future.successful(Right(ValidationFailure(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-      val controller = application.injector.instanceOf[FileValidationController]
+      val controller             = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
@@ -138,7 +139,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
     "must redirect to file error page if XML parser fails" in {
 
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData = Json.obj("invalidXML"-> "afile")
+      val expectedData      = Json.obj("invalidXML" -> "afile")
 
       fakeUpscanConnector.setDetails(uploadDetails)
       //noinspection ScalaStyle
@@ -146,7 +147,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
         .thenReturn(Future.successful(Left(new SAXParseException("", null))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-      val controller = application.injector.instanceOf[FileValidationController]
+      val controller             = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
@@ -170,7 +171,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
         .thenReturn(Future.successful(Right(ValidationSuccess(downloadURL, None))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
-      val controller = application.injector.instanceOf[FileValidationController]
+      val controller             = application.injector.instanceOf[FileValidationController]
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       a[RuntimeException] mustBe thrownBy {

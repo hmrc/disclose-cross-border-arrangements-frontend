@@ -16,8 +16,4 @@
 
 package models
 
-case class ContactDetails(contactName: Option[String],
-                          contactEmail: Option[String],
-                          secondContactName: Option[String],
-                          secondEmail: Option[String]
-                         )
+case class ContactDetails(contactName: Option[String], contactEmail: Option[String], secondContactName: Option[String], secondEmail: Option[String])

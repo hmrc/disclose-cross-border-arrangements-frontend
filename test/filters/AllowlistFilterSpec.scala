@@ -47,14 +47,12 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(otherConfigGen, arbitrary[String], arbitrary[String]) {
           (otherConfig, destination, excluded) =>
-
             whenever(!otherConfig.contains("filters.allowlist.ips")) {
 
               val config = Configuration(
                 (otherConfig +
                   ("filters.allowlist.destination" -> destination) +
-                  ("filters.allowlist.excluded"    -> excluded)
-                ).toSeq: _*
+                  ("filters.allowlist.excluded"    -> excluded)).toSeq: _*
               )
 
               assertThrows[ConfigException] {
@@ -71,19 +69,17 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(otherConfigGen, arbitrary[String], arbitrary[String]) {
           (otherConfig, destination, excluded) =>
-
             val config = Configuration(
               (otherConfig +
                 ("filters.allowlist.destination" -> destination) +
                 ("filters.allowlist.excluded"    -> excluded) +
-                ("filters.allowlist.ips"         -> "")
-              ).toSeq: _*
+                ("filters.allowlist.ips"         -> "")).toSeq: _*
             )
 
             val allowlistFilter = new AllowlistFilter(config, mockMaterializer)
 
             allowlistFilter.allowlist mustBe empty
-          }
+        }
       }
     }
 
@@ -95,15 +91,13 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(gen, otherConfigGen, arbitrary[String], arbitrary[String]) {
           (ips, otherConfig, destination, excluded) =>
-
             val ipString = ips.mkString(",")
 
             val config = Configuration(
               (otherConfig +
                 ("filters.allowlist.destination" -> destination) +
                 ("filters.allowlist.excluded"    -> excluded) +
-                ("filters.allowlist.ips"         -> ipString)
-              ).toSeq: _*
+                ("filters.allowlist.ips"         -> ipString)).toSeq: _*
             )
 
             val allowlistFilter = new AllowlistFilter(config, mockMaterializer)
@@ -122,14 +116,12 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(otherConfigGen, arbitrary[String], arbitrary[String]) {
           (otherConfig, destination, excluded) =>
-
             whenever(!otherConfig.contains("filters.whitelist.destination")) {
 
               val config = Configuration(
                 (otherConfig +
                   ("filters.allowlist.ips"      -> destination) +
-                  ("filters.allowlist.excluded" -> excluded)
-                  ).toSeq: _*
+                  ("filters.allowlist.excluded" -> excluded)).toSeq: _*
               )
 
               assertThrows[ConfigException] {
@@ -144,13 +136,11 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
       forAll(otherConfigGen, arbitrary[String], arbitrary[String], arbitrary[String]) {
         (otherConfig, ips, destination, excluded) =>
-
           val config = Configuration(
             (otherConfig +
               ("filters.allowlist.ips"         -> destination) +
               ("filters.allowlist.excluded"    -> excluded) +
-              ("filters.allowlist.destination" -> destination)
-              ).toSeq: _*
+              ("filters.allowlist.destination" -> destination)).toSeq: _*
           )
 
           val allowlistFilter = new AllowlistFilter(config, mockMaterializer)
@@ -168,14 +158,12 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(otherConfigGen, arbitrary[String], arbitrary[String]) {
           (otherConfig, destination, excluded) =>
-
             whenever(!otherConfig.contains("filters.allowlist.excluded")) {
 
               val config = Configuration(
                 (otherConfig +
                   ("filters.allowlist.destination" -> destination) +
-                  ("filters.allowlist.ips"    -> excluded)
-                  ).toSeq: _*
+                  ("filters.allowlist.ips"         -> excluded)).toSeq: _*
               )
 
               assertThrows[ConfigException] {
@@ -194,15 +182,13 @@ class AllowlistFilterSpec extends AnyFreeSpec with Matchers with ScalaCheckPrope
 
         forAll(gen, otherConfigGen, arbitrary[String], arbitrary[String]) {
           (excludedPaths, otherConfig, destination, ips) =>
-
             val excludedPathString = excludedPaths.mkString(",")
 
             val config = Configuration(
               (otherConfig +
                 ("filters.allowlist.destination" -> destination) +
                 ("filters.allowlist.excluded"    -> excludedPathString) +
-                ("filters.allowlist.ips"         -> ips)
-                ).toSeq: _*
+                ("filters.allowlist.ips"         -> ips)).toSeq: _*
             )
 
             val expectedCalls = excludedPaths.map(Call("GET", _))

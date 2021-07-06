@@ -28,8 +28,8 @@ trait ModelGenerators {
 
   implicit val arbitraryEmailRequest: Arbitrary[EmailRequest] = Arbitrary {
     for {
-      to <- arbitrary[List[String]]
-      id <- arbitrary[String]
+      to          <- arbitrary[List[String]]
+      id          <- arbitrary[String]
       contactName <- arbitrary[Map[String, String]]
 
     } yield EmailRequest(to, id, contactName)

@@ -29,28 +29,29 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.ExecutionContext
 
-class FileErrorController @Inject()(
-    override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    errorHandler: ErrorHandler,
-    appConfig: FrontendAppConfig,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class FileErrorController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  errorHandler: ErrorHandler,
+  appConfig: FrontendAppConfig,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       request.userAnswers.get(InvalidXMLPage) match {
         case Some(fileName) =>
-          renderer.render(
-            "fileError.njk",
-            Json.obj(
-              "fileName" -> Json.toJson(fileName),
-              "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
-          ).map(Ok(_))
+          renderer
+            .render(
+              "fileError.njk",
+              Json.obj("fileName" -> Json.toJson(fileName), "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
+            )
+            .map(Ok(_))
         case None => errorHandler.onServerError(request, throw new RuntimeException("File name missing for file error page"))
       }
   }

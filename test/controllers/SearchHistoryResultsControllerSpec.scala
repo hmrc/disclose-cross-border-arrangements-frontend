@@ -51,8 +51,9 @@ class SearchHistoryResultsControllerSpec extends SpecBase {
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector)
-        ).build()
-      val request = FakeRequest(GET, routes.SearchHistoryResultsController.onPageLoad().url)
+        )
+        .build()
+      val request        = FakeRequest(GET, routes.SearchHistoryResultsController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value

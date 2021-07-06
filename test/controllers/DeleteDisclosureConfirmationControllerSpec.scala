@@ -36,9 +36,13 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with JsonMatch
 
     "return OK and the correct view for a GET" in {
 
-      val metaData = Dac6MetaData("DAC6NEW", Some("GBA20200701AAAB00"), Some("GBD20200701AA0001"),
-        disclosureInformationPresent = true, initialDisclosureMA = false,
-        messageRefId = "GB0000000XXX")
+      val metaData = Dac6MetaData("DAC6NEW",
+                                  Some("GBA20200701AAAB00"),
+                                  Some("GBD20200701AA0001"),
+                                  disclosureInformationPresent = true,
+                                  initialDisclosureMA = false,
+                                  messageRefId = "GB0000000XXX"
+      )
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -48,13 +52,16 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with JsonMatch
         .success
         .value
 
-      val fakeDataRetrieval = new FakeContactRetrievalAction(userAnswers, Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com"))))
+      val fakeDataRetrieval =
+        new FakeContactRetrievalAction(userAnswers,
+                                       Some(ContactDetails(Some("Test Testing"), Some("test@test.com"), Some("Test Testing"), Some("test@test.com")))
+        )
 
       val application =
         applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(
-            bind[ContactRetrievalAction].toInstance(fakeDataRetrieval)).build()
-      val request = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
+          .overrides(bind[ContactRetrievalAction].toInstance(fakeDataRetrieval))
+          .build()
+      val request        = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -73,8 +80,8 @@ class DeleteDisclosureConfirmationControllerSpec extends SpecBase with JsonMatch
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val request        = FakeRequest(GET, routes.DeleteDisclosureConfirmationController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value

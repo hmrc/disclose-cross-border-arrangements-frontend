@@ -25,19 +25,23 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class KeepAliveController @Inject()(
-                                     identify: IdentifierAction,
-                                     sessionRepository: SessionRepository,
-                                     val controllerComponents: MessagesControllerComponents
-                                   )(implicit ec: ExecutionContext)
-  extends FrontendBaseController
+class KeepAliveController @Inject() (
+  identify: IdentifierAction,
+  sessionRepository: SessionRepository,
+  val controllerComponents: MessagesControllerComponents
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
     with I18nSupport {
 
   def keepAlive: Action[AnyContent] = identify.async {
     implicit request =>
       sessionRepository.get(request.identifier) flatMap {
         case Some(ua) =>
-          sessionRepository.set(ua).map(_ => NoContent)
+          sessionRepository
+            .set(ua)
+            .map(
+              _ => NoContent
+            )
         case _ =>
           Future.successful(NoContent)
       }

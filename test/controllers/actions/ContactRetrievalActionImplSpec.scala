@@ -27,6 +27,7 @@ import play.api.libs.json.{JsString, Json}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 class ContactRetrievalActionImplSpec extends SpecBase {
 
   val mockSubscriptionConnector: SubscriptionConnector = mock[SubscriptionConnector]
@@ -37,8 +38,8 @@ class ContactRetrievalActionImplSpec extends SpecBase {
 
   "Contact retrieval action" - {
     "return request with contact information" in {
-      val jsonPayload: String = displaySubscriptionPayloadNoSecondary(
-        JsString("id"), JsString("FirstName"), JsString("LastName"), JsString("test@test.com"), JsString("0191 111 2222"))
+      val jsonPayload: String =
+        displaySubscriptionPayloadNoSecondary(JsString("id"), JsString("FirstName"), JsString("LastName"), JsString("test@test.com"), JsString("0191 111 2222"))
       val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
@@ -47,18 +48,23 @@ class ContactRetrievalActionImplSpec extends SpecBase {
 
       val action = new Harness(mockSubscriptionConnector)
 
-      val futureResult = action.callTransform(DataRequest(fakeRequest,
-        "id", "id",emptyUserAnswers))
+      val futureResult = action.callTransform(DataRequest(fakeRequest, "id", "id", emptyUserAnswers))
 
-      whenReady(futureResult) { result =>
-        result.contacts mustBe Some(ContactDetails(Some("FirstName LastName"), Some("test@test.com"), None, None))
+      whenReady(futureResult) {
+        result =>
+          result.contacts mustBe Some(ContactDetails(Some("FirstName LastName"), Some("test@test.com"), None, None))
       }
     }
 
     "return request with secondary contact information" in {
       val jsonPayload: String = displaySubscriptionPayload(
-        JsString("id"), JsString("Org Name 2"), JsString("Secondary Contact"), JsString("test@test.com"),
-        JsString("second-test@test.com"), JsString("0191 111 2222"))
+        JsString("id"),
+        JsString("Org Name 2"),
+        JsString("Secondary Contact"),
+        JsString("test@test.com"),
+        JsString("second-test@test.com"),
+        JsString("0191 111 2222")
+      )
       val displaySubscriptionDetails: DisplaySubscriptionForDACResponse = Json.parse(jsonPayload).as[DisplaySubscriptionForDACResponse]
 
       when(mockAppConfig.sendEmailToggle).thenReturn(true)
@@ -67,11 +73,11 @@ class ContactRetrievalActionImplSpec extends SpecBase {
 
       val action = new Harness(mockSubscriptionConnector)
 
-      val futureResult = action.callTransform(DataRequest(fakeRequest,
-        "id", "id", emptyUserAnswers))
+      val futureResult = action.callTransform(DataRequest(fakeRequest, "id", "id", emptyUserAnswers))
 
-      whenReady(futureResult) { result =>
-        result.contacts mustBe Some(ContactDetails(Some("Org Name 2"),Some("test@test.com"),Some("Secondary Contact"),Some("second-test@test.com")))
+      whenReady(futureResult) {
+        result =>
+          result.contacts mustBe Some(ContactDetails(Some("Org Name 2"), Some("test@test.com"), Some("Secondary Contact"), Some("second-test@test.com")))
       }
     }
 
@@ -80,11 +86,11 @@ class ContactRetrievalActionImplSpec extends SpecBase {
 
       val action = new Harness(mockSubscriptionConnector)
 
-      val futureResult = action.callTransform(DataRequest(fakeRequest,
-        "id", "id",emptyUserAnswers))
+      val futureResult = action.callTransform(DataRequest(fakeRequest, "id", "id", emptyUserAnswers))
 
-      whenReady(futureResult) { result =>
-        result.contacts mustBe None
+      whenReady(futureResult) {
+        result =>
+          result.contacts mustBe None
       }
     }
 

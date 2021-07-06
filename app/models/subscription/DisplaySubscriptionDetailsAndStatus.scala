@@ -18,8 +18,8 @@ package models.subscription
 
 import play.api.libs.json.{Json, OFormat}
 
-case class DisplaySubscriptionDetailsAndStatus(subscriptionDetails: Option[DisplaySubscriptionForDACResponse],
-                                               isLocked: Boolean = false)
+case class DisplaySubscriptionDetailsAndStatus(subscriptionDetails: Option[DisplaySubscriptionForDACResponse], isLocked: Boolean = false)
+
 object DisplaySubscriptionDetailsAndStatus {
   implicit val format: OFormat[DisplaySubscriptionDetailsAndStatus] = Json.format[DisplaySubscriptionDetailsAndStatus]
 }

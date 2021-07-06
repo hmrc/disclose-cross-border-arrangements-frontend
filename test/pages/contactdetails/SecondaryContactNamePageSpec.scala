@@ -18,7 +18,6 @@ package pages.contactdetails
 
 import pages.behaviours.PageBehaviours
 
-
 class SecondaryContactNamePageSpec extends PageBehaviours {
 
   "SecondaryContactNamePage" - {
