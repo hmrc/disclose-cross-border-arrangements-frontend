@@ -28,67 +28,76 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SubscriptionConnector @Inject()(val config: FrontendAppConfig, val http: HttpClient) {
+class SubscriptionConnector @Inject() (val config: FrontendAppConfig, val http: HttpClient) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
-  def displaySubscriptionDetails(enrolmentID: String)
-                                (implicit hc: HeaderCarrier,
-                                 ec: ExecutionContext): Future[DisplaySubscriptionDetailsAndStatus] = {
+  def displaySubscriptionDetails(enrolmentID: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[DisplaySubscriptionDetailsAndStatus] = {
 
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/retrieve-subscription"
 
-    http.POST[DisplaySubscriptionForDACRequest, HttpResponse](
-      submissionUrl,
-      DisplaySubscriptionForDACRequest(DisplaySubscriptionDetails.createRequest(enrolmentID))
-    ).map {
-      response =>
-        val errorMessage = "Create/Amend request is in progress"
+    http
+      .POST[DisplaySubscriptionForDACRequest, HttpResponse](
+        submissionUrl,
+        DisplaySubscriptionForDACRequest(DisplaySubscriptionDetails.createRequest(enrolmentID))
+      )
+      .map {
+        response =>
+          val errorMessage = "Create/Amend request is in progress"
 
-        response.status match {
-          case OK => response.json.validate[DisplaySubscriptionForDACResponse] match {
-            case JsSuccess(response, _) => DisplaySubscriptionDetailsAndStatus(Some(response))
-            case JsError(errors) =>
-              logger.warn("Validation of display subscription payload failed", errors)
-              DisplaySubscriptionDetailsAndStatus(None)
+          response.status match {
+            case OK =>
+              response.json.validate[DisplaySubscriptionForDACResponse] match {
+                case JsSuccess(response, _) => DisplaySubscriptionDetailsAndStatus(Some(response))
+                case JsError(errors) =>
+                  logger.warn("Validation of display subscription payload failed", errors)
+                  DisplaySubscriptionDetailsAndStatus(None)
+              }
+            case errorStatus: Int =>
+              response.json.validate[DisplaySubscriptionErrorResponse] match {
+                case JsSuccess(errorResponse, _) if errorResponse.errorDetail.errorMessage == errorMessage =>
+                  DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
+                case _ =>
+                  logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
+                  DisplaySubscriptionDetailsAndStatus(None)
+              }
           }
-          case errorStatus: Int => response.json.validate[DisplaySubscriptionErrorResponse] match {
-            case JsSuccess(errorResponse, _) if errorResponse.errorDetail.errorMessage == errorMessage =>
-              DisplaySubscriptionDetailsAndStatus(None, isLocked = true)
-            case _ =>
-              logger.warn(s"Status $errorStatus has been thrown when display subscription was called")
-              DisplaySubscriptionDetailsAndStatus(None)
-          }
-        }
-    }
+      }
   }
 
-  def updateSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)
-                        (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[UpdateSubscriptionForDACResponse]] = {
+  def updateSubscription(subscriptionDetails: SubscriptionForDACResponse, userAnswers: UserAnswers)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[Option[UpdateSubscriptionForDACResponse]] = {
 
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/update-subscription"
 
-    http.POST[UpdateSubscriptionForDACRequest, HttpResponse](
-      submissionUrl,
-      UpdateSubscriptionForDACRequest(UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, userAnswers))
-    ).map {
-      response =>
-        response.status match {
-          case OK => response.json.validate[UpdateSubscriptionForDACResponse] match {
-            case JsSuccess(response, _) => Some(response)
-            case JsError(errors) =>
-              logger.warn("Validation of update subscription response failed", errors)
+    http
+      .POST[UpdateSubscriptionForDACRequest, HttpResponse](
+        submissionUrl,
+        UpdateSubscriptionForDACRequest(UpdateSubscriptionDetails.updateSubscription(subscriptionDetails, userAnswers))
+      )
+      .map {
+        response =>
+          response.status match {
+            case OK =>
+              response.json.validate[UpdateSubscriptionForDACResponse] match {
+                case JsSuccess(response, _) => Some(response)
+                case JsError(errors) =>
+                  logger.warn("Validation of update subscription response failed", errors)
+                  None
+              }
+            case errorStatus: Int =>
+              logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
               None
           }
-          case errorStatus: Int =>
-            logger.warn(s"Status $errorStatus has been thrown when update subscription was called")
-            None
-        }
-    }
+      }
   }
 
-  def cacheSubscription(createSubscriptionForDACRequest: UpdateSubscriptionDetails,
-                        subscriptionID: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def cacheSubscription(createSubscriptionForDACRequest: UpdateSubscriptionDetails, subscriptionID: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext
+  ): Future[HttpResponse] = {
     val submissionUrl = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/subscription/cache-subscription"
 
     http.POST[CreateSubscriptionForDACRequest, HttpResponse](

@@ -49,7 +49,8 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
+        )
+        .build()
 
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
@@ -58,12 +59,12 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       status(result) mustEqual OK
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions" -> false,
+        "hasSubmissions"       -> false,
         "contactDetailsToggle" -> false
       )
 
@@ -88,7 +89,8 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
+        )
+        .build()
 
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
@@ -97,12 +99,12 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       status(result) mustEqual OK
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions" -> true,
+        "hasSubmissions"       -> true,
         "contactDetailsToggle" -> true
       )
 
@@ -127,7 +129,8 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
-        ).build()
+        )
+        .build()
 
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
 
@@ -136,7 +139,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       status(result) mustEqual OK
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 

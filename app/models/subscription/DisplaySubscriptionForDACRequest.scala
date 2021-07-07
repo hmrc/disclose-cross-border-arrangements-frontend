@@ -22,9 +22,8 @@ import java.util.UUID
 
 import play.api.libs.json.{Json, OFormat}
 
+case class RequestParameter(paramName: String, paramValue: String)
 
-case class RequestParameter(paramName: String,
-                            paramValue: String)
 object RequestParameter {
   implicit val format: OFormat[RequestParameter] = Json.format[RequestParameter]
 }
@@ -34,7 +33,8 @@ case class RequestCommon(regime: String,
                          receiptDate: String,
                          acknowledgementReference: String,
                          originatingSystem: String,
-                         requestParameters: Option[Seq[RequestParameter]])
+                         requestParameters: Option[Seq[RequestParameter]]
+)
 
 object RequestCommon {
   implicit val format: OFormat[RequestCommon] = Json.format[RequestCommon]
@@ -45,7 +45,7 @@ object RequestCommon {
 
     //Generate a 32 chars UUID without hyphens
     val acknowledgementReference = UUID.randomUUID().toString.replace("-", "")
-    val conversationID = UUID.randomUUID().toString
+    val conversationID           = UUID.randomUUID().toString
 
     RequestCommon(
       regime = "DAC",
@@ -59,29 +59,25 @@ object RequestCommon {
 }
 
 case class RequestDetail(IDType: String, IDNumber: String)
+
 object RequestDetail {
   implicit val format: OFormat[RequestDetail] = Json.format[RequestDetail]
 }
 
-case class DisplaySubscriptionDetails(requestCommon: RequestCommon,
-                                      requestDetail: RequestDetail)
+case class DisplaySubscriptionDetails(requestCommon: RequestCommon, requestDetail: RequestDetail)
+
 object DisplaySubscriptionDetails {
   implicit val format: OFormat[DisplaySubscriptionDetails] = Json.format[DisplaySubscriptionDetails]
 
-  def createRequest(enrolmentID: String): DisplaySubscriptionDetails = {
-    DisplaySubscriptionDetails(
-      requestCommon = RequestCommon.createRequestCommon,
-      requestDetail = createRequestDetail(enrolmentID))
-  }
+  def createRequest(enrolmentID: String): DisplaySubscriptionDetails =
+    DisplaySubscriptionDetails(requestCommon = RequestCommon.createRequestCommon, requestDetail = createRequestDetail(enrolmentID))
 
-  private def createRequestDetail(enrolmentID: String): RequestDetail = {
-    RequestDetail(
-      IDType = "DAC",
-      IDNumber = enrolmentID)
-  }
+  private def createRequestDetail(enrolmentID: String): RequestDetail =
+    RequestDetail(IDType = "DAC", IDNumber = enrolmentID)
 }
 
 case class DisplaySubscriptionForDACRequest(displaySubscriptionForDACRequest: DisplaySubscriptionDetails)
+
 object DisplaySubscriptionForDACRequest {
   implicit val format: OFormat[DisplaySubscriptionForDACRequest] = Json.format[DisplaySubscriptionForDACRequest]
 }

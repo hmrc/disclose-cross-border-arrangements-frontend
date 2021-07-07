@@ -28,10 +28,7 @@ import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 
-class EmailConnectorSpec extends SpecBase
-  with WireMockServerHandler
-  with Generators
-  with ScalaCheckPropertyChecks {
+class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Generators with ScalaCheckPropertyChecks {
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(

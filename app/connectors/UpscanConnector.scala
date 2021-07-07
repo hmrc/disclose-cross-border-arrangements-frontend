@@ -28,10 +28,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import javax.inject.{Inject, Named}
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpscanConnector @Inject()(configuration: FrontendAppConfig,
-                                httpClient: HttpClient,
-                                @Named("appName") appName: String)
-                               (implicit ec: ExecutionContext){
+class UpscanConnector @Inject() (configuration: FrontendAppConfig, httpClient: HttpClient, @Named("appName") appName: String)(implicit ec: ExecutionContext) {
 
   private val headers = Map(
     HeaderNames.CONTENT_TYPE -> "application/json"
@@ -39,9 +36,9 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
 
   def getUpscanFormData(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
     val callbackUrl        = s"$backendUrl/callback"
-    val successRedirectUrl = configuration.upscanRedirectBase +  routes.UploadFormController.showResult().url
+    val successRedirectUrl = configuration.upscanRedirectBase + routes.UploadFormController.showResult().url
     val errorRedirectUrl   = configuration.upscanRedirectBase + "/disclose-cross-border-arrangements/upload/error"
-    val body = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl, None, Some(upscanMaxSize * 1048576), Some("text/xml"))
+    val body               = UpscanInitiateRequest(callbackUrl, successRedirectUrl, errorRedirectUrl, None, Some(upscanMaxSize * 1048576), Some("text/xml"))
     httpClient.POST[UpscanInitiateRequest, PreparedUpload](upscanInitiateUrl, body, headers.toSeq).map {
       _.toUpscanInitiateResponse
     }
@@ -58,13 +55,15 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
   def getUploadDetails(uploadId: UploadId)(implicit hc: HeaderCarrier): Future[Option[UploadSessionDetails]] = {
     val detailsUrl = s"$backendUrl/upscan/details/${uploadId.value}"
     httpClient.GET[HttpResponse](detailsUrl).map {
-      response =>  response.status match {
-        case OK => response.json.validate[UploadSessionDetails] match {
-          case JsSuccess(details, _) => Some(details)
-          case JsError(_)            => None
+      response =>
+        response.status match {
+          case OK =>
+            response.json.validate[UploadSessionDetails] match {
+              case JsSuccess(details, _) => Some(details)
+              case JsError(_)            => None
+            }
+          case _ => None
         }
-        case _ => None
-      }
     }
   }
 
@@ -73,19 +72,20 @@ class UpscanConnector @Inject()(configuration: FrontendAppConfig,
     httpClient.GET[HttpResponse](statusUrl).map {
       response =>
         response.status match {
-        case OK => response.json.validate[UploadStatus] match {
-          case JsSuccess(status, _) =>
-            Some(status)
-          case JsError(_) =>
-            None
+          case OK =>
+            response.json.validate[UploadStatus] match {
+              case JsSuccess(status, _) =>
+                Some(status)
+              case JsError(_) =>
+                None
+            }
+          case _ => None
         }
-        case _ => None
-      }
     }
   }
 
   private[connectors] val upscanInitiatePath: String = "/upscan/v2/initiate"
-  private val backendUrl         = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
-  private val upscanInitiateUrl  = s"${configuration.upscanInitiateHost}$upscanInitiatePath"
-  private val upscanMaxSize      = configuration.upscanMaxFileSize
+  private val backendUrl                             = s"${configuration.crossBorderArrangementsUrl}/disclose-cross-border-arrangements"
+  private val upscanInitiateUrl                      = s"${configuration.upscanInitiateHost}$upscanInitiatePath"
+  private val upscanMaxSize                          = configuration.upscanMaxFileSize
 }

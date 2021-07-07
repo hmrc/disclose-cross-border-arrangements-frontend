@@ -25,13 +25,12 @@ class GeneratedIDsSpec extends SpecBase {
     "can be read from json" in {
 
       val json = Json.obj(
-  "arrangementID" -> "GBA20200601AAA000",
-         "disclosureID" -> "GBD20200601AAA001"
+        "arrangementID" -> "GBA20200601AAA000",
+        "disclosureID"  -> "GBD20200601AAA001"
       )
 
       json.as[GeneratedIDs] mustBe GeneratedIDs(Some("GBA20200601AAA000"), Some("GBD20200601AAA001"))
     }
   }
-
 
 }

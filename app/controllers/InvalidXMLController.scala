@@ -31,7 +31,7 @@ import uk.gov.hmrc.viewmodels._
 
 import scala.concurrent.ExecutionContext
 
-class InvalidXMLController @Inject()(
+class InvalidXMLController @Inject() (
   override val messagesApi: MessagesApi,
   identify: IdentifierAction,
   getData: DataRetrievalAction,
@@ -40,27 +40,29 @@ class InvalidXMLController @Inject()(
   renderer: Renderer,
   errorHandler: ErrorHandler,
   viewHelper: ViewHelper,
-  appConfig: FrontendAppConfig,
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+  appConfig: FrontendAppConfig
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       (request.userAnswers.get(GenericErrorPage), request.userAnswers.get(InvalidXMLPage)) match {
         case (Some(errors), Some(fileName)) =>
           val tableWithErrors: Table = viewHelper.mapErrorsToTable(errors)
 
-          renderer.render(
-            "invalidXML.njk",
-            Json.obj(
-              "fileName" -> Json.toJson(fileName),
-              "tableWithErrors" -> tableWithErrors,
-              "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl)
+          renderer
+            .render(
+              "invalidXML.njk",
+              Json.obj(
+                "fileName"                -> Json.toJson(fileName),
+                "tableWithErrors"         -> tableWithErrors,
+                "xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl)
+              )
             )
-          ).map(Ok(_))
+            .map(Ok(_))
 
         case _ => errorHandler.onServerError(request, throw new RuntimeException("fileName or errors missing for InvalidXMLPage"))
       }
   }
 }
-

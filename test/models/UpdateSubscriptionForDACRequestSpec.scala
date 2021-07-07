@@ -36,46 +36,53 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     requestParameters = Some(requestParameter)
   )
 
-  val individualPrimaryContact: PrimaryContact = PrimaryContact(Seq(
-    ContactInformationForIndividual(
-      individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
-      email = "email@email.com", phone = Some("07111222333"), mobile = None)
-  ))
+  val individualPrimaryContact: PrimaryContact = PrimaryContact(
+    Seq(
+      ContactInformationForIndividual(individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
+                                      email = "email@email.com",
+                                      phone = Some("07111222333"),
+                                      mobile = None
+      )
+    )
+  )
 
-  val primaryContact: PrimaryContact = PrimaryContact(Seq(
-    ContactInformationForOrganisation(
-      organisation = OrganisationDetails(organisationName = "Organisation Name"),
-      email = "email@email.com", phone = None, mobile = None)
-  ))
+  val primaryContact: PrimaryContact = PrimaryContact(
+    Seq(
+      ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Organisation Name"),
+                                        email = "email@email.com",
+                                        phone = None,
+                                        mobile = None
+      )
+    )
+  )
 
-  val secondaryContact: SecondaryContact = SecondaryContact(Seq(
-    ContactInformationForOrganisation(
-      organisation = OrganisationDetails(organisationName = "Secondary contact name"),
-      email = "email2@email.com", phone = Some("07111222333"), mobile = None)
-  ))
+  val secondaryContact: SecondaryContact = SecondaryContact(
+    Seq(
+      ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Secondary contact name"),
+                                        email = "email2@email.com",
+                                        phone = Some("07111222333"),
+                                        mobile = None
+      )
+    )
+  )
 
-  val responseCommon: ResponseCommon = ResponseCommon(
-    status = "OK",
-    statusText = None,
-    processingDate = "2021-03-10T12:02:53Z",
-    returnParameters = None)
+  val responseCommon: ResponseCommon = ResponseCommon(status = "OK", statusText = None, processingDate = "2021-03-10T12:02:53Z", returnParameters = None)
 
-  val responseDetail: ResponseDetail = ResponseDetail(
-    subscriptionID = "XE0001234567890",
-    tradingName = Some("Trading Name"),
-    isGBUser = true,
-    primaryContact = primaryContact,
-    secondaryContact = Some(secondaryContact))
+  val responseDetail: ResponseDetail = ResponseDetail(subscriptionID = "XE0001234567890",
+                                                      tradingName = Some("Trading Name"),
+                                                      isGBUser = true,
+                                                      primaryContact = primaryContact,
+                                                      secondaryContact = Some(secondaryContact)
+  )
 
   val subscriptionForDACResponse: SubscriptionForDACResponse =
-      SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail)
+    SubscriptionForDACResponse(responseCommon = responseCommon, responseDetail = responseDetail)
 
   "UpdateSubscriptionForDACRequest" - {
 
     "must deserialise UpdateSubscriptionForDACRequest" in {
       forAll(validPersonalName, validPersonalName, validEmailAddress, validOrganisationName, validEmailAddress, validPhoneNumber) {
         (firstName, lastName, primaryEmail, organisationName, secondaryEmail, phone) =>
-
           val primaryContactForInd: PrimaryContact = PrimaryContact(
             Seq(ContactInformationForIndividual(IndividualDetails(firstName, lastName, None), primaryEmail, None, None))
           )
@@ -88,7 +95,7 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             IDType = "SAFE",
             IDNumber = "IDNumber",
             tradingName = None,
-            isGBUser =  false,
+            isGBUser = false,
             primaryContact = primaryContactForInd,
             secondaryContact = Some(secondaryContact)
           )
@@ -100,8 +107,13 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             )
           )
 
-          val jsonPayload = updateDetailsPayload(JsString(firstName), JsString(lastName), JsString(primaryEmail),
-            JsString(organisationName), JsString(secondaryEmail), JsString(phone))
+          val jsonPayload = updateDetailsPayload(JsString(firstName),
+                                                 JsString(lastName),
+                                                 JsString(primaryEmail),
+                                                 JsString(organisationName),
+                                                 JsString(secondaryEmail),
+                                                 JsString(phone)
+          )
 
           Json.parse(jsonPayload).validate[UpdateSubscriptionForDACRequest].get mustBe updateRequest
       }
@@ -110,7 +122,6 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     "must deserialise UpdateSubscriptionForDACRequest without a second contact" in {
       forAll(validPersonalName, validPersonalName, validEmailAddress) {
         (firstName, lastName, primaryEmail) =>
-
           val primaryContactForInd: PrimaryContact = PrimaryContact(
             Seq(ContactInformationForIndividual(IndividualDetails(firstName, lastName, None), primaryEmail, None, None))
           )
@@ -119,7 +130,7 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             IDType = "SAFE",
             IDNumber = "IDNumber",
             tradingName = None,
-            isGBUser =  true,
+            isGBUser = true,
             primaryContact = primaryContactForInd,
             secondaryContact = None
           )
@@ -152,7 +163,7 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             IDType = "SAFE",
             IDNumber = "IDNumber",
             tradingName = None,
-            isGBUser =  false,
+            isGBUser = false,
             primaryContact = primaryContactForInd,
             secondaryContact = Some(secondaryContact)
           )
@@ -164,8 +175,7 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             )
           )
 
-          Json.toJson(updateRequest) mustBe updateDetailsJson(firstName, lastName, primaryEmail,
-            organisationName, secondaryEmail, phone)
+          Json.toJson(updateRequest) mustBe updateDetailsJson(firstName, lastName, primaryEmail, organisationName, secondaryEmail, phone)
       }
     }
 
@@ -180,7 +190,7 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
             IDType = "SAFE",
             IDNumber = "IDNumber",
             tradingName = None,
-            isGBUser =  true,
+            isGBUser = true,
             primaryContact = primaryContactForInd,
             secondaryContact = None
           )
@@ -200,26 +210,37 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
 
       "must build RequestDetailForUpdate with new primary phone and email if an Individual user has updated it" in {
         val userAnswers = UserAnswers(userAnswersId)
-          .set(ContactEmailAddressPage, "email2@email.com").success.value
-          .set(HaveContactPhonePage, true).success.value
-          .set(ContactTelephoneNumberPage, "07111111111").success.value
+          .set(ContactEmailAddressPage, "email2@email.com")
+          .success
+          .value
+          .set(HaveContactPhonePage, true)
+          .success
+          .value
+          .set(ContactTelephoneNumberPage, "07111111111")
+          .success
+          .value
 
         val subscriptionForDACResponse: SubscriptionForDACResponse =
-          SubscriptionForDACResponse(
-            responseCommon = responseCommon,
-            responseDetail = responseDetail.copy(primaryContact = individualPrimaryContact, secondaryContact = None))
+          SubscriptionForDACResponse(responseCommon = responseCommon,
+                                     responseDetail = responseDetail.copy(primaryContact = individualPrimaryContact, secondaryContact = None)
+          )
 
-        val expectedPrimaryContact: PrimaryContact = PrimaryContact(Seq(
-          ContactInformationForIndividual(
-            individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
-            email = "email2@email.com", phone = Some("07111111111"), mobile = None)
-        ))
+        val expectedPrimaryContact: PrimaryContact = PrimaryContact(
+          Seq(
+            ContactInformationForIndividual(
+              individual = IndividualDetails(firstName = "FirstName", lastName = "LastName", middleName = None),
+              email = "email2@email.com",
+              phone = Some("07111111111"),
+              mobile = None
+            )
+          )
+        )
 
         val expected = RequestDetailForUpdate(
           IDType = "DAC",
           IDNumber = "XE0001234567890",
           tradingName = None,
-          isGBUser =  true,
+          isGBUser = true,
           primaryContact = expectedPrimaryContact,
           secondaryContact = None
         )
@@ -231,20 +252,28 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
 
       "must build RequestDetailForUpdate with new primary phone if user has updated it" in {
         val userAnswers = UserAnswers(userAnswersId)
-          .set(HaveContactPhonePage, true).success.value
-          .set(ContactTelephoneNumberPage, "07111222333").success.value
+          .set(HaveContactPhonePage, true)
+          .success
+          .value
+          .set(ContactTelephoneNumberPage, "07111222333")
+          .success
+          .value
 
-        val primaryContact = PrimaryContact(Seq(
-          ContactInformationForOrganisation(
-            organisation = OrganisationDetails(organisationName = "Organisation Name"),
-            email = "email@email.com", phone = Some("07111222333"), mobile = None)
-        ))
+        val primaryContact = PrimaryContact(
+          Seq(
+            ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Organisation Name"),
+                                              email = "email@email.com",
+                                              phone = Some("07111222333"),
+                                              mobile = None
+            )
+          )
+        )
 
         val expected = RequestDetailForUpdate(
           IDType = "DAC",
           IDNumber = "XE0001234567890",
           tradingName = None,
-          isGBUser =  true,
+          isGBUser = true,
           primaryContact = primaryContact,
           secondaryContact = Some(secondaryContact)
         )
@@ -256,21 +285,31 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
 
       "must build RequestDetailForUpdate with updated secondary contact details e.g. New name and no phone" in {
         val userAnswers = UserAnswers(userAnswersId)
-          .set(HaveSecondContactPage, true).success.value
-          .set(SecondaryContactNamePage, "New secondary contact name").success.value
-          .set(HaveSecondaryContactPhonePage, false).success.value
+          .set(HaveSecondContactPage, true)
+          .success
+          .value
+          .set(SecondaryContactNamePage, "New secondary contact name")
+          .success
+          .value
+          .set(HaveSecondaryContactPhonePage, false)
+          .success
+          .value
 
-        val secondaryContact = SecondaryContact(Seq(
-          ContactInformationForOrganisation(
-            organisation = OrganisationDetails(organisationName = "New secondary contact name"),
-            email = "email2@email.com", phone = None, mobile = None)
-        ))
+        val secondaryContact = SecondaryContact(
+          Seq(
+            ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "New secondary contact name"),
+                                              email = "email2@email.com",
+                                              phone = None,
+                                              mobile = None
+            )
+          )
+        )
 
         val expected = RequestDetailForUpdate(
           IDType = "DAC",
           IDNumber = "XE0001234567890",
           tradingName = None,
-          isGBUser =  true,
+          isGBUser = true,
           primaryContact = primaryContact,
           secondaryContact = Some(secondaryContact)
         )
@@ -282,20 +321,28 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
 
       "must build RequestDetailForUpdate with new secondary phone if user has updated it" in {
         val userAnswers = UserAnswers(userAnswersId)
-          .set(HaveSecondaryContactPhonePage, true).success.value
-          .set(SecondaryContactTelephoneNumberPage, "07111111111").success.value
+          .set(HaveSecondaryContactPhonePage, true)
+          .success
+          .value
+          .set(SecondaryContactTelephoneNumberPage, "07111111111")
+          .success
+          .value
 
-        val secondaryContact = SecondaryContact(Seq(
-          ContactInformationForOrganisation(
-            organisation = OrganisationDetails(organisationName = "Secondary contact name"),
-            email = "email2@email.com", phone = Some("07111111111"), mobile = None)
-        ))
+        val secondaryContact = SecondaryContact(
+          Seq(
+            ContactInformationForOrganisation(organisation = OrganisationDetails(organisationName = "Secondary contact name"),
+                                              email = "email2@email.com",
+                                              phone = Some("07111111111"),
+                                              mobile = None
+            )
+          )
+        )
 
         val expected = RequestDetailForUpdate(
           IDType = "DAC",
           IDNumber = "XE0001234567890",
           tradingName = None,
-          isGBUser =  true,
+          isGBUser = true,
           primaryContact = primaryContact,
           secondaryContact = Some(secondaryContact)
         )
@@ -307,13 +354,15 @@ class UpdateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
 
       "must build RequestDetailForUpdate without secondary contact if user has removed them" in {
         val userAnswers = UserAnswers(userAnswersId)
-          .set(HaveSecondContactPage, false).success.value
+          .set(HaveSecondContactPage, false)
+          .success
+          .value
 
         val expected = RequestDetailForUpdate(
           IDType = "DAC",
           IDNumber = "XE0001234567890",
           tradingName = None,
-          isGBUser =  true,
+          isGBUser = true,
           primaryContact = primaryContact,
           secondaryContact = None
         )

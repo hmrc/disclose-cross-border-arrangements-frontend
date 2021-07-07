@@ -43,7 +43,7 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
   val service = new MetaDataValidationService(mockConnector)
 
-  implicit val postFixOps = scala.language.postfixOps
+  implicit val postFixOps                            = scala.language.postfixOps
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
   val enrolmentId = "XADAC0001234567"
@@ -51,18 +51,22 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
   val messageRefId1 = s"GB${enrolmentId}XYZ123"
   val messageRefId2 = s"GB${enrolmentId}XYZ789"
 
-
   val submissionDateTime1 = LocalDateTime.now()
   val submissionDateTime2 = submissionDateTime1.plusDays(1)
   val submissionDateTime3 = submissionDateTime1.plusDays(2)
 
-  "MetaDataValidationService" -{
-    "verifyMetaData" -{
+  "MetaDataValidationService" - {
+    "verifyMetaData" - {
       "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under another users arrangemntid" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-                               disclosureInformationPresent = true,
-                               initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6ADD",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = false,
+                       messageRefId = messageRefId1
+          )
+        )
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(List())))
@@ -74,17 +78,25 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSuccess if ArrangementId matches hmrcs record for DAC6ADD if they are filing under their own arrangemntid" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-                                disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6ADD",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = false,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
           initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
 
@@ -94,13 +106,18 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
         result mustBe Seq()
         verify(mockConnector, times(0)).verifyArrangementId(any())(any())
 
-
       }
 
       "should return a ValidationFailure if ArrangementId matches hmrcs record for DAC6ADD" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-                                disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6ADD",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = false,
+                       messageRefId = messageRefId1
+          )
+        )
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(List())))
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(false))
@@ -111,22 +128,30 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSuccess if disclosureId relates to them for DAC6REP" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-                              initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime1,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId1),
-                                                  disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false,
-                                                  messageRefId = messageRefId2)
+        val submissionDetails = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false,
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
 
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq()
@@ -135,45 +160,62 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure if disclosureId does not relate to them for DAC6REP" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime1,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId1),
-                                                  disclosureID = Some(disclosureId2),
-                                                  importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false,
-                                                  messageRefId = messageRefId2)
+        val submissionDetails = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId2),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false,
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
 
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq(Validation("metaDataRules.disclosureId.disclosureIDDoesNotMatchUser", false))
 
       }
 
+      "should return a ValidationFailure if disclosureId does not relate to them for DAC6DEL" in {
 
-"should return a ValidationFailure if disclosureId does not relate to them for DAC6DEL" in {
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6DEL",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6DEL", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
-
-        val submissionDetails = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime1,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId1),
-                                                  disclosureID = Some(disclosureId2),
-                                                  importInstruction = "DAC6DEL",
-                                                  initialDisclosureMA = false,
-                                                  messageRefId = messageRefId2)
+        val submissionDetails = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId2),
+          importInstruction = "DAC6DEL",
+          initialDisclosureMA = false,
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
 
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq(Validation("metaDataRules.disclosureId.disclosureIDDoesNotMatchUser", false))
@@ -182,30 +224,41 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure if disclosureId does not relate to the given ArrangementId" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2), disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId2),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime1,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId1),
-                                                  disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false,
-                                                  messageRefId = messageRefId2)
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false,
+          messageRefId = messageRefId2
+        )
 
-        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime2,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId2),
-                                                  disclosureID = Some(disclosureId2),
-                                                  importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = false,
-                                                  messageRefId = messageRefId2)
+        val submissionDetails2 = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime2,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId2),
+          disclosureID = Some(disclosureId2),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = false,
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
 
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq(Validation("metaDataRules.disclosureId.disclosureIDDoesNotMatchArrangementID", false))
@@ -214,103 +267,128 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSuccess if DAC6ADD for a marketable arrangement has implementingDates populated for new RelevantTaxpayers" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2), disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6ADD",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId2),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-                                                  submissionTime = submissionDateTime1,
-                                                  fileName = "fileName.xml",
-                                                  arrangementID = Some(arrangementId1),
-                                                  disclosureID = Some(disclosureId1),
-                                                  importInstruction = "DAC6REP",
-                                                  initialDisclosureMA = true,
-                                                  messageRefId = messageRefId2)
-
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
+          submissionTime = submissionDateTime1,
+          fileName = "fileName.xml",
+          arrangementID = Some(arrangementId1),
+          disclosureID = Some(disclosureId1),
+          importInstruction = "DAC6REP",
+          initialDisclosureMA = true,
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
 
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq()
       }
 
-       "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates populated for new RelevantTaxpayers" in {
+      "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates populated for new RelevantTaxpayers" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-                                disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6ADD",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = false,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6NEW",
           initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
-        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails2 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime2,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "DAC6REP",
           initialDisclosureMA = false,
-          messageRefId = messageRefId2)
-
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-         result mustBe Seq()
-      }
-
-      "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates " +
-      "populated for new RelevantTaxpayers 2" in {
-
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-                                 disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
-
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "DAC6NEW",
-          initialDisclosureMA = true,
-          messageRefId = messageRefId2)
-
-        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime2,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "DAC6REP",
-          initialDisclosureMA = true,
-          messageRefId = messageRefId2)
-
-        val submissionDetails3 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime3,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "DAC6REP",
-          initialDisclosureMA = false,
-          messageRefId = messageRefId2)
-
-
-        val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2, submissionDetails3))
-        when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
-
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
         result mustBe Seq()
       }
 
+      "should return a ValidationSucces if DAC6ADD for an arrangment which is no longer a marketable arrangement and does not have implementingDates " +
+        "populated for new RelevantTaxpayers 2" in {
+
+          val dac6MetaData = Some(
+            Dac6MetaData(importInstruction = "DAC6ADD",
+                         arrangementID = Some(arrangementId1),
+                         disclosureInformationPresent = true,
+                         initialDisclosureMA = false,
+                         messageRefId = messageRefId1
+            )
+          )
+
+          val submissionDetails1 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "DAC6NEW",
+            initialDisclosureMA = true,
+            messageRefId = messageRefId2
+          )
+
+          val submissionDetails2 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime2,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "DAC6REP",
+            initialDisclosureMA = true,
+            messageRefId = messageRefId2
+          )
+
+          val submissionDetails3 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime3,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "DAC6REP",
+            initialDisclosureMA = false,
+            messageRefId = messageRefId2
+          )
+
+          val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2, submissionDetails3))
+          when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq()
+        }
 
       "should return a ValidationFailure if metaData notDefined" in {
 
@@ -319,12 +397,10 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
         result mustBe Seq(Validation("File does not contain necessary data", false))
       }
 
-
       "should return a ValidationSucces if DAC6NEW has disclosure information" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", disclosureInformationPresent = true,
-                                            initialDisclosureMA = false, messageRefId = messageRefId1))
-
+        val dac6MetaData =
+          Some(Dac6MetaData(importInstruction = "DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
 
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(Seq())))
 
@@ -334,8 +410,8 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure if DAC6NEW does not have disclosure information" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", disclosureInformationPresent = false,
-                                             initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData =
+          Some(Dac6MetaData(importInstruction = "DAC6NEW", disclosureInformationPresent = false, initialDisclosureMA = false, messageRefId = messageRefId1))
 
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(SubmissionHistory(Seq())))
         val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
@@ -345,89 +421,118 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
       "should return a ValidationSucces for a DAC6ADD when InitialDisclosureMA was false in the DAC6NEW for the ArrangementID" +
         " and disclosure info is present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)
-          , disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = messageRefId1))
+          val dac6MetaData = Some(
+            Dac6MetaData(importInstruction = "DAC6ADD",
+                         arrangementID = Some(arrangementId1),
+                         disclosureInformationPresent = true,
+                         initialDisclosureMA = false,
+                         messageRefId = messageRefId1
+            )
+          )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "DAC6REP",
-          initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          val submissionDetails1 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "DAC6REP",
+            initialDisclosureMA = false,
+            messageRefId = messageRefId2
+          )
 
+          val submissionHistory = SubmissionHistory(List(submissionDetails1))
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-        val submissionHistory = SubmissionHistory(List(submissionDetails1))
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
-
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe Seq()
-      }
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq()
+        }
 
       "should return a ValidationSucces for a DAC6ADD when InitialDisclosureMA was true in the DAC6NEW for the ArrangementID" +
         " and disclosure info is present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)
-          , disclosureInformationPresent = false, initialDisclosureMA = false, messageRefId = messageRefId1))
+          val dac6MetaData = Some(
+            Dac6MetaData(
+              importInstruction = "DAC6ADD",
+              arrangementID = Some(arrangementId1),
+              disclosureInformationPresent = false,
+              initialDisclosureMA = false,
+              messageRefId = messageRefId1
+            )
+          )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "New",
-          initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          val submissionDetails1 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "New",
+            initialDisclosureMA = true,
+            messageRefId = messageRefId2
+          )
 
+          val submissionHistory = SubmissionHistory(List(submissionDetails1))
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-        val submissionHistory = SubmissionHistory(List(submissionDetails1))
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
-
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe Seq()
-      }
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq()
+        }
 
       "should return a ValidationFailure for a DAC6ADD when InitialDisclosureMA was false in the DAC6NEW for the ArrangementID" +
         " and disclosure info is not present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1)
-          , disclosureInformationPresent = false, initialDisclosureMA = false, messageRefId = messageRefId1))
+          val dac6MetaData = Some(
+            Dac6MetaData(
+              importInstruction = "DAC6ADD",
+              arrangementID = Some(arrangementId1),
+              disclosureInformationPresent = false,
+              initialDisclosureMA = false,
+              messageRefId = messageRefId1
+            )
+          )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "New",
-          initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          val submissionDetails1 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "New",
+            initialDisclosureMA = false,
+            messageRefId = messageRefId2
+          )
 
+          val submissionHistory = SubmissionHistory(List(submissionDetails1))
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-        val submissionHistory = SubmissionHistory(List(submissionDetails1))
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
-
-
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD", false))
-      }
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq(Validation("metaDataRules.disclosureInformation.disclosureInformationMissingFromDAC6ADD", false))
+        }
 
       "should return a ValidationSucces for a DAC6REP which is replacing a DAC6NEW and disclosure info is present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -438,18 +543,27 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a DAC6REP which is replacing a DAC6NEW and disclosure info is not present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = false,
-          initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = false,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -460,27 +574,38 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSucces for a DAC6REP which is replacing a DAC6ADD linked to a non-marketable arrangement and disclsoure info is present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2), disclosureInformationPresent = true,
-          initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId2),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
-        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails2 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId2),
           importInstruction = "Add",
           initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -492,49 +617,69 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
       "should return a ValidationFailure for a DAC6REP which is replacing a DAC6ADD linked to a non-marketable" +
         " arrangement and disclsoure info is not present" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2), disclosureInformationPresent = false,
-          initialDisclosureMA = false, messageRefId = messageRefId1))
+          val dac6MetaData = Some(
+            Dac6MetaData(
+              importInstruction = "DAC6REP",
+              arrangementID = Some(arrangementId1),
+              disclosureID = Some(disclosureId2),
+              disclosureInformationPresent = false,
+              initialDisclosureMA = false,
+              messageRefId = messageRefId1
+            )
+          )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1),
-          importInstruction = "New",
-          initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          val submissionDetails1 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            importInstruction = "New",
+            initialDisclosureMA = false,
+            messageRefId = messageRefId2
+          )
 
-        val submissionDetails2 = SubmissionDetails(enrolmentID = enrolmentId,
-          submissionTime = submissionDateTime1,
-          fileName = "fileName.xml",
-          arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId2),
-          importInstruction = "Add",
-          initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          val submissionDetails2 = SubmissionDetails(
+            enrolmentID = enrolmentId,
+            submissionTime = submissionDateTime1,
+            fileName = "fileName.xml",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId2),
+            importInstruction = "Add",
+            initialDisclosureMA = false,
+            messageRefId = messageRefId2
+          )
 
-        val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+          val submissionHistory = SubmissionHistory(List(submissionDetails1, submissionDetails2))
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe Seq(Validation("metaDataRules.disclosureInformation.noInfoForNonMaDAC6REP", false))
-      }
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq(Validation("metaDataRules.disclosureInformation.noInfoForNonMaDAC6REP", false))
+        }
 
       "should return a ValidationSuccess for a DAC6REP which is replacing a DAC6NEW and marketable arrangment flag matches" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -545,18 +690,27 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a DAC6REP which is replacing a DAC6NEW and marketable arrangement flag does not match 1" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = false,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -567,18 +721,27 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a DAC6REP which is replacing a DAC6NEW and marketable arrangement flag does not match 2" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = false, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6REP",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = false,
+            messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId2)
+          messageRefId = messageRefId2
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -589,9 +752,16 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSuccess for a file with MessageRefId in correct format" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6NEW",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = messageRefId1
+          )
+        )
 
         val submissionHistory = SubmissionHistory(List())
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -602,9 +772,16 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationSuccess for a file with blank messageRefId (as this will be covered by xsd error)" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = ""))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6NEW",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = ""
+          )
+        )
 
         val submissionHistory = SubmissionHistory(List())
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -617,9 +794,16 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
         val invalidMessageRefId = "123456XYZ789"
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6NEW",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = invalidMessageRefId
+          )
+        )
 
         val submissionHistory = SubmissionHistory(List())
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -631,29 +815,42 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
       "should return a ValidationFailure for a file with MessageRefId which does not contain users enrolment id " +
         "after GB" in {
 
-        val wrongEnrolmentId = "XADAC0007654321"
+          val wrongEnrolmentId = "XADAC0007654321"
 
-        val invalidMessageRefId = s"GB${wrongEnrolmentId}XYZ789"
+          val invalidMessageRefId = s"GB${wrongEnrolmentId}XYZ789"
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+          val dac6MetaData = Some(
+            Dac6MetaData(
+              importInstruction = "DAC6NEW",
+              arrangementID = Some(arrangementId1),
+              disclosureID = Some(disclosureId1),
+              disclosureInformationPresent = true,
+              initialDisclosureMA = true,
+              messageRefId = invalidMessageRefId
+            )
+          )
 
-        val submissionHistory = SubmissionHistory(List())
-        when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
+          val submissionHistory = SubmissionHistory(List())
+          when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
 
-        val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
-        result mustBe Seq(Validation("metaDataRules.messageRefId.noUserId", false))
-      }
+          val result = Await.result(service.verifyMetaData(dac6MetaData, enrolmentId), 10 seconds)
+          result mustBe Seq(Validation("metaDataRules.messageRefId.noUserId", false))
+        }
 
       "should return a ValidationFailure for a file with MessageRefId which does have any chars after userId" in {
 
-
         val invalidMessageRefId = s"GB$enrolmentId"
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId1),
-          disclosureID = Some(disclosureId1), disclosureInformationPresent = true,
-          initialDisclosureMA = true, messageRefId = invalidMessageRefId))
+        val dac6MetaData = Some(
+          Dac6MetaData(
+            importInstruction = "DAC6NEW",
+            arrangementID = Some(arrangementId1),
+            disclosureID = Some(disclosureId1),
+            disclosureInformationPresent = true,
+            initialDisclosureMA = true,
+            messageRefId = invalidMessageRefId
+          )
+        )
 
         val submissionHistory = SubmissionHistory(List())
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -664,17 +861,25 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a file with MessageRefId has been used before by this user for a DAC6NEW" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6NEW", arrangementID = Some(arrangementId2),
-          disclosureInformationPresent = true, initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6NEW",
+                       arrangementID = Some(arrangementId2),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = true,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId1)
+          messageRefId = messageRefId1
+        )
 
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
         when(mockConnector.getSubmissionHistory(any())(any())).thenReturn(Future.successful(submissionHistory))
@@ -685,17 +890,25 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a file with MessageRefId has been used before by this user for a DAC6ADD" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6ADD", arrangementID = Some(arrangementId1),
-          disclosureInformationPresent = true, initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6ADD",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = true,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId1)
+          messageRefId = messageRefId1
+        )
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -707,17 +920,25 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a file with MessageRefId has been used before by this user for a DAC6REP" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureInformationPresent = true, initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6REP",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = true,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId1)
+          messageRefId = messageRefId1
+        )
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -729,17 +950,25 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
       "should return a ValidationFailure for a file with MessageRefId has been used before by this user for a DAC6DEL" in {
 
-        val dac6MetaData = Some(Dac6MetaData(importInstruction = "DAC6REP", arrangementID = Some(arrangementId1),
-          disclosureInformationPresent = true, initialDisclosureMA = true, messageRefId = messageRefId1))
+        val dac6MetaData = Some(
+          Dac6MetaData(importInstruction = "DAC6REP",
+                       arrangementID = Some(arrangementId1),
+                       disclosureInformationPresent = true,
+                       initialDisclosureMA = true,
+                       messageRefId = messageRefId1
+          )
+        )
 
-        val submissionDetails1 = SubmissionDetails(enrolmentID = enrolmentId,
+        val submissionDetails1 = SubmissionDetails(
+          enrolmentID = enrolmentId,
           submissionTime = submissionDateTime1,
           fileName = "fileName.xml",
           arrangementID = Some(arrangementId1),
           disclosureID = Some(disclosureId1),
           importInstruction = "New",
           initialDisclosureMA = true,
-          messageRefId = messageRefId1)
+          messageRefId = messageRefId1
+        )
 
         when(mockConnector.verifyArrangementId(any())(any())).thenReturn(Future.successful(true))
         val submissionHistory = SubmissionHistory(List(submissionDetails1))
@@ -751,8 +980,6 @@ class MetaDataValidationServiceSpec extends SpecBase with BeforeAndAfterEach {
 
     }
 
-
   }
-
 
 }

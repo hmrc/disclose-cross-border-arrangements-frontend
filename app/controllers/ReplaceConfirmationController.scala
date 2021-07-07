@@ -30,40 +30,44 @@ import pages.Dac6MetaDataPage
 
 import scala.concurrent.ExecutionContext
 
-class ReplaceConfirmationController @Inject()(
-    override val messagesApi: MessagesApi,
-    frontEndAppConfig: FrontendAppConfig,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer,
-    viewHelper: ViewHelper,
-    contactRetrievalAction: ContactRetrievalAction,
-    errorHandler: ErrorHandler
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class ReplaceConfirmationController @Inject() (
+  override val messagesApi: MessagesApi,
+  frontEndAppConfig: FrontendAppConfig,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  viewHelper: ViewHelper,
+  contactRetrievalAction: ContactRetrievalAction,
+  errorHandler: ErrorHandler
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
-
       val messageRef = request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(metaData) => metaData.messageRefId
-        case None => errorHandler.onServerError(request, new Exception("MessageRefID is missing"))
+        case None           => errorHandler.onServerError(request, new Exception("MessageRefID is missing"))
       }
 
       val emailMessage = request.contacts match {
-        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
-        case Some(contactDetails) => contactDetails.contactEmail.get
-        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined => contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails)                                         => contactDetails.contactEmail.get
+        case _                                                            => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
 
-      renderer.render("replaceConfirmation.njk",
-        Json.obj(
-          "messageRefID" -> messageRef.toString,
-          "emailMessage" -> emailMessage.toString,
-          "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(frontEndAppConfig.discloseArrangeLink)),
-          "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(frontEndAppConfig.betaFeedbackUrl))
+      renderer
+        .render(
+          "replaceConfirmation.njk",
+          Json.obj(
+            "messageRefID"       -> messageRef.toString,
+            "emailMessage"       -> emailMessage.toString,
+            "homePageLink"       -> viewHelper.linkToHomePageText(Json.toJson(frontEndAppConfig.discloseArrangeLink)),
+            "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(frontEndAppConfig.betaFeedbackUrl))
+          )
         )
-      ).map(Ok(_))
+        .map(Ok(_))
   }
 }

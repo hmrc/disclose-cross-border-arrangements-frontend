@@ -25,36 +25,32 @@ import uk.gov.hmrc.allowlist.AkamaiAllowlistFilter
 import scala.concurrent.Future
 
 class AllowlistFilter @Inject() (
-                                  config: Configuration,
-                                  override val mat: Materializer
-                                ) extends AkamaiAllowlistFilter {
+  config: Configuration,
+  override val mat: Materializer
+) extends AkamaiAllowlistFilter {
 
-  override val allowlist: Seq[String] = {
-    config
-      .underlying
+  override val allowlist: Seq[String] =
+    config.underlying
       .getString("filters.allowlist.ips")
       .split(",")
       .map(_.trim)
       .filter(_.nonEmpty)
-  }
 
   override val destination: Call = {
     val path = config.underlying.getString("filters.allowlist.destination")
     Call("GET", path)
   }
 
-  override val excludedPaths: Seq[Call] = {
+  override val excludedPaths: Seq[Call] =
     config.underlying.getString("filters.allowlist.excluded").split(",").map {
       path =>
         Call("GET", path.trim)
     }
-  }
 
-  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
-    if(config.get[Boolean]("filters.allowlist.enabled")) {
+  override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] =
+    if (config.get[Boolean]("filters.allowlist.enabled")) {
       super.apply(f)(rh)
-    }  else {
+    } else {
       f(rh)
     }
-  }
 }

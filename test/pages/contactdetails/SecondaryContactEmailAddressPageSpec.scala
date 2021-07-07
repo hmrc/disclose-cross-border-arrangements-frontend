@@ -18,7 +18,6 @@ package pages.contactdetails
 
 import pages.behaviours.PageBehaviours
 
-
 class SecondaryContactEmailAddressPageSpec extends PageBehaviours {
 
   "SecondaryContactEmailAddressPage" - {

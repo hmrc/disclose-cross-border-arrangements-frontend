@@ -28,19 +28,20 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DisplaySubscriptionForDACController @Inject()(
-    override val messagesApi: MessagesApi,
-    subscriptionConnector: SubscriptionConnector,
-    viewHelper: ViewHelper,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class DisplaySubscriptionForDACController @Inject() (
+  override val messagesApi: MessagesApi,
+  subscriptionConnector: SubscriptionConnector,
+  viewHelper: ViewHelper,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
-
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>
           if (details.subscriptionDetails.isDefined) {

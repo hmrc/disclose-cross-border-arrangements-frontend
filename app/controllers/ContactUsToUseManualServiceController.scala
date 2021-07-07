@@ -27,19 +27,20 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class ContactUsToUseManualServiceController @Inject()(
-    override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer,
-    appConfig: FrontendAppConfig
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class ContactUsToUseManualServiceController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  appConfig: FrontendAppConfig
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       val json = Json.obj(
         "homePageLink" -> appConfig.discloseArrangeLink
       )

@@ -34,38 +34,39 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContactEmailAddressController @Inject()(
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    viewHelper: ViewHelper,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    formProvider: ContactEmailAddressFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
+class ContactEmailAddressController @Inject() (
+  override val messagesApi: MessagesApi,
+  sessionRepository: SessionRepository,
+  navigator: Navigator,
+  viewHelper: ViewHelper,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  formProvider: ContactEmailAddressFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with NunjucksSupport {
 
   private val form = formProvider()
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       val preparedForm =
         (request.userAnswers.get(ContactEmailAddressPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
           case (Some(value), _) => form.fill(value)
           case (None, Some(displaySubscription)) =>
             val primaryContactEmail =
-              viewHelper.retrieveContactEmail(
-                displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
+              viewHelper.retrieveContactEmail(displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
 
             form.fill(primaryContactEmail)
           case _ => form
         }
 
       val json = Json.obj(
-        "form" -> preparedForm,
+        "form"               -> preparedForm,
         "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
       )
 
@@ -74,35 +75,34 @@ class ContactEmailAddressController @Inject()(
 
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
 
-      form.bindFromRequest().fold(
-        formWithErrors => {
+            val json = Json.obj(
+              "form"               -> formWithErrors,
+              "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
+            )
 
-          val json = Json.obj(
-            "form" -> formWithErrors,
-            "primaryContactName" -> viewHelper.getPrimaryContactName(request.userAnswers)
-          )
+            renderer.render("contactdetails/contactEmailAddress.njk", json).map(BadRequest(_))
+          },
+          newContactEmail =>
+            request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+              case Some(displaySubscription) =>
+                val primaryContactEmail =
+                  viewHelper.retrieveContactEmail(displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
 
-          renderer.render("contactdetails/contactEmailAddress.njk", json).map(BadRequest(_))
-        },
-        newContactEmail => {
-          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
-            case Some(displaySubscription) =>
-              val primaryContactEmail =
-                viewHelper.retrieveContactEmail(
-                  displaySubscription.displaySubscriptionForDACResponse.responseDetail.primaryContact.contactInformation)
-
-              if (newContactEmail != primaryContactEmail) {
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactEmailAddressPage, newContactEmail))
-                  _ <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers))
-              } else {
-                Future.successful(Redirect(controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad()))
-              }
-            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
-          }
-        }
-      )
+                if (newContactEmail != primaryContactEmail) {
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(ContactEmailAddressPage, newContactEmail))
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield Redirect(navigator.nextPage(ContactEmailAddressPage, NormalMode, updatedAnswers))
+                } else {
+                  Future.successful(Redirect(controllers.contactdetails.routes.HaveContactPhoneController.onPageLoad()))
+                }
+              case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+            }
+        )
   }
 }

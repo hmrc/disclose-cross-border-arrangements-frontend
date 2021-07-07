@@ -23,9 +23,9 @@ import play.api.test.Helpers._
 class SignOutControllerSpec extends SpecBase {
 
   private def signOutRoute: String = controllers.routes.SignOutController.signOut().url
-  private val application = applicationBuilder().build()
+  private val application          = applicationBuilder().build()
 
-  "SignOut Controller"  - {
+  "SignOut Controller" - {
 
     "redirect to feedback survey page" in {
 

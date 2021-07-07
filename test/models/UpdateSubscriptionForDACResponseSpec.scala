@@ -26,8 +26,9 @@ import play.api.libs.json.{JsString, Json}
 class UpdateSubscriptionForDACResponseSpec extends SpecBase with Generators {
 
   val returnParameters: ReturnParameters = ReturnParameters("Name", "Value")
-  val responseCommon: ResponseCommon = ResponseCommon(
-    status = "OK", statusText = None, processingDate = "2020-09-23T16:12:11Z", returnParameters = Some(Seq(returnParameters)))
+
+  val responseCommon: ResponseCommon =
+    ResponseCommon(status = "OK", statusText = None, processingDate = "2020-09-23T16:12:11Z", returnParameters = Some(Seq(returnParameters)))
 
   def updateSubscriptionResponse(safeID: String): UpdateSubscriptionForDACResponse = UpdateSubscriptionForDACResponse(
     UpdateSubscription(
@@ -37,13 +38,15 @@ class UpdateSubscriptionForDACResponseSpec extends SpecBase with Generators {
   )
 
   "UpdateSubscriptionForDACResponse" - {
-     "must deserialise UpdateSubscriptionForDACResponse" in {
-       forAll(validDacID) {
-         safeID =>
-         Json.parse(updateSubscriptionResponsePayload(JsString(safeID)))
-           .validate[UpdateSubscriptionForDACResponse].get mustBe updateSubscriptionResponse(safeID)
-       }
-     }
+    "must deserialise UpdateSubscriptionForDACResponse" in {
+      forAll(validDacID) {
+        safeID =>
+          Json
+            .parse(updateSubscriptionResponsePayload(JsString(safeID)))
+            .validate[UpdateSubscriptionForDACResponse]
+            .get mustBe updateSubscriptionResponse(safeID)
+      }
+    }
 
     "must serialise UpdateSubscriptionForDACResponse" in {
       forAll(validDacID) {

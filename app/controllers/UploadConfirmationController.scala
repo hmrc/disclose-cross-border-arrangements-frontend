@@ -31,31 +31,32 @@ import uk.gov.hmrc.viewmodels.Html
 
 import scala.concurrent.ExecutionContext
 
-class UploadConfirmationController @Inject()(
-    override val messagesApi: MessagesApi,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer,
-    errorHandler: ErrorHandler,
-    viewHelper: ViewHelper,
-    appConfig: FrontendAppConfig,
-    contactRetrievalAction: ContactRetrievalAction
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class UploadConfirmationController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer,
+  errorHandler: ErrorHandler,
+  viewHelper: ViewHelper,
+  appConfig: FrontendAppConfig,
+  contactRetrievalAction: ContactRetrievalAction
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
-
       val disclosureID = request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
-        case _ => ""
+        case _                                           => ""
       }
 
       val emailMessage = request.contacts match {
-        case Some(contactDetails) if contactDetails.secondEmail.isDefined =>  contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
-        case Some(contactDetails) => contactDetails.contactEmail.get
-        case _ => errorHandler.onServerError(request, new Exception("Contact details are missing"))
+        case Some(contactDetails) if contactDetails.secondEmail.isDefined => contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
+        case Some(contactDetails)                                         => contactDetails.contactEmail.get
+        case _                                                            => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
 
       val xmlData = request.userAnswers.get(Dac6MetaDataPage).get
@@ -64,10 +65,10 @@ class UploadConfirmationController @Inject()(
         errorHandler.onServerError(request, throw new Exception("Disclosure ID is missing"))
       } else {
         val json = Json.obj(
-          "messageRefID" -> xmlData.messageRefId,
-          "emailMessage" -> emailMessage.toString,
-          "disclosureID" -> confirmationPanelText(disclosureID),
-          "homePageLink" -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
+          "messageRefID"       -> xmlData.messageRefId,
+          "emailMessage"       -> emailMessage.toString,
+          "disclosureID"       -> confirmationPanelText(disclosureID),
+          "homePageLink"       -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
           "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
         )
 
@@ -75,7 +76,6 @@ class UploadConfirmationController @Inject()(
       }
   }
 
-  private def confirmationPanelText(id: String)(implicit messages: Messages): Html = {
-    Html(s"${{ messages("uploadConfirmation.panel.html") }}<br><strong class='breakString'>$id</strong>")
-  }
+  private def confirmationPanelText(id: String)(implicit messages: Messages): Html =
+    Html(s"${messages("uploadConfirmation.panel.html")}<br><strong class='breakString'>$id</strong>")
 }

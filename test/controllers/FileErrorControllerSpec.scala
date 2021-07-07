@@ -37,8 +37,8 @@ class FileErrorControllerSpec extends SpecBase {
         .thenReturn(Future.successful(Html("")))
       val userAnswers = UserAnswers(userAnswersId).set(InvalidXMLPage, "fileName.xml").success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
-      val request = FakeRequest(GET, routes.FileErrorController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val request        = FakeRequest(GET, routes.FileErrorController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value
@@ -57,8 +57,8 @@ class FileErrorControllerSpec extends SpecBase {
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
-      val request = FakeRequest(GET, routes.FileErrorController.onPageLoad().url)
+      val application    = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val request        = FakeRequest(GET, routes.FileErrorController.onPageLoad().url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
 
       val result = route(application, request).value

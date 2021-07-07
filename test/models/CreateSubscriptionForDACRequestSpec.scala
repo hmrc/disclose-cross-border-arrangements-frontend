@@ -46,7 +46,7 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     IDType = "DAC",
     IDNumber = "IDNumber",
     tradingName = None,
-    isGBUser =  false,
+    isGBUser = false,
     primaryContact = primaryContactForInd,
     secondaryContact = None
   )
@@ -105,32 +105,34 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
         Json.obj(
           "createSubscriptionForDACRequest" -> Json.obj(
             "requestCommon" -> Json.obj(
-              "regime" -> "DAC",
-              "receiptDate" -> "2020-09-23T16:12:11Z",
+              "regime"                   -> "DAC",
+              "receiptDate"              -> "2020-09-23T16:12:11Z",
               "acknowledgementReference" -> "AB123c",
-              "originatingSystem" -> "MDTP",
+              "originatingSystem"        -> "MDTP",
               "requestParameters" -> Json.arr(
                 Json.obj(
-                  "paramName" -> "Name",
+                  "paramName"  -> "Name",
                   "paramValue" -> "Value"
                 )
               )
             ),
             "requestDetail" -> Json.obj(
-              "IDType" -> "DAC",
+              "IDType"   -> "DAC",
               "IDNumber" -> "IDNumber",
               "isGBUser" -> false,
-              "primaryContact" -> Json.arr(Json.obj(
-                "individual" -> Json.obj(
-                  "firstName" -> "FirstName",
-                  "lastName" -> "LastName"
-                ),
-                "email" -> "email@email.com"
-              ))
-            ),
+              "primaryContact" -> Json.arr(
+                Json.obj(
+                  "individual" -> Json.obj(
+                    "firstName" -> "FirstName",
+                    "lastName"  -> "LastName"
+                  ),
+                  "email" -> "email@email.com"
+                )
+              )
+            )
           ),
           "subscriptionID" -> "XADAC0000111111",
-          "lastUpdated" ->  s"$lastUpdated"
+          "lastUpdated"    -> s"$lastUpdated"
         )
 
       Json.toJson(updateRequest) mustBe json

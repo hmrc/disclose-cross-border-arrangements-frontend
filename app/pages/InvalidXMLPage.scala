@@ -15,6 +15,7 @@
  */
 
 package pages
+
 import play.api.libs.json.JsPath
 
 case object InvalidXMLPage extends QuestionPage[String] {

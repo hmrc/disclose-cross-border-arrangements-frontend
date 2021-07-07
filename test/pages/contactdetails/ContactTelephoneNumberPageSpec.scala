@@ -18,7 +18,6 @@ package pages.contactdetails
 
 import pages.behaviours.PageBehaviours
 
-
 class ContactTelephoneNumberPageSpec extends PageBehaviours {
 
   "ContactTelephoneNumberPage" - {

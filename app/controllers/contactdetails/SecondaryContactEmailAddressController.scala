@@ -35,33 +35,35 @@ import uk.gov.hmrc.viewmodels.NunjucksSupport
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class SecondaryContactEmailAddressController @Inject()(
-    override val messagesApi: MessagesApi,
-    sessionRepository: SessionRepository,
-    navigator: Navigator,
-    viewHelper: ViewHelper,
-    identify: IdentifierAction,
-    getData: DataRetrievalAction,
-    requireData: DataRequiredAction,
-    formProvider: SecondaryContactEmailAddressFormProvider,
-    val controllerComponents: MessagesControllerComponents,
-    renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
+class SecondaryContactEmailAddressController @Inject() (
+  override val messagesApi: MessagesApi,
+  sessionRepository: SessionRepository,
+  navigator: Navigator,
+  viewHelper: ViewHelper,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  formProvider: SecondaryContactEmailAddressFormProvider,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with NunjucksSupport {
 
   private val form = formProvider()
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       val preparedForm =
         (request.userAnswers.get(SecondaryContactEmailAddressPage), request.userAnswers.get(DisplaySubscriptionDetailsPage)) match {
-          case (Some(value), _) => form.fill(value)
+          case (Some(value), _)                  => form.fill(value)
           case (None, Some(displaySubscription)) => form.fill(retrieveSecondaryContactEmail(displaySubscription))
-          case _ => form
+          case _                                 => form
         }
 
       val json = Json.obj(
-        "form" -> preparedForm,
+        "form"                 -> preparedForm,
         "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
       )
 
@@ -70,39 +72,40 @@ class SecondaryContactEmailAddressController @Inject()(
 
   def onSubmit: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      form
+        .bindFromRequest()
+        .fold(
+          formWithErrors => {
 
-      form.bindFromRequest().fold(
-        formWithErrors => {
+            val json = Json.obj(
+              "form"                 -> formWithErrors,
+              "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
+            )
 
-          val json = Json.obj(
-            "form" -> formWithErrors,
-            "secondaryContactName" -> viewHelper.getSecondaryContactName(request.userAnswers)
-          )
-
-          renderer.render("contactdetails/secondaryContactEmailAddress.njk", json).map(BadRequest(_))
-        },
-        newContactEmail => {
-          request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
-            case Some(displaySubscription) =>
-              if (newContactEmail != retrieveSecondaryContactEmail(displaySubscription)) {
-                for {
-                  updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactEmailAddressPage, newContactEmail))
-                  _ <- sessionRepository.set(updatedAnswers)
-                } yield Redirect(navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers))
-              } else {
-                Future.successful(Redirect(controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad()))
-              }
-            case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
-          }
-        }
-      )
+            renderer.render("contactdetails/secondaryContactEmailAddress.njk", json).map(BadRequest(_))
+          },
+          newContactEmail =>
+            request.userAnswers.get(DisplaySubscriptionDetailsPage) match {
+              case Some(displaySubscription) =>
+                if (newContactEmail != retrieveSecondaryContactEmail(displaySubscription)) {
+                  for {
+                    updatedAnswers <- Future.fromTry(request.userAnswers.set(SecondaryContactEmailAddressPage, newContactEmail))
+                    _              <- sessionRepository.set(updatedAnswers)
+                  } yield Redirect(navigator.nextPage(SecondaryContactEmailAddressPage, NormalMode, updatedAnswers))
+                } else {
+                  Future.successful(Redirect(controllers.contactdetails.routes.HaveSecondaryContactPhoneController.onPageLoad()))
+                }
+              case None => Future.successful(Redirect(controllers.routes.ContactDetailsController.onPageLoad()))
+            }
+        )
   }
 
   private def retrieveSecondaryContactEmail(displaySubscription: DisplaySubscriptionForDACResponse): String = {
     val secondaryContact = displaySubscription.displaySubscriptionForDACResponse.responseDetail.secondaryContact
 
-    secondaryContact.fold(""){ _ =>
-      viewHelper.retrieveContactEmail(secondaryContact.get.contactInformation)
+    secondaryContact.fold("") {
+      _ =>
+        viewHelper.retrieveContactEmail(secondaryContact.get.contactInformation)
     }
   }
 }

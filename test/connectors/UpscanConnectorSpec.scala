@@ -28,18 +28,16 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.UpstreamErrorResponse
 import utils.WireMockHelper
 
-class UpscanConnectorSpec extends SpecBase
-  with GuiceOneAppPerSuite
-  with WireMockHelper
-  with ScalaFutures {
+class UpscanConnectorSpec extends SpecBase with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures {
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder()
     .configure(
       "microservice.services.upscan.port" -> server.port()
-    ).build()
+    )
+    .build()
 
   lazy val connector: UpscanConnector = app.injector.instanceOf[UpscanConnector]
-  val request: UpscanInitiateRequest = UpscanInitiateRequest("callbackUrl", "successRedirectUrl", "errorRedirectUrl")
+  val request: UpscanInitiateRequest  = UpscanInitiateRequest("callbackUrl", "successRedirectUrl", "errorRedirectUrl")
 
   "getUpscanFormData" - {
     "should return an UpscanInitiateResponse" - {
@@ -54,7 +52,7 @@ class UpscanConnectorSpec extends SpecBase
             )
         )
 
-        whenReady(connector.getUpscanFormData){
+        whenReady(connector.getUpscanFormData) {
           result =>
             result mustBe body.toUpscanInitiateResponse
         }
@@ -62,41 +60,43 @@ class UpscanConnectorSpec extends SpecBase
       }
     }
 
-  "throw an exception" - {
-    "when upscan returns a 4xx response" in {
-      server.stubFor(
-        post(urlEqualTo(connector.upscanInitiatePath))
-          .willReturn(
-            aResponse()
-              .withStatus(BAD_REQUEST)
-          )
-      )
+    "throw an exception" - {
+      "when upscan returns a 4xx response" in {
+        server.stubFor(
+          post(urlEqualTo(connector.upscanInitiatePath))
+            .willReturn(
+              aResponse()
+                .withStatus(BAD_REQUEST)
+            )
+        )
 
-      val result = connector.getUpscanFormData
+        val result = connector.getUpscanFormData
 
-      whenReady(result.failed){ e =>
-        e mustBe an[UpstreamErrorResponse]
-        val error = e.asInstanceOf[UpstreamErrorResponse]
-        error.statusCode mustBe BAD_REQUEST
+        whenReady(result.failed) {
+          e =>
+            e mustBe an[UpstreamErrorResponse]
+            val error = e.asInstanceOf[UpstreamErrorResponse]
+            error.statusCode mustBe BAD_REQUEST
+        }
       }
-    }
 
-    "when upscan returns 5xx response" in {
-      server.stubFor(
-        post(urlEqualTo(connector.upscanInitiatePath))
-          .willReturn(
-            aResponse()
-              .withStatus(SERVICE_UNAVAILABLE)
-          )
-      )
+      "when upscan returns 5xx response" in {
+        server.stubFor(
+          post(urlEqualTo(connector.upscanInitiatePath))
+            .willReturn(
+              aResponse()
+                .withStatus(SERVICE_UNAVAILABLE)
+            )
+        )
 
-      val result = connector.getUpscanFormData
-      whenReady(result.failed){ e =>
-        e mustBe an[UpstreamErrorResponse]
-        val error = e.asInstanceOf[UpstreamErrorResponse]
-        error.statusCode mustBe SERVICE_UNAVAILABLE
+        val result = connector.getUpscanFormData
+        whenReady(result.failed) {
+          e =>
+            e mustBe an[UpstreamErrorResponse]
+            val error = e.asInstanceOf[UpstreamErrorResponse]
+            error.statusCode mustBe SERVICE_UNAVAILABLE
+        }
       }
     }
   }
-}
 }
