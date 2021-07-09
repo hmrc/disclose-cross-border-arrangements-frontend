@@ -95,11 +95,12 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
         }
 
         application.stop()
+        reset(mockRenderer)
       }
 
       verifyResult(InProgress, OK)
       verifyResult(Quarantined)
-      verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")))
+      verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK)
       verifyResult(Failed, INTERNAL_SERVER_ERROR)
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
