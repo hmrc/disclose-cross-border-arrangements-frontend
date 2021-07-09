@@ -16,6 +16,7 @@
 
 package models.upscan
 
+import org.slf4j.LoggerFactory
 import play.api.libs.json._
 
 sealed trait UploadStatus
@@ -28,12 +29,14 @@ case object Rejected extends UploadStatus
 case class UploadedSuccessfully(name: String, downloadUrl: String) extends UploadStatus
 
 object UploadStatus {
+
   implicit val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
 
   implicit val read: Reads[UploadStatus] = new Reads[UploadStatus] {
 
     override def reads(json: JsValue): JsResult[UploadStatus] = {
       val jsObject = json.asInstanceOf[JsObject]
+
       jsObject.value.get("_type") match {
         case Some(JsString("NotStarted"))           => JsSuccess(NotStarted)
         case Some(JsString("InProgress"))           => JsSuccess(InProgress)

@@ -18,10 +18,12 @@ package connectors
 
 import config.FrontendAppConfig
 import controllers.routes
+import models.upscan.UploadStatus.getClass
 import models.upscan._
+import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames
 import play.api.http.Status.OK
-import play.api.libs.json.{JsError, JsSuccess}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
@@ -29,6 +31,8 @@ import javax.inject.{Inject, Named}
 import scala.concurrent.{ExecutionContext, Future}
 
 class UpscanConnector @Inject() (configuration: FrontendAppConfig, httpClient: HttpClient, @Named("appName") appName: String)(implicit ec: ExecutionContext) {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private val headers = Map(
     HeaderNames.CONTENT_TYPE -> "application/json"
@@ -71,6 +75,7 @@ class UpscanConnector @Inject() (configuration: FrontendAppConfig, httpClient: H
     val statusUrl = s"$backendUrl/upscan/status/${uploadId.value}"
     httpClient.GET[HttpResponse](statusUrl).map {
       response =>
+        logger.debug(s"Status uploaded: $response")
         response.status match {
           case OK =>
             response.json.validate[UploadStatus] match {
