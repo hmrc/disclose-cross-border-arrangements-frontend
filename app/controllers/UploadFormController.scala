@@ -123,10 +123,11 @@ class UploadFormController @Inject() (
           upscanConnector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
+            case Some(r: UploadRejected) =>
+              logger.debug(s"Upload rejected with $r")
+              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-            case Some(Rejected) =>
-              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Failed) =>
               errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
             case Some(_) =>
