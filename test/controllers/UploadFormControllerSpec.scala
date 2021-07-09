@@ -72,7 +72,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
       val request = FakeRequest(GET, routes.UploadFormController.getStatus().url)
 
-      def verifyResult(uploadStatus: UploadStatus, expectedResult: Int = SEE_OTHER): Unit = {
+      def verifyResult(uploadStatus: UploadStatus, expectedResult: Int = SEE_OTHER, expectedUI: String = ""): Unit = {
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
           .overrides(
@@ -91,16 +91,16 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
         status(result) mustBe expectedResult
         if (expectedResult == OK) {
           verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
-          templateCaptor.getValue mustEqual "upload-result.njk"
+          templateCaptor.getValue mustEqual expectedUI
         }
 
         application.stop()
         reset(mockRenderer)
       }
 
-      verifyResult(InProgress, OK)
+      verifyResult(InProgress, OK, "upload-result.njk")
       verifyResult(Quarantined)
-      verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK)
+      verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK, "upload-form.njk")
       verifyResult(Failed, INTERNAL_SERVER_ERROR)
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
