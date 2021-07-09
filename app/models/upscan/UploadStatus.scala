@@ -30,8 +30,6 @@ case class UploadedSuccessfully(name: String, downloadUrl: String) extends Uploa
 
 object UploadStatus {
 
-  private val logger = LoggerFactory.getLogger(getClass)
-
   implicit val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
 
   implicit val read: Reads[UploadStatus] = new Reads[UploadStatus] {
@@ -39,7 +37,6 @@ object UploadStatus {
     override def reads(json: JsValue): JsResult[UploadStatus] = {
       val jsObject = json.asInstanceOf[JsObject]
 
-      logger.debug(s"Status received from upscan as Json: ${Json.stringify(jsObject)}")
       jsObject.value.get("_type") match {
         case Some(JsString("NotStarted"))           => JsSuccess(NotStarted)
         case Some(JsString("InProgress"))           => JsSuccess(InProgress)
