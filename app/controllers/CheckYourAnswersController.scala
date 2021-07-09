@@ -38,21 +38,23 @@ import utils.CheckYourAnswersHelper
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Elem
 
-class CheckYourAnswersController @Inject()(
-                                            override val messagesApi: MessagesApi,
-                                            identify: IdentifierAction,
-                                            getData: DataRetrievalAction,
-                                            requireData: DataRequiredAction,
-                                            contactRetrievalAction: ContactRetrievalAction,
-                                            sessionRepository: SessionRepository,
-                                            xmlValidationService: XmlLoadHelper,
-                                            auditService: AuditService,
-                                            emailService: EmailService,
-                                            frontendAppConfig: FrontendAppConfig,
-                                            crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
-                                            val controllerComponents: MessagesControllerComponents,
-                                            renderer: Renderer
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+class CheckYourAnswersController @Inject() (
+  override val messagesApi: MessagesApi,
+  identify: IdentifierAction,
+  getData: DataRetrievalAction,
+  requireData: DataRequiredAction,
+  contactRetrievalAction: ContactRetrievalAction,
+  sessionRepository: SessionRepository,
+  xmlValidationService: XmlLoadHelper,
+  auditService: AuditService,
+  emailService: EmailService,
+  frontendAppConfig: FrontendAppConfig,
+  crossBorderArrangementsConnector: CrossBorderArrangementsConnector,
+  val controllerComponents: MessagesControllerComponents,
+  renderer: Renderer
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -68,12 +70,14 @@ class CheckYourAnswersController @Inject()(
             xmlData.messageRefId
           )
 
-          renderer.render(
-            "check-your-answers.njk",
-            Json.obj(
-              "fileInfo" -> fileInfo
+          renderer
+            .render(
+              "check-your-answers.njk",
+              Json.obj(
+                "fileInfo" -> fileInfo
+              )
             )
-          ).map(Ok(_))
+            .map(Ok(_))
 
         case _ =>
           logger.warn("Dac6MetaData can't be retrieved. Redirecting to /upload page.")
@@ -81,25 +85,22 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  private def sendMail(ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] = {
-
+  private def sendMail(ids: GeneratedIDs)(implicit request: DataRequestWithContacts[_]): Future[Option[HttpResponse]] =
     if (frontendAppConfig.sendEmailToggle && request.userAnswers.get(Dac6MetaDataPage).isDefined) {
       val dac6MetaData = request.userAnswers.get(Dac6MetaDataPage).get
 
       val generatedIDs =
         (ids.arrangementID, ids.disclosureID) match {
-          case (Some(_), Some(_)) => ids //DAC6NEW
+          case (Some(_), Some(_))      => ids //DAC6NEW
           case (_, Some(disclosureID)) => GeneratedIDs(dac6MetaData.arrangementID, Some(disclosureID)) //DAC6ADD
-          case _ => GeneratedIDs(dac6MetaData.arrangementID, dac6MetaData.disclosureID) //DAC6REP and DAC6DEL
+          case _                       => GeneratedIDs(dac6MetaData.arrangementID, dac6MetaData.disclosureID) //DAC6REP and DAC6DEL
         }
 
       emailService.sendEmail(request.contacts, generatedIDs, dac6MetaData.importInstruction, dac6MetaData.messageRefId)
-    }
-    else {
+    } else {
       logger.warn("Unable to send out email.")
       Future.successful(None)
     }
-  }
 
   def onSubmit(): Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
@@ -107,9 +108,9 @@ class CheckYourAnswersController @Inject()(
         case (Some(url), Some(fileName)) =>
           val xml: Elem = xmlValidationService.loadXML(url)
 
-          val importInstruction= request.userAnswers.get(Dac6MetaDataPage) match {
+          val importInstruction = request.userAnswers.get(Dac6MetaDataPage) match {
             case Some(metaData) => metaData.importInstruction
-            case None => ""
+            case None           => ""
           }
 
           for {
@@ -117,20 +118,18 @@ class CheckYourAnswersController @Inject()(
             userAnswersWithIDs <- Future.fromTry(request.userAnswers.set(GeneratedIDPage, ids))
             _                  <- sessionRepository.set(userAnswersWithIDs)
             _                  <- sendMail(ids)
-            _ =  auditService.submissionAudit(
-                    request.enrolmentID,
-                    fileName,
-                    ids.arrangementID,
-                    ids.disclosureID,
-                    xml
-                  )
-          } yield {
-            importInstruction match {
-              case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
-              case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
-              case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
-              case _ => Redirect(routes.UploadFormController.onPageLoad().url)
-            }
+            _ = auditService.submissionAudit(
+              request.enrolmentID,
+              fileName,
+              ids.arrangementID,
+              ids.disclosureID,
+              xml
+            )
+          } yield importInstruction match {
+            case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
+            case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
+            case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
+            case _         => Redirect(routes.UploadFormController.onPageLoad().url)
           }
         case _ =>
           logger.warn("XML url or XML is missing. Redirecting to /upload page.")

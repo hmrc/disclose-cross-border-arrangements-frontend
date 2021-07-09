@@ -25,30 +25,30 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ValidationConnector @Inject()(http: HttpClient, config: FrontendAppConfig) {
+class ValidationConnector @Inject() (http: HttpClient, config: FrontendAppConfig) {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
   val url = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/validate-upload-submission"
 
-  def sendForValidation(upScanUrl: String)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Option[Either[Seq[GenericError], Dac6MetaData]]] = {
-
-    http.POSTString[HttpResponse](url, upScanUrl).map {
-     response =>
-       response.status match {
-         case OK => response.json.as[UploadSubmissionValidationResult] match {
-           case x: UploadSubmissionValidationSuccess =>
-             Some(Right(x.dac6MetaData))
-           case x: UploadSubmissionValidationFailure =>
-             Some(Left(x.errors))
-         }
-       }
-    }.recover {
-      case e: Throwable =>
-        logger.warn(s"XML parsing failed. The XML parser in disclose-cross-border-arrangements backend has thrown the exception: $e")
-        None
-    }
-  }
+  def sendForValidation(upScanUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Either[Seq[GenericError], Dac6MetaData]]] =
+    http
+      .POSTString[HttpResponse](url, upScanUrl)
+      .map {
+        response =>
+          response.status match {
+            case OK =>
+              response.json.as[UploadSubmissionValidationResult] match {
+                case x: UploadSubmissionValidationSuccess =>
+                  Some(Right(x.dac6MetaData))
+                case x: UploadSubmissionValidationFailure =>
+                  Some(Left(x.errors))
+              }
+          }
+      }
+      .recover {
+        case e: Throwable =>
+          logger.warn(s"XML parsing failed. The XML parser in disclose-cross-border-arrangements backend has thrown the exception: $e")
+          None
+      }
 }
-
-

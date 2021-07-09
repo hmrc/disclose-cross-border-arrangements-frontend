@@ -20,9 +20,9 @@ import java.net.URL
 import scala.xml.Elem
 
 class XmlLoadHelper {
-  def loadXML(downloadSrc: String): Elem = {
+
+  def loadXML(downloadSrc: String): Elem =
     new scala.xml.factory.XMLLoader[scala.xml.Elem] {
       override def adapter = new scala.xml.parsing.NoBindingFactoryAdapter
     }.load(new URL(downloadSrc))
-  }
 }

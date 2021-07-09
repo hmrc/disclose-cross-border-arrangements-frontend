@@ -24,25 +24,23 @@ import helpers.JsonFixtures
 import models.{Dac6MetaData, GenericError}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.{OK, BAD_REQUEST}
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.JsString
 import utils.WireMockHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ValidationConnectorSpec extends SpecBase
-  with WireMockHelper
-  with Generators
-  with ScalaCheckPropertyChecks {
+class ValidationConnectorSpec extends SpecBase with WireMockHelper with Generators with ScalaCheckPropertyChecks {
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(
       conf = "microservice.services.cross-border-arrangements.port" -> server.port()
-    ).build()
+    )
+    .build()
 
   lazy val connector: ValidationConnector = app.injector.instanceOf[ValidationConnector]
-  val validationUrl = "/disclose-cross-border-arrangements/validate-upload-submission"
+  val validationUrl                       = "/disclose-cross-border-arrangements/validate-upload-submission"
 
   val successPayloadResult: Dac6MetaData = Dac6MetaData(
     importInstruction = "DAC6NEW",
@@ -54,7 +52,7 @@ class ValidationConnectorSpec extends SpecBase
   )
 
   val failurePayloadResult: Seq[GenericError] = Seq(GenericError(1, "some error"), GenericError(2, "another error"))
-  
+
   "Validation Connector" - {
 
     "must return a 200 and a Success Object when passing validation" in {

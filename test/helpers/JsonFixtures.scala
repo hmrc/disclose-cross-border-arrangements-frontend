@@ -344,10 +344,7 @@ object JsonFixtures {
     )
   )
 
-  def xmlValidationSuccessResponse(importInstruction: JsString,
-                                       arrangementID:JsString,
-                                       disclosureID:JsString,
-                                       messageRefId: JsString): String = {
+  def xmlValidationSuccessResponse(importInstruction: JsString, arrangementID: JsString, disclosureID: JsString, messageRefId: JsString): String =
     s"""
        |{
        |  "dac6MetaData": {
@@ -359,9 +356,8 @@ object JsonFixtures {
        |  "messageRefId": $messageRefId
        |  }
        |}""".stripMargin
-  }
 
-  def xmlValidationFailureResponse = {
+  def xmlValidationFailureResponse =
     """
       |{
       | "errors":[
@@ -375,6 +371,5 @@ object JsonFixtures {
       |      }
       |  ]
       |}""".stripMargin
-  }
 
 }

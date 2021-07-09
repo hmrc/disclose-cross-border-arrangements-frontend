@@ -23,7 +23,8 @@ case class Dac6MetaData(importInstruction: String,
                         disclosureID: Option[String] = None,
                         disclosureInformationPresent: Boolean,
                         initialDisclosureMA: Boolean,
-                        messageRefId: String)
+                        messageRefId: String
+)
 
 object Dac6MetaData {
   implicit val format = Json.format[Dac6MetaData]
@@ -40,7 +41,9 @@ case class GenericError(lineNumber: Int, messageKey: String)
 object GenericError {
 
   implicit def orderByLineNumber[A <: GenericError]: Ordering[A] =
-    Ordering.by(ge => (ge.lineNumber, ge.messageKey))
+    Ordering.by(
+      ge => (ge.lineNumber, ge.messageKey)
+    )
 
   implicit val format = Json.format[GenericError]
 
@@ -49,16 +52,19 @@ object GenericError {
 sealed trait UploadSubmissionValidationResult
 
 object UploadSubmissionValidationResult {
+
   implicit val validationWrites = new Format[UploadSubmissionValidationResult] {
 
     override def reads(json: JsValue): JsResult[UploadSubmissionValidationResult] =
-      json.validate[UploadSubmissionValidationSuccess].orElse(
-        json.validate[UploadSubmissionValidationFailure]
-      )
+      json
+        .validate[UploadSubmissionValidationSuccess]
+        .orElse(
+          json.validate[UploadSubmissionValidationFailure]
+        )
 
     override def writes(o: UploadSubmissionValidationResult): JsValue = o match {
-      case m@UploadSubmissionValidationSuccess(_) => UploadSubmissionValidationSuccess.format.writes(m)
-      case m@UploadSubmissionValidationFailure(_) => UploadSubmissionValidationFailure.format.writes(m)
+      case m @ UploadSubmissionValidationSuccess(_) => UploadSubmissionValidationSuccess.format.writes(m)
+      case m @ UploadSubmissionValidationFailure(_) => UploadSubmissionValidationFailure.format.writes(m)
     }
   }
 }
@@ -74,4 +80,3 @@ case class UploadSubmissionValidationFailure(errors: Seq[GenericError]) extends 
 object UploadSubmissionValidationFailure {
   implicit val format: OFormat[UploadSubmissionValidationFailure] = Json.format[UploadSubmissionValidationFailure]
 }
-

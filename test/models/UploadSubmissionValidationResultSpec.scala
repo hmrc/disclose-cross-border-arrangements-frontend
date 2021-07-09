@@ -21,8 +21,7 @@ import play.api.libs.json.{JsSuccess, Json}
 
 class UploadSubmissionValidationResultSpec extends SpecBase {
 
-  val mockMetaData = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true,
-    initialDisclosureMA = false, messageRefId = "messageRefId")
+  val mockMetaData = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = "messageRefId")
 
   "UploadSubmissionValidationResult" - {
     "must be able to read UploadSubmissionValidationSuccess from the trait" in {

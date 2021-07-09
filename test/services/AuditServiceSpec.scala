@@ -60,31 +60,31 @@ class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
       val xml = XMLFixture.dac6NotInitialDisclosureMA
       forAll(arbitrary[String], arbitrary[String], arbitrary[Option[String]], arbitrary[Option[String]]) {
         (enrolmentID, fileName, arrangementID, disclosureID) =>
-        reset(auditConnector)
+          reset(auditConnector)
 
-        when(auditConnector.sendExtendedEvent(any())(any(), any()))
-          .thenReturn(Future.successful(AuditResult.Success))
+          when(auditConnector.sendExtendedEvent(any())(any(), any()))
+            .thenReturn(Future.successful(AuditResult.Success))
 
-        auditService.submissionAudit(enrolmentID, fileName, arrangementID, disclosureID, xml)
+          auditService.submissionAudit(enrolmentID, fileName, arrangementID, disclosureID, xml)
 
-        val arrangementAudit = arrangementID.getOrElse("None Provided")
-        val disclosureAudit = disclosureID.getOrElse("None Provided")
+          val arrangementAudit = arrangementID.getOrElse("None Provided")
+          val disclosureAudit  = disclosureID.getOrElse("None Provided")
 
-        val expectedjson = Json.obj(
-          "fileName" -> fileName,
-          "enrolmentID" -> enrolmentID,
-          "arrangementID" -> arrangementAudit,
-          "disclosureID" -> disclosureAudit,
-          "messageRefID" -> "GB0000000XXX",
-          "disclosureImportInstruction" -> "DAC6NEW",
-          "initialDisclosureMA" -> "false"
-        )
+          val expectedjson = Json.obj(
+            "fileName"                    -> fileName,
+            "enrolmentID"                 -> enrolmentID,
+            "arrangementID"               -> arrangementAudit,
+            "disclosureID"                -> disclosureAudit,
+            "messageRefID"                -> "GB0000000XXX",
+            "disclosureImportInstruction" -> "DAC6NEW",
+            "initialDisclosureMA"         -> "false"
+          )
 
-        val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
+          val eventCaptor = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
 
-        verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(), any())
+          verify(auditConnector, times(1)).sendExtendedEvent(eventCaptor.capture())(any(), any())
 
-        eventCaptor.getValue.detail mustBe expectedjson
+          eventCaptor.getValue.detail mustBe expectedjson
       }
     }
   }
