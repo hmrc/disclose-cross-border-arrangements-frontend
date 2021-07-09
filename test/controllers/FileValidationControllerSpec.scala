@@ -75,7 +75,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
       val expectedData = Json.obj("validXML"-> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Right(metaData)))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Right(metaData))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
       fakeUpscanConnector.setDetails(uploadDetails)
 
@@ -99,7 +99,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       val expectedData = Json.obj("validXML"-> "afile","dac6MetaData" -> metaData, "url" -> downloadURL)
 
       fakeUpscanConnector.setDetails(uploadDetails)
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Right(metaData)))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Right(metaData))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -120,7 +120,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       fakeUpscanConnector.setDetails(uploadDetails)
 
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Left(errors)))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]
@@ -140,7 +140,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       fakeUpscanConnector.setDetails(uploadDetails)
       //noinspection ScalaStyle
 
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Left(errors)))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(errors))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller = application.injector.instanceOf[FileValidationController]

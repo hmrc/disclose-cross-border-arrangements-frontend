@@ -18,27 +18,37 @@ package connectors
 
 import config.FrontendAppConfig
 import models.{Dac6MetaData, GenericError, UploadSubmissionValidationFailure, UploadSubmissionValidationResult, UploadSubmissionValidationSuccess}
-import play.api.http.HeaderNames
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import org.slf4j.LoggerFactory
+import play.api.http.Status.OK
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.Elem
 
 class ValidationConnector @Inject()(http: HttpClient, config: FrontendAppConfig) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   val url = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/validate-upload-submission"
 
-  private val headers = Seq(
-    HeaderNames.CONTENT_TYPE -> "application/xml"
-  )
+  def sendForValidation(upScanUrl: String)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Option[Either[Seq[GenericError], Dac6MetaData]]] = {
 
-  def sendForValidation(xml: Elem)(implicit hc:HeaderCarrier, ec: ExecutionContext): Future[Either[Seq[GenericError], Dac6MetaData]] = {
-    http.POSTString[UploadSubmissionValidationResult](url, xml.mkString, headers).map {
-      case UploadSubmissionValidationSuccess(a) =>
-        Right(a)
-      case UploadSubmissionValidationFailure(a) =>
-        Left(a)
+    http.POSTString[HttpResponse](url, upScanUrl).map {
+     response =>
+       response.status match {
+         case OK => response.json.as[UploadSubmissionValidationResult] match {
+           case x: UploadSubmissionValidationSuccess =>
+             Some(Right(x.dac6MetaData))
+           case x: UploadSubmissionValidationFailure =>
+             Some(Left(x.errors))
+         }
+       }
+    }.recover {
+      case e: Throwable =>
+        logger.warn(s"XML parsing failed. The XML parser in disclose-cross-border-arrangements backend has thrown the exception: $e")
+        None
     }
   }
 }
+
+

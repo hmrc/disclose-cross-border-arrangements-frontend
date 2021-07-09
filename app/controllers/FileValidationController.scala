@@ -18,8 +18,6 @@ package controllers
 
 import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import handlers.ErrorHandler
-import helpers.XmlLoadHelper
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
 import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers}
 import navigation.Navigator
@@ -41,8 +39,6 @@ class FileValidationController @Inject()(
                                           upscanConnector: UpscanConnector,
                                           requireData: DataRequiredAction,
                                           validationConnector: ValidationConnector,
-                                          errorHandler: ErrorHandler,
-                                          validationService: XmlLoadHelper,
                                           navigator: Navigator
 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
@@ -52,15 +48,14 @@ class FileValidationController @Inject()(
       for {
         uploadId <- getUploadId(request.userAnswers)
         uploadSessions <- upscanConnector.getUploadDetails(uploadId)
-        (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-        xml = validationService.loadXML(downloadUrl)
-        validation: Either[Seq[GenericError], Dac6MetaData] <- validationConnector.sendForValidation(xml)
+        (fileName, upScanUrl) = getDownloadUrl(uploadSessions)
+        validation: Option[Either[Seq[GenericError], Dac6MetaData]] <- validationConnector.sendForValidation(upScanUrl)
       } yield {
         validation match  {
-          case Right(metaData) =>
+          case Some(Right(metaData)) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              updatedAnswersWithURL <- Future.fromTry(updatedAnswers.set(URLPage, upScanUrl))
               updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
               _              <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield {
@@ -69,7 +64,8 @@ class FileValidationController @Inject()(
                 case _ => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
               }
             }
-          case Left(errors: Seq[GenericError]) =>
+
+          case Some(Left(errors: Seq[GenericError])) =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
@@ -77,15 +73,14 @@ class FileValidationController @Inject()(
             } yield {
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }
-          case Left(_) =>
+
+          case _ =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               _              <- sessionRepository.set(updatedAnswers)
             } yield {
               Redirect(routes.FileErrorController.onPageLoad())
-            }
-          case _ =>
-            errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
+          }
         }
       }
     }.flatten

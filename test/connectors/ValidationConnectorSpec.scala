@@ -63,8 +63,8 @@ class ValidationConnectorSpec extends SpecBase
 
       stubResponse(validationUrl, OK, expectedBody)
 
-      val result = connector.sendForValidation(<test></test>)
-      result.futureValue mustBe Right(successPayloadResult)
+      val result = connector.sendForValidation("SomeUrl")
+      result.futureValue mustBe Some(Right(successPayloadResult))
     }
 
     "must return a 200 and a Failure Object when failing validation" in {
@@ -73,18 +73,16 @@ class ValidationConnectorSpec extends SpecBase
 
       stubResponse(validationUrl, OK, expectedBody)
 
-      val result = connector.sendForValidation(<test></test>)
-      result.futureValue mustBe Left(failurePayloadResult)
+      val result = connector.sendForValidation("SomeUrl")
+      result.futureValue mustBe Some(Left(failurePayloadResult))
     }
 
-    "must throw an exception when validation returns a 400 (BAD_REQUEST) status" in {
+    "must return None when validation returns a 400 (BAD_REQUEST) status" in {
       stubResponse(validationUrl, BAD_REQUEST, "Some error")
 
-      val result = connector.sendForValidation(<test></test>)
+      val result = connector.sendForValidation("SomeUrl")
 
-      assertThrows[Exception] {
-        result.futureValue
-      }
+      result.futureValue mustBe None
     }
   }
 
