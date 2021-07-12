@@ -123,12 +123,9 @@ class UploadFormController @Inject() (
               } else {
                 "upload_form.error.file.invalid"
               }
-
-              val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form) {
-                _ =>
-                  form.withError("file", errorMessage)
-              }
-              toResponse(formWithErrors)
+              val errorForm: Form[String] = form.withError("file", errorMessage)
+              logger.debug(s"Show errorForm on rejection $errorForm")
+              toResponse(errorForm)
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(Failed) =>
