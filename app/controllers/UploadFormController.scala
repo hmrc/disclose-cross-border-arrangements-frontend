@@ -22,7 +22,7 @@ import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierA
 import forms.mappings.Mappings
 import handlers.ErrorHandler
 import models.UserAnswers
-import models.requests.OptionalDataRequest
+import models.requests.{DataRequest, OptionalDataRequest}
 import models.upscan._
 import org.slf4j.LoggerFactory
 import pages.UploadIDPage
@@ -40,7 +40,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UploadFormController @Inject()(
+class UploadFormController @Inject() (
   override val messagesApi: MessagesApi,
   val controllerComponents: MessagesControllerComponents,
   appConfig: FrontendAppConfig,
@@ -51,73 +51,71 @@ class UploadFormController @Inject()(
   sessionRepository: SessionRepository,
   renderer: Renderer,
   errorHandler: ErrorHandler
-)(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport with NunjucksSupport {
+)(implicit ec: ExecutionContext)
+    extends FrontendBaseController
+    with I18nSupport
+    with NunjucksSupport {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
   private[controllers] def form: Form[String] = new Mappings {
-    val apply: Form[String] = Form( "file" -> text() )
+    val apply: Form[String] = Form("file" -> text())
   }.apply
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData).async  {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
-      val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form){ _ =>
-        form.withError("file", "upload_form.error.file.invalid")
+      val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form) {
+        _ =>
+          form.withError("file", "upload_form.error.file.invalid")
       }
 
       toResponse(formWithErrors)
   }
 
-  private[controllers] def toResponse(preparedForm: Form[String])(implicit request: OptionalDataRequest[AnyContent], hc: HeaderCarrier): Future[Result] = {
+  private[controllers] def toResponse(preparedForm: Form[String])(implicit request: DataRequest[AnyContent], hc: HeaderCarrier): Future[Result] = {
 
-    def json(upscanInitiateResponse: UpscanInitiateResponse): JsObject = Json.obj(
-      "form" -> preparedForm,
-      "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse),
-      "status" -> Json.toJson(0))
+    def json(upscanInitiateResponse: UpscanInitiateResponse): JsObject =
+      Json.obj("form" -> preparedForm, "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse), "status" -> Json.toJson(0))
 
     (for {
       upscanInitiateResponse <- upscanConnector.getUpscanFormData
-      uploadId <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
-      updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
-      _ <- sessionRepository.set(updatedAnswers)
-      html <- renderer.render("upload-form.njk", json(upscanInitiateResponse))
-    } yield {
-      html
-    }).map(Ok(_))
+      uploadId               <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
+      updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
+      _                      <- sessionRepository.set(updatedAnswers)
+      html                   <- renderer.render("upload-form.njk", json(upscanInitiateResponse))
+    } yield html).map(Ok(_))
   }
 
   def showResult: Action[AnyContent] = Action.async {
-    implicit uploadResponse => {
-      renderer.render(
-        "upload-result.njk").map (Ok (_))
-      }
-    }
+    implicit uploadResponse =>
+      renderer.render("upload-result.njk").map(Ok(_))
+  }
 
-  def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = (identify andThen getData).async {
+  def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-
       errorCode match {
         case "EntityTooLarge" =>
-          renderer.render(
-            "fileTooLargeError.njk",
-            Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
-          ).map (Ok (_))
+          renderer
+            .render(
+              "fileTooLargeError.njk",
+              Json.obj("xmlTechnicalGuidanceUrl" -> Json.toJson(appConfig.xmlTechnicalGuidanceUrl))
+            )
+            .map(Ok(_))
         case "InvalidArgument" =>
           val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
           toResponse(formWithErrors)
         case _ =>
-          renderer.render (
-            "error.njk",
-            Json.obj ("pageTitle" -> "Upload Error",
-              "heading" -> errorMessage,
-              "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-          ).map (Ok (_) )
+          renderer
+            .render(
+              "error.njk",
+              Json.obj("pageTitle" -> "Upload Error", "heading" -> errorMessage, "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
+            )
+            .map(Ok(_))
       }
   }
 
   def getStatus: Action[AnyContent] = (identify andThen getData andThen requireData).async {
-    implicit request => {
+    implicit request =>
       logger.debug("Show status called")
 
       request.userAnswers.get(UploadIDPage) match {
@@ -125,10 +123,15 @@ class UploadFormController @Inject()(
           upscanConnector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
+            case Some(r: UploadRejected) if r.details.message contains "application/octet-stream" =>
+              logger.debug(s"Upload empty file with $r")
+              val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
+              toResponse(formWithErrors)
+            case Some(r: UploadRejected) =>
+              logger.debug(s"Upload empty file with $r")
+              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-            case Some(Rejected) =>
-              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Failed) =>
               errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
             case Some(_) =>
@@ -139,8 +142,6 @@ class UploadFormController @Inject()(
         case None =>
           errorHandler.onServerError(request, new Throwable("UploadId not found"))
       }
-    }
   }
-
 
 }
