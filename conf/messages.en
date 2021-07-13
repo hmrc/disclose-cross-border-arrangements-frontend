@@ -186,7 +186,7 @@ submissionHistory.disclosureType.label = Disclosure type
 upload_form.title = Upload an XML file
 upload_form.heading = Upload an XML file
 upload_form.error.file.invalid = The selected file must be an XML
-upload_form.error.file.empty = Select a file to Upload
+upload_form.error.file.empty = Select a file to upload
 
 upload_error.title = Upload Error
 upload_error.heading = Upload Error
