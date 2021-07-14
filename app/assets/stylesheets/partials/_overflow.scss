@@ -1,0 +1,14 @@
+.name-overflow {
+  word-wrap: break-word; /* old version of overflow-wrap for IE and Edge and FF < 49*/
+  overflow-wrap: anywhere; /* modern, tries to fit word on a new line rather than fitting on remnants of the current line */
+  /* hyphens is not supported on Chrome < 55 or Opera and misc mobile browsers */
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto; /* ie10+ */
+  -moz-hyphens: auto;
+  hyphens: auto;
+}
+
+.text-overflow {
+  word-wrap: break-word; /* old version of overflow-wrap for IE and Edge and FF < 49*/
+  overflow-wrap: anywhere; /* modern, tries to fit word on a new line rather than fitting on remnants of the current line */
+}

@@ -64,12 +64,7 @@ class UploadFormController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
-      val formWithErrors: Form[String] = request.flash.get("REJECTED").fold(form) {
-        _ =>
-          form.withError("file", "upload_form.error.file.invalid")
-      }
-
-      toResponse(formWithErrors)
+      toResponse(form)
   }
 
   private[controllers] def toResponse(preparedForm: Form[String])(implicit request: OptionalDataRequest[AnyContent], hc: HeaderCarrier): Future[Result] = {
@@ -114,19 +109,25 @@ class UploadFormController @Inject() (
       }
   }
 
-  def getStatus: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def getStatus: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
       logger.debug("Show status called")
-
-      request.userAnswers.get(UploadIDPage) match {
+      request.userAnswers.flatMap(_.get(UploadIDPage)) match {
         case Some(uploadId) =>
           upscanConnector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
               Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
+            case Some(r: UploadRejected) =>
+              val errorMessage = if (r.details.message.contains("octet-stream")) {
+                "upload_form.error.file.empty"
+              } else {
+                "upload_form.error.file.invalid"
+              }
+              val errorForm: Form[String] = form.withError("file", errorMessage)
+              logger.debug(s"Show errorForm on rejection $errorForm")
+              toResponse(errorForm)
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
-            case Some(Rejected) =>
-              Future.successful(Redirect(routes.UploadFormController.onPageLoad()).flashing("REJECTED" -> "REJECTED"))
             case Some(Failed) =>
               errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
             case Some(_) =>

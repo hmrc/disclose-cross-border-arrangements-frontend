@@ -25,60 +25,53 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
 
-        {% if form.errors.length > 0 %}
-          {{ govukErrorSummary({
-            "titleText": messages("error.summary.title"),
-            "errorList": form.errors
-          }) }}
-        {% endif %}
-
         <h1 class="govuk-heading-xl" id="heading">
            {{ messages("upload_form.heading") }}
         </h1>
 
-<form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
+        <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
 
-    {% for key, value in upscanInitiateResponse.formFields %}
-    <input type="hidden" name="{{key}}" value="{{value}}"/>
-    {% endfor %}
+            {% for key, value in upscanInitiateResponse.formFields %}
+            <input type="hidden" name="{{key}}" value="{{value}}"/>
+            {% endfor %}
 
-    <div class="js-visible mt-3">
+            <div class="js-visible mt-3">
 
-        <div class="form-group {% if form.errors.length > 0 %}govuk-form-group--error{% endif %}" aria-describedby="file-upload">
+                <div class="form-group {% if form.errors.length > 0 %}govuk-form-group--error{% endif %}" aria-describedby="file-upload">
 
-          {% if form.errors.length > 0 %}
-            <span id="event-name-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span>{{ form.file.error.text }}
-              </span>
-          {% endif %}
+                  {% if form.errors.length > 0 %}
+                    <span id="event-name-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span>{{ form.file.error.text }}
+                      </span>
+                  {% endif %}
 
-            <div class="form-control-wrapper">
-                {{ govukFileUpload({
-                  id: "file-upload",
-                  name: "file",
-                  classes: "hmrc-file-upload",
-                  label: {
-                    text: messages("upload_form.heading"),
-                    isPageHeading: true,
-                    classes: "govuk-label govuk-visually-hidden"
-                  },
-                  attributes: {
-                    "accept": ".xml,application/xml",
-                    "required": "required"
-                   }
-                }) }}
+                    <div class="form-control-wrapper">
+                        {{ govukFileUpload({
+                          id: "file-upload",
+                          name: "file",
+                          classes: "hmrc-file-upload",
+                          label: {
+                            text: messages("upload_form.heading"),
+                            isPageHeading: true,
+                            classes: "govuk-label govuk-visually-hidden"
+                          },
+                          attributes: {
+                            "accept": ".xml,application/xml",
+                            "required": "required"
+                           }
+                        }) }}
+                    </div>
+                </div>
+
             </div>
-        </div>
 
-    </div>
-
-    <div class="section">
-    {{ govukButton({
-                text: messages("site.continue"),
-                attributes: {id:"submit"}
-              }) }}
-    </div>
-</form>
+            <div class="section">
+            {{ govukButton({
+                        text: messages("site.continue"),
+                        attributes: {id:"submit"}
+                      }) }}
+            </div>
+        </form>
       </div>
     </div>
   </div>
