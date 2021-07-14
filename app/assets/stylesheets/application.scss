@@ -6,6 +6,7 @@ $hmrc-assets-path: "/disclose-cross-border-arrangements/upload/assets/lib/hmrc-f
 @import "partials/header";
 @import "partials/file_upload";
 @import "partials/spinner";
+@import "partials/overflow";
 @import "_timeout-dialog.scss";
 @import "_recruitmentBanner.scss";
 
