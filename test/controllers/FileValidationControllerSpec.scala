@@ -32,6 +32,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.SessionRepository
+import services.AuditService
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -40,11 +41,12 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
   val mockXmlLoadHelper       = mock[XmlLoadHelper]
   val mockSessionRepository   = mock[SessionRepository]
   val mockValidationConnector = mock[ValidationConnector]
+  val mockAuditService        = mock[AuditService]
 
   implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
   override def beforeEach: Unit =
-    reset(mockSessionRepository)
+    reset(mockSessionRepository, mockAuditService)
 
   val fakeUpscanConnector = app.injector.instanceOf[FakeUpscanConnector]
 
@@ -56,7 +58,8 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
         bind[UpscanConnector].toInstance(fakeUpscanConnector),
         bind[SessionRepository].toInstance(mockSessionRepository),
         bind[XmlLoadHelper].toInstance(mockXmlLoadHelper),
-        bind[ValidationConnector].toInstance(mockValidationConnector)
+        bind[ValidationConnector].toInstance(mockValidationConnector),
+        bind[AuditService].toInstance(mockAuditService)
       )
       .build()
 
@@ -130,6 +133,8 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       status(result) mustBe SEE_OTHER
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
+      verify(mockAuditService, times(1)).auditErrorMessage(any())(any())
+
       userAnswersCaptor.getValue.data mustEqual expectedData
     }
 

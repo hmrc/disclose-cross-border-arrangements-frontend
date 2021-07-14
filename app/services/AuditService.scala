@@ -17,6 +17,7 @@
 package services
 
 import config.FrontendAppConfig
+import models.GenericError
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -79,6 +80,41 @@ class AuditService @Inject() (appConfig: FrontendAppConfig, auditConnector: Audi
             logger.warn(s"The attempt to issue audit event $auditType was unsuccessful, as auditing is currently disabled in config"); ar
           case _ => logger.debug(s"Audit event $auditType issued successfully."); ar
         }
+    }
+  }
+
+  def auditErrorMessage(error: GenericError)(implicit hc: HeaderCarrier): Unit = {
+
+    val errorMessageType = "ErrorMessage"
+
+    val auditMap: JsObject = Json.obj("errorMessage" -> error.messageKey)
+
+    if (appConfig.validationAuditToggle) {
+      auditConnector.sendExtendedEvent(
+        ExtendedDataEvent(
+          auditSource = appConfig.appName,
+          auditType = errorMessageType,
+          detail = auditMap,
+          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+        )
+      ) map {
+        ar: AuditResult =>
+          ar match {
+            case Failure(msg, ex) =>
+              ex match {
+                case Some(throwable) =>
+                  logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg", throwable)
+                case None =>
+                  logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg")
+              }
+              ar
+            case Disabled =>
+              logger.warn(s"The attempt to issue audit event $errorMessageType was unsuccessful, as auditing is currently disabled in config"); ar
+            case _ => logger.debug(s"Audit event $errorMessageType issued successfully."); ar
+          }
+      }
+    } else {
+      logger.warn(s"Validation has failed and auditing currently disabled for this event type")
     }
   }
 }

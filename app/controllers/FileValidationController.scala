@@ -25,6 +25,7 @@ import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
+import services.AuditService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -34,6 +35,7 @@ class FileValidationController @Inject() (
   override val messagesApi: MessagesApi,
   identify: IdentifierAction,
   getData: DataRetrievalAction,
+  auditService: AuditService,
   val sessionRepository: SessionRepository,
   val controllerComponents: MessagesControllerComponents,
   upscanConnector: UpscanConnector,
@@ -69,7 +71,10 @@ class FileValidationController @Inject() (
               updatedAnswers           <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
               _                        <- sessionRepository.set(updatedAnswersWithErrors)
-            } yield Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            } yield {
+              errors.foreach(auditService.auditErrorMessage(_))
+              Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
 
           case _ =>
             for {
