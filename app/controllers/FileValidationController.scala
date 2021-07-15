@@ -72,6 +72,7 @@ class FileValidationController @Inject() (
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
               _                        <- sessionRepository.set(updatedAnswersWithErrors)
             } yield {
+              auditService.auditValidationFailure(request.enrolmentID, dac6MetaData, errors)
               errors.foreach(auditService.auditErrorMessage(_))
               Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
             }
