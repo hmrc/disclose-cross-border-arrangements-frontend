@@ -17,6 +17,7 @@
 package services
 
 import config.FrontendAppConfig
+import models.{Dac6MetaData, GenericError}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -80,5 +81,76 @@ class AuditService @Inject() (appConfig: FrontendAppConfig, auditConnector: Audi
           case _ => logger.debug(s"Audit event $auditType issued successfully."); ar
         }
     }
+  }
+
+  def auditValidationFailure(enrolmentId: String, metaData: Option[Dac6MetaData], errors: Seq[GenericError])(implicit hc: HeaderCarrier): Unit = {
+
+    val validationFailureType = "ValidationFailure"
+
+    val auditMap: JsObject = Json.obj(
+      "enrolmentID" -> enrolmentId,
+      "arrangementID" -> metaData.fold(noneProvided)(
+        data => data.arrangementID.getOrElse(noneProvided)
+      ),
+      "disclosureID" -> metaData.fold(noneProvided)(
+        data => data.disclosureID.getOrElse(noneProvided)
+      ),
+      "messageRefID" -> metaData.fold(noneProvided)(
+        data => data.messageRefId
+      ),
+      "disclosureImportInstruction" -> metaData.fold("Unknown Import Instruction")(
+        data => data.importInstruction
+      ),
+      "initialDisclosureMA" -> metaData.fold("InitialDisclosureMA value not supplied")(
+        data => data.initialDisclosureMA.toString
+      ),
+      "errors" -> buildErrorMessagePayload(errors)
+    )
+
+    if (appConfig.validationAuditToggle) {
+      auditConnector.sendExtendedEvent(
+        ExtendedDataEvent(
+          auditSource = appConfig.appName,
+          auditType = validationFailureType,
+          detail = auditMap,
+          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+        )
+      ) map {
+        ar: AuditResult =>
+          ar match {
+            case Failure(msg, ex) =>
+              ex match {
+                case Some(throwable) =>
+                  logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg", throwable)
+                case None =>
+                  logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg")
+              }
+              ar
+            case Disabled =>
+              logger.warn(s"The attempt to issue audit event $validationFailureType was unsuccessful, as auditing is currently disabled in config"); ar
+            case _ => logger.debug(s"Audit event $validationFailureType issued successfully."); ar
+          }
+      }
+    } else {
+      logger.warn(s"Validation has failed and auditing currently disabled for this event type")
+    }
+  }
+
+  private def buildErrorMessagePayload(errors: Seq[GenericError]): String = {
+
+    val formattedErrors = errors
+      .map {
+        error =>
+          s"""|{
+              |"lineNumber" : ${error.lineNumber},
+              |"errorMessage" : ${error.messageKey}
+              |}""".stripMargin
+      }
+      .mkString(",")
+
+    s"""|[
+        |$formattedErrors
+        |]""".stripMargin.mkString
+
   }
 }

@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqua
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import generators.Generators
 import helpers.JsonFixtures
-import models.{Dac6MetaData, GenericError}
+import models.{Dac6MetaData, GenericError, ValidationErrors}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK}
@@ -51,7 +51,7 @@ class ValidationConnectorSpec extends SpecBase with WireMockHelper with Generato
     messageRefId = "messageRef"
   )
 
-  val failurePayloadResult: Seq[GenericError] = Seq(GenericError(1, "some error"), GenericError(2, "another error"))
+  val failurePayloadResult: ValidationErrors = ValidationErrors(Seq(GenericError(1, "some error"), GenericError(2, "another error")), None)
 
   "Validation Connector" - {
 

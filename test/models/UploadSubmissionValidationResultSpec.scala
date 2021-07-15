@@ -43,11 +43,12 @@ class UploadSubmissionValidationResultSpec extends SpecBase {
     "must be able to read UploadSubmissionValidationFailure from the trait" in {
       val jsonPayload =
         """
-          |{"errors":[
+          |{"validationErrors": {
+          |"errors":[
           |{"lineNumber":1,"messageKey":"Some Error"}
-          |]}""".stripMargin
+          |]}}""".stripMargin
       Json.parse(jsonPayload).validate[UploadSubmissionValidationResult] mustBe
-        JsSuccess(UploadSubmissionValidationFailure(Seq(GenericError(1, "Some Error"))))
+        JsSuccess(UploadSubmissionValidationFailure(ValidationErrors(Seq(GenericError(1, "Some Error")), None)))
     }
   }
 }

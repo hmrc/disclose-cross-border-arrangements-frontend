@@ -49,6 +49,12 @@ object GenericError {
 
 }
 
+case class ValidationErrors(errors: Seq[GenericError], dac6MetaData: Option[Dac6MetaData])
+
+object ValidationErrors {
+  implicit val format = Json.format[ValidationErrors]
+}
+
 sealed trait UploadSubmissionValidationResult
 
 object UploadSubmissionValidationResult {
@@ -75,7 +81,7 @@ object UploadSubmissionValidationSuccess {
   implicit val format: OFormat[UploadSubmissionValidationSuccess] = Json.format[UploadSubmissionValidationSuccess]
 }
 
-case class UploadSubmissionValidationFailure(errors: Seq[GenericError]) extends UploadSubmissionValidationResult
+case class UploadSubmissionValidationFailure(validationErrors: ValidationErrors) extends UploadSubmissionValidationResult
 
 object UploadSubmissionValidationFailure {
   implicit val format: OFormat[UploadSubmissionValidationFailure] = Json.format[UploadSubmissionValidationFailure]

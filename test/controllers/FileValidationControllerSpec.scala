@@ -20,7 +20,7 @@ import base.SpecBase
 import connectors.{UpscanConnector, ValidationConnector}
 import helpers.{FakeUpscanConnector, XmlLoadHelper}
 import models.upscan.{Reference, UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{Dac6MetaData, GenericError, UserAnswers}
+import models.{Dac6MetaData, GenericError, UserAnswers, ValidationErrors}
 import org.bson.types.ObjectId
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -122,7 +122,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       fakeUpscanConnector.setDetails(uploadDetails)
 
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(errors))))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(ValidationErrors(errors, None)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller             = application.injector.instanceOf[FileValidationController]
@@ -142,7 +142,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       fakeUpscanConnector.setDetails(uploadDetails)
       //noinspection ScalaStyle
 
-      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(errors))))
+      when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Left(ValidationErrors(errors, None)))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
 
       val controller             = application.injector.instanceOf[FileValidationController]

@@ -359,7 +359,7 @@ object JsonFixtures {
 
   def xmlValidationFailureResponse =
     """
-      |{
+      |{ "validationErrors": {
       | "errors":[
       |     {
       |         "lineNumber" : 1,
@@ -370,6 +370,6 @@ object JsonFixtures {
       |         "messageKey":"another error"
       |      }
       |  ]
-      |}""".stripMargin
+      |}}""".stripMargin
 
 }

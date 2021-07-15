@@ -17,7 +17,14 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.{Dac6MetaData, GenericError, UploadSubmissionValidationFailure, UploadSubmissionValidationResult, UploadSubmissionValidationSuccess}
+import models.{
+  Dac6MetaData,
+  GenericError,
+  UploadSubmissionValidationFailure,
+  UploadSubmissionValidationResult,
+  UploadSubmissionValidationSuccess,
+  ValidationErrors
+}
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
@@ -31,7 +38,7 @@ class ValidationConnector @Inject() (http: HttpClient, config: FrontendAppConfig
 
   val url = s"${config.crossBorderArrangementsUrl}/disclose-cross-border-arrangements/validate-upload-submission"
 
-  def sendForValidation(upScanUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Either[Seq[GenericError], Dac6MetaData]]] =
+  def sendForValidation(upScanUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Either[ValidationErrors, Dac6MetaData]]] =
     http
       .POSTString[HttpResponse](url, upScanUrl)
       .map {
@@ -42,7 +49,7 @@ class ValidationConnector @Inject() (http: HttpClient, config: FrontendAppConfig
                 case x: UploadSubmissionValidationSuccess =>
                   Some(Right(x.dac6MetaData))
                 case x: UploadSubmissionValidationFailure =>
-                  Some(Left(x.errors))
+                  Some(Left(x.validationErrors))
               }
           }
       }

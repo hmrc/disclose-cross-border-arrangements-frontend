@@ -19,13 +19,14 @@ package controllers
 import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers}
+import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers, ValidationErrors}
 import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import services.AuditService
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,7 +40,8 @@ class FileValidationController @Inject() (
   upscanConnector: UpscanConnector,
   requireData: DataRequiredAction,
   validationConnector: ValidationConnector,
-  navigator: Navigator
+  navigator: Navigator,
+  auditService: AuditService
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
     with I18nSupport {
@@ -51,7 +53,7 @@ class FileValidationController @Inject() (
           uploadId       <- getUploadId(request.userAnswers)
           uploadSessions <- upscanConnector.getUploadDetails(uploadId)
           (fileName, upScanUrl) = getDownloadUrl(uploadSessions)
-          validation: Option[Either[Seq[GenericError], Dac6MetaData]] <- validationConnector.sendForValidation(upScanUrl)
+          validation: Option[Either[ValidationErrors, Dac6MetaData]] <- validationConnector.sendForValidation(upScanUrl)
         } yield validation match {
           case Some(Right(metaData)) =>
             for {
@@ -64,11 +66,12 @@ class FileValidationController @Inject() (
               case _         => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
             }
 
-          case Some(Left(errors: Seq[GenericError])) =>
+          case Some(Left(ValidationErrors(errors, dac6MetaData))) =>
             for {
               updatedAnswers           <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
-              _                        <- sessionRepository.set(updatedAnswersWithErrors)
+              _ = auditService.auditValidationFailure(request.enrolmentID, dac6MetaData, errors)
+              _ <- sessionRepository.set(updatedAnswersWithErrors)
             } yield Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
 
           case _ =>
