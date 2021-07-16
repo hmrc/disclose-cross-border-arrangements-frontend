@@ -16,18 +16,16 @@
 
 package controllers
 
-import connectors.UpscanConnector
+import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
-import handlers.ErrorHandler
-
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{GenericError, NormalMode, UserAnswers, ValidationFailure, ValidationSuccess}
+import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers, ValidationErrors}
 import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
-import services.ValidationEngine
+import services.AuditService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
@@ -37,12 +35,12 @@ class FileValidationController @Inject() (
   override val messagesApi: MessagesApi,
   identify: IdentifierAction,
   getData: DataRetrievalAction,
+  auditService: AuditService,
   val sessionRepository: SessionRepository,
   val controllerComponents: MessagesControllerComponents,
   upscanConnector: UpscanConnector,
   requireData: DataRequiredAction,
-  validationEngine: ValidationEngine,
-  errorHandler: ErrorHandler,
+  validationConnector: ValidationConnector,
   navigator: Navigator
 )(implicit ec: ExecutionContext)
     extends FrontendBaseController
@@ -54,32 +52,36 @@ class FileValidationController @Inject() (
         for {
           uploadId       <- getUploadId(request.userAnswers)
           uploadSessions <- upscanConnector.getUploadDetails(uploadId)
-          (fileName, downloadUrl) = getDownloadUrl(uploadSessions)
-          validation <- validationEngine.validateFile(downloadUrl, request.enrolmentID)
+          (fileName, upScanUrl) = getDownloadUrl(uploadSessions)
+          validation: Option[Either[ValidationErrors, Dac6MetaData]] <- validationConnector.sendForValidation(upScanUrl)
         } yield validation match {
-          case Right(ValidationSuccess(_, Some(metaData))) =>
+          case Some(Right(metaData)) =>
             for {
               updatedAnswers             <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
-              updatedAnswersWithURL      <- Future.fromTry(updatedAnswers.set(URLPage, downloadUrl))
+              updatedAnswersWithURL      <- Future.fromTry(updatedAnswers.set(URLPage, upScanUrl))
               updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
               _                          <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield metaData.importInstruction match {
               case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
               case _         => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
             }
-          case Right(ValidationFailure(errors: Seq[GenericError])) =>
+
+          case Some(Left(ValidationErrors(errors, dac6MetaData))) =>
             for {
               updatedAnswers           <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               updatedAnswersWithErrors <- Future.fromTry(updatedAnswers.set(GenericErrorPage, errors))
               _                        <- sessionRepository.set(updatedAnswersWithErrors)
-            } yield Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
-          case Left(_) =>
+            } yield {
+              auditService.auditValidationFailure(request.enrolmentID, dac6MetaData, errors)
+              errors.foreach(auditService.auditErrorMessage(_))
+              Redirect(navigator.nextPage(InvalidXMLPage, NormalMode, updatedAnswers))
+            }
+
+          case _ =>
             for {
               updatedAnswers <- Future.fromTry(UserAnswers(request.internalId).set(InvalidXMLPage, fileName))
               _              <- sessionRepository.set(updatedAnswers)
             } yield Redirect(routes.FileErrorController.onPageLoad())
-          case _ =>
-            errorHandler.onServerError(request, throw new RuntimeException("file validation failed - missing data"))
         }
       }.flatten
   }
@@ -99,5 +101,4 @@ class FileValidationController @Inject() (
         }
       case _ => throw new RuntimeException("File not uploaded successfully")
     }
-
 }

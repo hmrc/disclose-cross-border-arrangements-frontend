@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions._
+import helpers.XmlLoadHelper
 import models.GeneratedIDs
 import models.requests.DataRequestWithContacts
 import org.slf4j.LoggerFactory
@@ -28,7 +29,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.{EmailService, XMLValidationService}
+import services.EmailService
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
@@ -44,7 +45,7 @@ class DeleteDisclosureSummaryController @Inject() (
   requireData: DataRequiredAction,
   contactRetrievalAction: ContactRetrievalAction,
   sessionRepository: SessionRepository,
-  xmlValidationService: XMLValidationService,
+  xmlValidationService: XmlLoadHelper,
   emailService: EmailService,
   frontendAppConfig: FrontendAppConfig,
   crossBorderArrangementsConnector: CrossBorderArrangementsConnector,

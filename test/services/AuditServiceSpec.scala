@@ -88,7 +88,6 @@ class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
           eventCaptor.getValue.detail mustBe expectedjson
       }
     }
-
     "must generate correct payload for validationFailure audit with one error" in {
       forAll(arbitrary[String], arbitrary[Option[String]], arbitrary[Option[String]], arbitrary[String]) {
         (enrolmentID, arrangementID, disclosureID, messageRefID) =>
@@ -115,11 +114,11 @@ class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
 
           val errorsArray =
             s"""|[
-                                   |{
-                                   |"lineNumber" : 1,
-                                   |"errorMessage" : error-message
-                                   |}
-                                   |]""".stripMargin
+                |{
+                |"lineNumber" : 1,
+                |"errorMessage" : error-message
+                |}
+                |]""".stripMargin
 
           val expectedjson = Json.obj(
             "enrolmentID"                 -> enrolmentID,
@@ -165,14 +164,14 @@ class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
 
           val errorsArray =
             s"""|[
-                                   |{
-                                   |"lineNumber" : 1,
-                                   |"errorMessage" : error-message
-                                   |},{
-                                   |"lineNumber" : 2,
-                                   |"errorMessage" : error-message2
-                                   |}
-                                   |]""".stripMargin
+                |{
+                |"lineNumber" : 1,
+                |"errorMessage" : error-message
+                |},{
+                |"lineNumber" : 2,
+                |"errorMessage" : error-message2
+                |}
+                |]""".stripMargin
 
           val expectedjson = Json.obj(
             "enrolmentID"                 -> enrolmentID,
@@ -191,6 +190,5 @@ class AuditServiceSpec extends SpecBase with ScalaCheckPropertyChecks {
           eventCaptor.getValue.detail mustBe expectedjson
       }
     }
-
   }
 }
