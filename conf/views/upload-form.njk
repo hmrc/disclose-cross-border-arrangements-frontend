@@ -25,13 +25,11 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
 
-        <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
+        <h1 class="govuk-heading-xl" id="heading">
+           {{ messages("upload_form.heading") }}
+        </h1>
 
-            <h1 class="govuk-label-wrapper" id="heading">
-              <label class="govuk-label govuk-label--xl" for="file-upload">
-                {{ messages("upload_form.heading") }}
-              </label>
-            </h1>
+        <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
 
             {% for key, value in upscanInitiateResponse.formFields %}
             <input type="hidden" name="{{key}}" value="{{value}}"/>
@@ -52,6 +50,11 @@
                         name: "file",
                         classes: "hmrc-file-upload",
                         describedBy: "event-name-error",
+                        label: {
+                          text: messages("upload_form.heading"),
+                          isPageHeading: true,
+                          classes: "govuk-label govuk-visually-hidden"
+                        },
                         attributes: {
                           "accept": ".xml,application/xml",
                           "required": "required"
@@ -66,6 +69,11 @@
                         id: "file-upload",
                         name: "file",
                         classes: "hmrc-file-upload",
+                        label: {
+                          text: messages("upload_form.heading"),
+                          isPageHeading: true,
+                          classes: "govuk-label govuk-visually-hidden"
+                        },
                         attributes: {
                           "accept": ".xml,application/xml",
                           "required": "required"
