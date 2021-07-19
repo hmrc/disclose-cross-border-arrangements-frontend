@@ -30,12 +30,6 @@ object Dac6MetaData {
   implicit val format = Json.format[Dac6MetaData]
 }
 
-case class ValidationSuccess(downloadUrl: String, metaData: Option[Dac6MetaData] = None) extends XMLValidationStatus
-
-object ValidationSuccess {
-  implicit val format = Json.format[ValidationSuccess]
-}
-
 case class SaxParseError(lineNumber: Int, errorMessage: String)
 
 object SaxParseError {
@@ -52,34 +46,43 @@ object GenericError {
     )
 
   implicit val format = Json.format[GenericError]
+
 }
 
-case class ValidationFailure(errors: Seq[GenericError]) extends XMLValidationStatus
+case class ValidationErrors(errors: Seq[GenericError], dac6MetaData: Option[Dac6MetaData])
 
-object ValidationFailure {
-  implicit val format = Json.format[ValidationFailure]
+object ValidationErrors {
+  implicit val format = Json.format[ValidationErrors]
 }
 
-sealed trait XMLValidationStatus
+sealed trait UploadSubmissionValidationResult
 
-object XMLValidationStatus {
+object UploadSubmissionValidationResult {
 
-  implicit val reads = new Reads[XMLValidationStatus] {
+  implicit val validationWrites = new Format[UploadSubmissionValidationResult] {
 
-    override def reads(json: JsValue): JsResult[XMLValidationStatus] =
-      json \ "downloadUrl" match {
-        case JsDefined(_)  => implicitly[Reads[ValidationSuccess]].reads(json)
-        case JsUndefined() => implicitly[Reads[ValidationFailure]].reads(json)
-      }
+    override def reads(json: JsValue): JsResult[UploadSubmissionValidationResult] =
+      json
+        .validate[UploadSubmissionValidationSuccess]
+        .orElse(
+          json.validate[UploadSubmissionValidationFailure]
+        )
+
+    override def writes(o: UploadSubmissionValidationResult): JsValue = o match {
+      case m @ UploadSubmissionValidationSuccess(_) => UploadSubmissionValidationSuccess.format.writes(m)
+      case m @ UploadSubmissionValidationFailure(_) => UploadSubmissionValidationFailure.format.writes(m)
+    }
   }
+}
 
-  implicit val writes: Writes[XMLValidationStatus] = Writes[XMLValidationStatus] {
-    case ValidationSuccess(downloadUrl, metaData) => Json.obj("downloadUrl" -> downloadUrl, "metaData" -> metaData, "_type" -> "ValidationSuccess")
+case class UploadSubmissionValidationSuccess(dac6MetaData: Dac6MetaData) extends UploadSubmissionValidationResult
 
-    case ValidationFailure(error) =>
-      Json.obj(
-        "error" -> JsArray(error.map(Json.toJson[GenericError](_))),
-        "_type" -> "ValidationFailure"
-      )
-  }
+object UploadSubmissionValidationSuccess {
+  implicit val format: OFormat[UploadSubmissionValidationSuccess] = Json.format[UploadSubmissionValidationSuccess]
+}
+
+case class UploadSubmissionValidationFailure(validationErrors: ValidationErrors) extends UploadSubmissionValidationResult
+
+object UploadSubmissionValidationFailure {
+  implicit val format: OFormat[UploadSubmissionValidationFailure] = Json.format[UploadSubmissionValidationFailure]
 }

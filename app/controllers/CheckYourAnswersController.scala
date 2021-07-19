@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import helpers.XmlLoadHelper
 import models.GeneratedIDs
 import models.requests.DataRequestWithContacts
 import org.slf4j.LoggerFactory
@@ -29,7 +30,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
 import repositories.SessionRepository
-import services.{AuditService, EmailService, XMLValidationService}
+import services.{AuditService, EmailService}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CheckYourAnswersHelper
@@ -44,7 +45,7 @@ class CheckYourAnswersController @Inject() (
   requireData: DataRequiredAction,
   contactRetrievalAction: ContactRetrievalAction,
   sessionRepository: SessionRepository,
-  xmlValidationService: XMLValidationService,
+  xmlValidationService: XmlLoadHelper,
   auditService: AuditService,
   emailService: EmailService,
   frontendAppConfig: FrontendAppConfig,

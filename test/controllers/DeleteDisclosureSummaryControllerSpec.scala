@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import helpers.XmlLoadHelper
 import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
@@ -29,7 +30,7 @@ import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.{EmailService, XMLValidationService}
+import services.EmailService
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
@@ -143,12 +144,12 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
         .success
         .value
 
-      val mockXmlValidationService             = mock[XMLValidationService]
+      val mockXmlValidationService             = mock[XmlLoadHelper]
       val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
@@ -193,19 +194,19 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
         .success
         .value
 
-      val mockXmlValidationService             = mock[XMLValidationService]
+      val mockXmlLoadHelper                    = mock[XmlLoadHelper]
       val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlLoadHelper),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
         )
         .build()
 
-      when(mockXmlValidationService.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
+      when(mockXmlLoadHelper.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
       when(mockAppConfig.sendEmailToggle).thenReturn(false)
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))

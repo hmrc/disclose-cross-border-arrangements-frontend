@@ -19,6 +19,7 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import helpers.XmlLoadHelper
 import models.subscription.DisplaySubscriptionDetailsAndStatus
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
@@ -31,7 +32,7 @@ import play.api.libs.json.JsObject
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.Html
-import services.{EmailService, XMLValidationService}
+import services.EmailService
 import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent.Future
@@ -46,7 +47,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
     .success
     .value
 
-  val mockXmlValidationService: XMLValidationService                         = mock[XMLValidationService]
+  val mockXmlValidationService: XmlLoadHelper                                = mock[XmlLoadHelper]
   val mockCrossBorderArrangementsConnector: CrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
   val mockEmailService: EmailService                                         = mock[EmailService]
   val mockSubscriptionConnector: SubscriptionConnector                       = mock[SubscriptionConnector]
@@ -128,7 +129,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(userAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[FrontendAppConfig].toInstance(mockAppConfig)
         )
@@ -166,7 +167,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
@@ -198,7 +199,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),
@@ -237,7 +238,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(updatedUserAnswers))
         .overrides(
-          bind[XMLValidationService].toInstance(mockXmlValidationService),
+          bind[XmlLoadHelper].toInstance(mockXmlValidationService),
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
           bind[EmailService].toInstance(mockEmailService),
           bind[SubscriptionConnector].toInstance(mockSubscriptionConnector),

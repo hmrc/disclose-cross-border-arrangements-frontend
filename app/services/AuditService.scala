@@ -17,6 +17,7 @@
 package services
 
 import config.FrontendAppConfig
+import models.{Dac6MetaData, GenericError}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -24,9 +25,8 @@ import uk.gov.hmrc.play.audit.AuditExtensions
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import javax.inject.Inject
-import models.{Dac6MetaData, GenericError}
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.xml.{Elem, NodeSeq}
 
@@ -142,9 +142,9 @@ class AuditService @Inject() (appConfig: FrontendAppConfig, auditConnector: Audi
       .map {
         error =>
           s"""|{
-        |"lineNumber" : ${error.lineNumber},
-        |"errorMessage" : ${error.messageKey}
-        |}""".stripMargin
+              |"lineNumber" : ${error.lineNumber},
+              |"errorMessage" : ${error.messageKey}
+              |}""".stripMargin
       }
       .mkString(",")
 
