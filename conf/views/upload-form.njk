@@ -25,11 +25,13 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
 
-        <h1 class="govuk-heading-xl" id="heading">
-           {{ messages("upload_form.heading") }}
-        </h1>
-
         <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
+
+            <h1 class="govuk-label-wrapper" id="heading">
+              <label class="govuk-label govuk-label--xl" for="file-upload">
+                {{ messages("upload_form.heading") }}
+              </label>
+            </h1>
 
             {% for key, value in upscanInitiateResponse.formFields %}
             <input type="hidden" name="{{key}}" value="{{value}}"/>
@@ -37,30 +39,40 @@
 
             <div class="js-visible mt-3">
 
-                <div class="form-group {% if form.errors.length > 0 %}govuk-form-group--error{% endif %}" aria-describedby="file-upload">
+                <div class="form-group {% if form.errors.length > 0 %}govuk-form-group--error{% endif %}">
 
                   {% if form.errors.length > 0 %}
                     <span id="event-name-error" class="govuk-error-message">
                         <span class="govuk-visually-hidden">Error:</span>{{ form.file.error.text }}
-                      </span>
-                  {% endif %}
+                    </span>
 
                     <div class="form-control-wrapper">
-                        {{ govukFileUpload({
-                          id: "file-upload",
-                          name: "file",
-                          classes: "hmrc-file-upload",
-                          label: {
-                            text: messages("upload_form.heading"),
-                            isPageHeading: true,
-                            classes: "govuk-label govuk-visually-hidden"
-                          },
-                          attributes: {
-                            "accept": ".xml,application/xml",
-                            "required": "required"
-                           }
-                        }) }}
+                      {{ govukFileUpload({
+                        id: "file-upload",
+                        name: "file",
+                        classes: "hmrc-file-upload",
+                        describedBy: "event-name-error",
+                        attributes: {
+                          "accept": ".xml,application/xml",
+                          "required": "required"
+                         }
+                      }) }}
                     </div>
+
+                  {% else %}
+
+                    <div class="form-control-wrapper">
+                      {{ govukFileUpload({
+                        id: "file-upload",
+                        name: "file",
+                        classes: "hmrc-file-upload",
+                        attributes: {
+                          "accept": ".xml,application/xml",
+                          "required": "required"
+                         }
+                      }) }}
+                    </div>
+                  {% endif %}
                 </div>
 
             </div>
