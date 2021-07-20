@@ -25,13 +25,13 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
 
-        <h1 class="govuk-label-wrapper" id="heading">
-          <label class="govuk-label govuk-label--xl" for="file-upload">
-            {{ messages("upload_form.heading") }}
-          </label>
-        </h1>
-
         <form id="dac6UploadForm" action="{{upscanInitiateResponse.postTarget}}" method="post" enctype="multipart/form-data" novalidate>
+
+            <h1 class="govuk-label-wrapper" id="heading">
+              <label class="govuk-label govuk-label--xl" for="file-upload">
+                {{ messages("upload_form.heading") }}
+              </label>
+            </h1>
 
             {% for key, value in upscanInitiateResponse.formFields %}
             <input type="hidden" name="{{key}}" value="{{value}}"/>
