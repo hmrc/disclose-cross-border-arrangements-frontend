@@ -22,7 +22,7 @@ import models.subscription._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json.{JsObject, Json}
 
-import java.time.{Clock, LocalDateTime}
+import java.time.LocalDateTime
 
 class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with ScalaCheckPropertyChecks {
 
