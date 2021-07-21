@@ -20,7 +20,7 @@ import base.SpecBase
 import generators.Generators
 import models.subscription._
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 
 import java.time.LocalDateTime
 
@@ -40,7 +40,7 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     Seq(ContactInformationForIndividual(IndividualDetails("FirstName", "LastName", None), "email@email.com", None, None))
   )
 
-  val lastUpdated: LocalDateTime = LocalDateTime.now
+  val lastUpdated: LocalDateTime = LocalDateTime.parse("2021-06-20T12:12:12")
 
   val requestDetailForUpdate: RequestDetailForUpdate = RequestDetailForUpdate(
     IDType = "DAC",
@@ -101,7 +101,7 @@ class CreateSubscriptionForDACRequestSpec extends SpecBase with Generators with 
     }
 
     "must serialise CreateSubscriptionForDACRequest" in {
-      val json =
+      val json: JsObject =
         Json.obj(
           "createSubscriptionForDACRequest" -> Json.obj(
             "requestCommon" -> Json.obj(
