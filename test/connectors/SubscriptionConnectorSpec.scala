@@ -335,7 +335,7 @@ class SubscriptionConnectorSpec extends SpecBase with ScalaCheckPropertyChecks w
 
     "cacheSubscription" - {
       "must return OK if update was stored successfully" in {
-        stubResponse("/disclose-cross-border-arrangements/subscription/cache-subscription", OK)
+        stubResponse("/disclose-cross-border-arrangements/subscription/update-cache-subscription", OK)
 
         val updateSubscriptionDetails = UpdateSubscriptionDetails(requestCommon, requestDetailForUpdate)
 
