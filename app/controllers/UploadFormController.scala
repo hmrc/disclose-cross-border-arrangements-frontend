@@ -100,6 +100,7 @@ class UploadFormController @Inject() (
           val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
           toResponse(formWithErrors)
         case _ =>
+          logger.error(s"Upscan error $errorCode: $errorMessage, requestId is $errorRequestId")
           renderer.render("upscanError.njk").map(Ok(_))
       }
   }

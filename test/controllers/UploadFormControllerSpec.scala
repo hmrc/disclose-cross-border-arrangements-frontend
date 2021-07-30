@@ -120,11 +120,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
-      templateCaptor.getValue mustEqual "error.njk"
-      val captured = argumentCaptor.getValue
-      (captured \\ "pageTitle").head.as[String] mustEqual "Upload Error"
-      (captured \\ "heading").head.as[String] mustEqual "errorMessage"
-      (captured \\ "message").head.as[String] mustEqual "Code: errorCode, RequestId: errorReqId"
+      templateCaptor.getValue mustEqual "upscanError.njk"
     }
 
     "must show File to large error when the errorCode is EntityTooLarge" in {
