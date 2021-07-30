@@ -100,12 +100,7 @@ class UploadFormController @Inject() (
           val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
           toResponse(formWithErrors)
         case _ =>
-          renderer
-            .render(
-              "error.njk",
-              Json.obj("pageTitle" -> "Upload Error", "heading" -> errorMessage, "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-            )
-            .map(Ok(_))
+          renderer.render("upscanError.njk").map(Ok(_))
       }
   }
 
@@ -133,10 +128,10 @@ class UploadFormController @Inject() (
             case Some(_) =>
               renderer.render("upload-result.njk").map(Ok(_))
             case None =>
-              errorHandler.onServerError(request, new Throwable(s"Upload with id $uploadId not found"))
+              renderer.render("upscanError.njk").map(Ok(_))
           }
         case None =>
-          errorHandler.onServerError(request, new Throwable("UploadId not found"))
+          renderer.render("upscanError.njk").map(Ok(_))
       }
   }
 

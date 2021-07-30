@@ -1,0 +1,32 @@
+{% extends "includes/layout.njk" %}
+
+{% from "macros/title.njk"                         import title %}
+
+{% block pageTitle %}
+  {{ title(messages("upscanError.title")) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+
+        <h1 class="govuk-heading-xl">
+          {{ messages("upscanError.heading") }}
+        </h1>
+
+        <p class="govuk-body">
+            {{ messages("upscanError.p1") }}
+        </p>
+
+        <p class="govuk-body">
+          {{ messages("upscanError.link.p2") }}
+          <a class='govuk-link' href='mailto: enquiries.aeoi@hmrc.gov.uk'>enquiries.aeoi@hmrc.gov.uk</a>
+          {{ messages("upscanError.link.p3") }}
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
