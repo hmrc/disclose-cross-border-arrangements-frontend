@@ -1,6 +1,5 @@
 {% extends "includes/layout.njk" %}
 
-{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
 {% from "govuk/components/summary-list/macro.njk"  import govukSummaryList %}
 {% from "govuk/components/button/macro.njk"        import govukButton %}
 {% from "macros/title.njk"                         import title %}
@@ -8,12 +7,6 @@
 
 {% block pageTitle %}
   {{ title(messages("checkYourAnswers.title")) }}
-{% endblock %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-      text: messages("site.back")
-      }) }}
 {% endblock %}
 
 {% block mainContent %}
