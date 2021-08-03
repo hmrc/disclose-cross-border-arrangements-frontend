@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.exceptions.SubmissionAlreadySentException
 import helpers.XmlLoadHelper
 import models.GeneratedIDs
 import models.requests.DataRequestWithContacts
@@ -129,7 +130,7 @@ class CheckYourAnswersController @Inject() (
             case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
             case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
             case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
-            case _         => Redirect(routes.UploadFormController.onPageLoad().url)
+            case _         => throw new SubmissionAlreadySentException()
           }
         case _ =>
           logger.warn("XML url or XML is missing. Redirecting to /upload page.")

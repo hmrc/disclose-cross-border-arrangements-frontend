@@ -20,12 +20,14 @@ import config.FrontendAppConfig
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
+
 import javax.inject.Inject
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
@@ -37,6 +39,7 @@ class UploadConfirmationController @Inject() (
   getData: DataRetrievalAction,
   requireData: DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   errorHandler: ErrorHandler,
   viewHelper: ViewHelper,
@@ -71,6 +74,10 @@ class UploadConfirmationController @Inject() (
           "homePageLink"       -> viewHelper.linkToHomePageText(Json.toJson(appConfig.discloseArrangeLink)),
           "betaFeedbackSurvey" -> viewHelper.surveyLinkText(Json.toJson(appConfig.betaFeedbackUrl))
         )
+
+        for {
+          updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+        } yield sessionRepository.set(updatedAnswers)
 
         renderer.render("uploadConfirmation.njk", json).map(Ok(_))
       }

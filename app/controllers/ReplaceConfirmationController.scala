@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions._
 import helpers.ViewHelper
+
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
@@ -27,6 +28,7 @@ import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import handlers.ErrorHandler
 import pages.Dac6MetaDataPage
+import repositories.SessionRepository
 
 import scala.concurrent.ExecutionContext
 
@@ -37,6 +39,7 @@ class ReplaceConfirmationController @Inject() (
   getData: DataRetrievalAction,
   requireData: DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   viewHelper: ViewHelper,
   contactRetrievalAction: ContactRetrievalAction,
@@ -57,6 +60,10 @@ class ReplaceConfirmationController @Inject() (
         case Some(contactDetails)                                         => contactDetails.contactEmail.get
         case _                                                            => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
+
+      for {
+        updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+      } yield sessionRepository.set(updatedAnswers)
 
       renderer
         .render(

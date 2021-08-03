@@ -20,12 +20,14 @@ import config.FrontendAppConfig
 import controllers.actions.{ContactRetrievalAction, _}
 import handlers.ErrorHandler
 import helpers.ViewHelper
+
 import javax.inject.Inject
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
@@ -38,6 +40,7 @@ class CreateConfirmationController @Inject() (
   requireData: DataRequiredAction,
   contactRetrievalAction: ContactRetrievalAction,
   val controllerComponents: MessagesControllerComponents,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   errorHandler: ErrorHandler,
   viewHelper: ViewHelper,
@@ -61,6 +64,10 @@ class CreateConfirmationController @Inject() (
 
       request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) =>
+          for {
+            updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+          } yield sessionRepository.set(updatedAnswers)
+
           (value.arrangementID, value.disclosureID) match {
             case (Some(arrangementID), Some(disclosureID)) =>
               val json = Json.obj(

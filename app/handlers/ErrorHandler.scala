@@ -16,6 +16,8 @@
 
 package handlers
 
+import controllers.exceptions.SubmissionAlreadySentException
+
 import javax.inject.{Inject, Singleton}
 import org.slf4j.LoggerFactory
 import play.api.PlayException
@@ -28,6 +30,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result, Results}
 import renderer.Renderer
 import uk.gov.hmrc.play.bootstrap.frontend.http.ApplicationException
+import controllers.exceptions.SubmissionAlreadySentException
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -65,6 +68,8 @@ class ErrorHandler @Inject() (
 
     logError(request, exception)
     exception match {
+      case _: SubmissionAlreadySentException =>
+        renderer.render("alreadySent.njk").map(Ok(_))
       case ApplicationException(result, _) =>
         Future.successful(result)
       case _ =>
