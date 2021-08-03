@@ -69,7 +69,7 @@ class ErrorHandler @Inject() (
     logError(request, exception)
     exception match {
       case _: SubmissionAlreadySentException =>
-        renderer.render("alreadySent.njk").map(Ok(_))
+        renderer.render("disclosureAlreadySent.njk").map(Ok(_))
       case ApplicationException(result, _) =>
         Future.successful(result)
       case _ =>

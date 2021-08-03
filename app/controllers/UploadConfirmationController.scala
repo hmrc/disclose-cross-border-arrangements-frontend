@@ -20,8 +20,6 @@ import config.FrontendAppConfig
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-
-import javax.inject.Inject
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
@@ -31,6 +29,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class UploadConfirmationController @Inject() (
@@ -76,7 +75,7 @@ class UploadConfirmationController @Inject() (
         )
 
         for {
-          updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+          updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
         } yield sessionRepository.set(updatedAnswers)
 
         renderer.render("uploadConfirmation.njk", json).map(Ok(_))

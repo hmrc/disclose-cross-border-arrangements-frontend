@@ -61,6 +61,9 @@ class CheckYourAnswersController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      if (request.userAnswers.get(GeneratedIDPage).isEmpty) {
+        throw new SubmissionAlreadySentException()
+      }
       request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)
@@ -130,7 +133,7 @@ class CheckYourAnswersController @Inject() (
             case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
             case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
             case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
-            case _         => throw new SubmissionAlreadySentException()
+            case _         => Redirect(routes.UploadFormController.onPageLoad().url)
           }
         case _ =>
           logger.warn("XML url or XML is missing. Redirecting to /upload page.")

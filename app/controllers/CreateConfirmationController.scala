@@ -17,11 +17,9 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{ContactRetrievalAction, _}
+import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-
-import javax.inject.Inject
 import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
@@ -31,6 +29,7 @@ import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import uk.gov.hmrc.viewmodels.Html
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class CreateConfirmationController @Inject() (
@@ -65,7 +64,7 @@ class CreateConfirmationController @Inject() (
       request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) =>
           for {
-            updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+            updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
           } yield sessionRepository.set(updatedAnswers)
 
           (value.arrangementID, value.disclosureID) match {

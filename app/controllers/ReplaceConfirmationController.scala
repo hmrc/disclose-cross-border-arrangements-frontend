@@ -18,18 +18,17 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import handlers.ErrorHandler
 import helpers.ViewHelper
-
-import javax.inject.Inject
+import pages.{Dac6MetaDataPage, GeneratedIDPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import handlers.ErrorHandler
-import pages.Dac6MetaDataPage
 import repositories.SessionRepository
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ReplaceConfirmationController @Inject() (
@@ -62,7 +61,7 @@ class ReplaceConfirmationController @Inject() (
       }
 
       for {
-        updatedAnswers <- request.userAnswers.remove(Dac6MetaDataPage)
+        updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
       } yield sessionRepository.set(updatedAnswers)
 
       renderer
