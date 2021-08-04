@@ -33,6 +33,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.http.ApplicationException
 import controllers.exceptions.SubmissionAlreadySentException
 
 import scala.concurrent.{ExecutionContext, Future}
+import controllers.exceptions.UpscanTimeoutException
 
 // NOTE: There should be changes to bootstrap to make this easier, the API in bootstrap should allow a `Future[Html]` rather than just an `Html`
 @Singleton
@@ -74,6 +75,8 @@ class ErrorHandler @Inject() (
         Future.successful(Redirect(controllers.routes.DisclosureAlreadySentController.onPageLoad()))
       case ApplicationException(result, _) =>
         Future.successful(result)
+      case _: UpscanTimeoutException =>
+        renderer.render("upscanError.njk", Json.obj()).map(RequestTimeout(_))
       case _ =>
         renderer.render("internalServerError.njk").map {
           content =>

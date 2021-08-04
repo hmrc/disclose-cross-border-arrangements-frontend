@@ -18,12 +18,11 @@ package connectors
 
 import config.FrontendAppConfig
 import controllers.routes
-import models.upscan.UploadStatus.getClass
 import models.upscan._
 import org.slf4j.LoggerFactory
 import play.api.http.HeaderNames
 import play.api.http.Status.OK
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 

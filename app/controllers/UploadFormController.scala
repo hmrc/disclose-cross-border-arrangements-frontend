@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.exceptions.UpscanTimeoutException
 import forms.mappings.Mappings
 import handlers.ErrorHandler
 import models.UserAnswers
@@ -73,7 +74,7 @@ class UploadFormController @Inject() (
       Json.obj("form" -> preparedForm, "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse), "status" -> Json.toJson(0))
 
     (for {
-      upscanInitiateResponse <- upscanConnector.getUpscanFormData
+      upscanInitiateResponse <- upscanConnector.getUpscanFormData.recover(throw new UpscanTimeoutException())
       uploadId               <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
       updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
       _                      <- sessionRepository.set(updatedAnswers)
