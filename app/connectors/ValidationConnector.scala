@@ -17,17 +17,11 @@
 package connectors
 
 import config.FrontendAppConfig
-import models.{
-  Dac6MetaData,
-  GenericError,
-  UploadSubmissionValidationFailure,
-  UploadSubmissionValidationResult,
-  UploadSubmissionValidationSuccess,
-  ValidationErrors
-}
+import controllers.exceptions.UpscanTimeoutException
+import models.{Dac6MetaData, UploadSubmissionValidationFailure, UploadSubmissionValidationResult, UploadSubmissionValidationSuccess, ValidationErrors}
 import org.slf4j.LoggerFactory
 import play.api.http.Status.OK
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,8 +48,11 @@ class ValidationConnector @Inject() (http: HttpClient, config: FrontendAppConfig
           }
       }
       .recover {
-        case e: Throwable =>
+        case e: Throwable if e.getMessage contains "Invalid XML" =>
           logger.warn(s"XML parsing failed. The XML parser in disclose-cross-border-arrangements backend has thrown the exception: $e")
           None
+        case e: Throwable =>
+          logger.warn(s"Remote service timed out. The XML parser in disclose-cross-border-arrangements backend has thrown the exception: $e")
+          throw new UpscanTimeoutException
       }
 }

@@ -74,12 +74,16 @@ class UploadFormController @Inject() (
       Json.obj("form" -> preparedForm, "upscanInitiateResponse" -> Json.toJson(upscanInitiateResponse), "status" -> Json.toJson(0))
 
     (for {
-      upscanInitiateResponse <- upscanConnector.getUpscanFormData.recover(throw new UpscanTimeoutException())
+      upscanInitiateResponse <- upscanConnector.getUpscanFormData
       uploadId               <- upscanConnector.requestUpload(upscanInitiateResponse.fileReference)
       updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
       _                      <- sessionRepository.set(updatedAnswers)
       html                   <- renderer.render("upload-form.njk", json(upscanInitiateResponse))
-    } yield html).map(Ok(_))
+    } yield html)
+      .recover {
+        case _: Exception => throw new UpscanTimeoutException
+      }
+      .map(Ok(_))
   }
 
   def showResult: Action[AnyContent] = Action.async {
@@ -102,7 +106,7 @@ class UploadFormController @Inject() (
           toResponse(formWithErrors)
         case _ =>
           logger.error(s"Upscan error $errorCode: $errorMessage, requestId is $errorRequestId")
-          renderer.render("upscanError.njk").map(Ok(_))
+          renderer.render("serviceError.njk").map(Ok(_))
       }
   }
 
@@ -126,14 +130,14 @@ class UploadFormController @Inject() (
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(Failed) =>
-              errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
+              renderer.render("serviceError.njk").map(Ok(_))
             case Some(_) =>
               renderer.render("upload-result.njk").map(Ok(_))
             case None =>
-              renderer.render("upscanError.njk").map(Ok(_))
+              renderer.render("serviceError.njk").map(Ok(_))
           }
         case None =>
-          renderer.render("upscanError.njk").map(Ok(_))
+          renderer.render("serviceError.njk").map(Ok(_))
       }
   }
 

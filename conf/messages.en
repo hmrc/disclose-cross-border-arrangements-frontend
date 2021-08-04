@@ -225,11 +225,11 @@ virusError.p1 = We found a virus in your file.
 virusError.link.reupload = Upload a different file
 virusError.link.guidance = Read the technical guidance for XML files (opens in a new tab)
 
-upscanError.title = There is a problem with the service
-upscanError.heading = Sorry, there is a problem with the service
-upscanError.p1 = Try again later.
-upscanError.link.p2 = Email the Automatic Exchange of Information Team at
-upscanError.link.p3 = if you need to contact someone about your disclosures.
+serviceError.title = There is a problem with the service
+serviceError.heading = Sorry, there is a problem with the service
+serviceError.p1 = Try again later.
+serviceError.link.p2 = Email the Automatic Exchange of Information Team at
+serviceError.link.p3 = if you need to contact someone about your disclosures.
 
 checkYourAnswers.title = Check Your Answers
 checkYourAnswers.heading = Check your answers before sending your file

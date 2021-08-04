@@ -57,7 +57,7 @@ class FileValidationController @Inject() (
         } yield validation match {
           case Some(Right(metaData)) =>
             for {
-              updatedAnswers             <- Future.fromTry(request.userAnswers.set(ValidXMLPage, fileName))
+              updatedAnswers             <- Future.fromTry(UserAnswers(request.internalId).set(ValidXMLPage, fileName))
               updatedAnswersWithURL      <- Future.fromTry(updatedAnswers.set(URLPage, upScanUrl))
               updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
               _                          <- sessionRepository.set(updatedAnswersWithMetaData)

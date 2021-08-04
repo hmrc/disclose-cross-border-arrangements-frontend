@@ -17,11 +17,11 @@
 package controllers
 
 import base.SpecBase
-import connectors.UpscanConnector
+import connectors.{UpscanConnector, ValidationConnector}
 import generators.Generators
 import helpers.FakeUpscanConnector
 import matchers.JsonMatchers
-import models.UserAnswers
+import models.{Dac6MetaData, UserAnswers}
 import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -39,8 +39,9 @@ import scala.concurrent.Future
 
 class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaCheckPropertyChecks with JsonMatchers with Generators {
 
-  val fakeUpscanConnector   = app.injector.instanceOf[FakeUpscanConnector]
-  val mockSessionRepository = mock[SessionRepository]
+  val fakeUpscanConnector     = app.injector.instanceOf[FakeUpscanConnector]
+  val mockSessionRepository   = mock[SessionRepository]
+  val mockValidationConnector = mock[ValidationConnector]
 
   val userAnswers = UserAnswers(userAnswersId)
     .set(UploadIDPage, UploadId("uploadId"))
@@ -101,7 +102,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
       verifyResult(InProgress, OK, "upload-result.njk")
       verifyResult(Quarantined)
       verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK, "upload-form.njk")
-      verifyResult(Failed, INTERNAL_SERVER_ERROR)
+      verifyResult(Failed, OK, "serviceError.njk")
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
     }
@@ -120,7 +121,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
       status(result) mustBe OK
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
-      templateCaptor.getValue mustEqual "upscanError.njk"
+      templateCaptor.getValue mustEqual "serviceError.njk"
     }
 
     "must show File to large error when the errorCode is EntityTooLarge" in {

@@ -35,6 +35,8 @@ import controllers.exceptions.SubmissionAlreadySentException
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.exceptions.UpscanTimeoutException
 
+import java.net.ConnectException
+
 // NOTE: There should be changes to bootstrap to make this easier, the API in bootstrap should allow a `Future[Html]` rather than just an `Html`
 @Singleton
 class ErrorHandler @Inject() (
@@ -56,7 +58,7 @@ class ErrorHandler @Inject() (
       case NOT_FOUND =>
         renderer.render("notFound.njk", Json.obj()).map(NotFound(_))
       case REQUEST_TIMEOUT =>
-        renderer.render("upscanError.njk", Json.obj()).map(RequestTimeout(_))
+        renderer.render("serviceError.njk", Json.obj()).map(RequestTimeout(_))
       case _ =>
         renderer.render("error.njk", Json.obj()).map {
           content =>
@@ -75,10 +77,8 @@ class ErrorHandler @Inject() (
         Future.successful(Redirect(controllers.routes.DisclosureAlreadySentController.onPageLoad()))
       case ApplicationException(result, _) =>
         Future.successful(result)
-      case _: UpscanTimeoutException =>
-        renderer.render("upscanError.njk", Json.obj()).map(RequestTimeout(_))
       case _ =>
-        renderer.render("internalServerError.njk").map {
+        renderer.render("serviceError.njk").map {
           content =>
             InternalServerError(content).withHeaders(CACHE_CONTROL -> "no-cache")
         }
