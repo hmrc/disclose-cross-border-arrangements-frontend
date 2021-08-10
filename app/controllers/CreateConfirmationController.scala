@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import pages.{Dac6MetaDataPage, GeneratedIDPage}
+import pages.{Dac6MetaDataPage, GeneratedIDPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -64,7 +64,7 @@ class CreateConfirmationController @Inject() (
       request.userAnswers.get(GeneratedIDPage) match {
         case Some(value) =>
           for {
-            updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
+            updatedAnswers <- request.userAnswers.remove(UploadIDPage)
           } yield sessionRepository.set(updatedAnswers)
 
           (value.arrangementID, value.disclosureID) match {

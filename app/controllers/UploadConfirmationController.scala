@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import pages.{Dac6MetaDataPage, GeneratedIDPage}
+import pages.{Dac6MetaDataPage, GeneratedIDPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -50,10 +50,7 @@ class UploadConfirmationController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen contactRetrievalAction).async {
     implicit request =>
-      val disclosureID = request.userAnswers.get(GeneratedIDPage) match {
-        case Some(value) if value.disclosureID.isDefined => value.disclosureID.get
-        case _                                           => ""
-      }
+      val disclosureID: String = request.userAnswers.get(GeneratedIDPage).fold("")(_.disclosureID.getOrElse(""))
 
       val emailMessage = request.contacts match {
         case Some(contactDetails) if contactDetails.secondEmail.isDefined => contactDetails.contactEmail.get + " and " + contactDetails.secondEmail.get
@@ -75,7 +72,7 @@ class UploadConfirmationController @Inject() (
         )
 
         for {
-          updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
+          updatedAnswers <- request.userAnswers.remove(UploadIDPage)
         } yield sessionRepository.set(updatedAnswers)
 
         renderer.render("uploadConfirmation.njk", json).map(Ok(_))

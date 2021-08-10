@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import pages.{Dac6MetaDataPage, GeneratedIDPage}
+import pages.{Dac6MetaDataPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -61,7 +61,7 @@ class ReplaceConfirmationController @Inject() (
       }
 
       for {
-        updatedAnswers <- request.userAnswers.remove(GeneratedIDPage)
+        updatedAnswers <- request.userAnswers.remove(UploadIDPage)
       } yield sessionRepository.set(updatedAnswers)
 
       renderer
