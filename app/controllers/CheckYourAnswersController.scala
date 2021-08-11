@@ -20,11 +20,12 @@ import com.google.inject.Inject
 import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{ContactRetrievalAction, DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.exceptions.SubmissionAlreadySentException
 import helpers.XmlLoadHelper
 import models.GeneratedIDs
 import models.requests.DataRequestWithContacts
 import org.slf4j.LoggerFactory
-import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, ValidXMLPage}
+import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -60,6 +61,9 @@ class CheckYourAnswersController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
+      if (request.userAnswers.get(UploadIDPage).isEmpty) {
+        throw new SubmissionAlreadySentException()
+      }
       request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(xmlData) =>
           val helper = new CheckYourAnswersHelper(request.userAnswers)

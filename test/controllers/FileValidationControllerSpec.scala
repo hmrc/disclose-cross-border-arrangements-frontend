@@ -75,7 +75,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val metaData          = Dac6MetaData("DAC6NEW", disclosureInformationPresent = true, initialDisclosureMA = false, messageRefId = "GB0000000XXX")
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData      = Json.obj("validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
+      val expectedData      = Json.obj("UploadID" -> UploadId("123"), "validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Right(metaData))))
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
@@ -101,7 +101,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
                                   messageRefId = "GB0000000XXX"
       )
       val userAnswersCaptor = ArgumentCaptor.forClass(classOf[UserAnswers])
-      val expectedData      = Json.obj("validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
+      val expectedData      = Json.obj("UploadID" -> UploadId("123"), "validXML" -> "afile", "dac6MetaData" -> metaData, "url" -> downloadURL)
 
       fakeUpscanConnector.setDetails(uploadDetails)
       when(mockValidationConnector.sendForValidation(any())(any(), any())).thenReturn(Future.successful(Some(Right(metaData))))

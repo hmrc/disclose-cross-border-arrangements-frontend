@@ -17,17 +17,18 @@
 package controllers
 
 import config.FrontendAppConfig
-import controllers.actions.{ContactRetrievalAction, _}
+import controllers.actions._
 import handlers.ErrorHandler
 import helpers.ViewHelper
-import javax.inject.Inject
-import pages.Dac6MetaDataPage
+import pages.{Dac6MetaDataPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class DeleteDisclosureConfirmationController @Inject() (
@@ -38,6 +39,7 @@ class DeleteDisclosureConfirmationController @Inject() (
   requireData: DataRequiredAction,
   contactRetrievalAction: ContactRetrievalAction,
   val controllerComponents: MessagesControllerComponents,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   errorHandler: ErrorHandler,
   viewHelper: ViewHelper
@@ -55,6 +57,10 @@ class DeleteDisclosureConfirmationController @Inject() (
 
       request.userAnswers.get(Dac6MetaDataPage) match {
         case Some(xmlData) =>
+          for {
+            updatedAnswers <- request.userAnswers.remove(UploadIDPage)
+          } yield sessionRepository.set(updatedAnswers)
+
           renderer
             .render(
               "deleteDisclosureConfirmation.njk",

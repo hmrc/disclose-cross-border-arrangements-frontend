@@ -18,16 +18,17 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import handlers.ErrorHandler
 import helpers.ViewHelper
-import javax.inject.Inject
+import pages.{Dac6MetaDataPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import handlers.ErrorHandler
-import pages.Dac6MetaDataPage
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ReplaceConfirmationController @Inject() (
@@ -37,6 +38,7 @@ class ReplaceConfirmationController @Inject() (
   getData: DataRetrievalAction,
   requireData: DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   viewHelper: ViewHelper,
   contactRetrievalAction: ContactRetrievalAction,
@@ -57,6 +59,10 @@ class ReplaceConfirmationController @Inject() (
         case Some(contactDetails)                                         => contactDetails.contactEmail.get
         case _                                                            => errorHandler.onServerError(request, new Exception("Contact details are missing"))
       }
+
+      for {
+        updatedAnswers <- request.userAnswers.remove(UploadIDPage)
+      } yield sessionRepository.set(updatedAnswers)
 
       renderer
         .render(

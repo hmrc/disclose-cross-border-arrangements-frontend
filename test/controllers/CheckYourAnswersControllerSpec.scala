@@ -19,13 +19,15 @@ package controllers
 import base.SpecBase
 import config.FrontendAppConfig
 import connectors.{CrossBorderArrangementsConnector, SubscriptionConnector}
+import controllers.exceptions.SubmissionAlreadySentException
 import helpers.XmlLoadHelper
 import models.subscription.DisplaySubscriptionDetailsAndStatus
+import models.upscan.UploadId
 import models.{Dac6MetaData, GeneratedIDs, UserAnswers}
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.BeforeAndAfterEach
-import pages.{Dac6MetaDataPage, URLPage, ValidXMLPage}
+import pages.{Dac6MetaDataPage, GeneratedIDPage, URLPage, UploadIDPage, ValidXMLPage}
 import play.api.http.Status.OK
 import play.api.inject.bind
 import play.api.libs.json.JsObject
@@ -69,10 +71,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
         .thenReturn(Future.successful(Html("")))
 
       val userAnswers = UserAnswers(userAnswersId)
+        .set(UploadIDPage, UploadId("123"))
+        .success
+        .value
         .set(ValidXMLPage, "file-name.xml")
         .success
         .value
         .set(Dac6MetaDataPage, metaData)
+        .success
+        .value
+        .set(GeneratedIDPage, GeneratedIDs(None, None))
         .success
         .value
 
@@ -92,7 +100,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       application.stop()
     }
 
-    "must redirect to upload form for a GET if userAnswers empty" in {
+    "must throw an exception for a GET if userAnswers empty" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -103,9 +111,9 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val result = route(application, request).value
 
-      status(result) mustEqual SEE_OTHER
-
-      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad().url
+      assertThrows[SubmissionAlreadySentException] {
+        status(result) mustEqual SEE_OTHER
+      }
 
       application.stop()
     }

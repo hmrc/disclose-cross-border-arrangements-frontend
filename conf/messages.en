@@ -394,3 +394,7 @@ detailsNotUpdated.p = Your details have been saved. You can try to send them aga
 detailsUpdated.title = Contact details updated
 detailsUpdated.panel.heading = Contact details updated
 detailsUpdated.p = We will use your new details if we need to contact you.
+
+disclosureAlreadySent.title = You have already sent your disclosure
+disclosureAlreadySent.heading = You have already sent your disclosure
+disclosureAlreadySent.link = Back to disclosure cross-border arrangements
