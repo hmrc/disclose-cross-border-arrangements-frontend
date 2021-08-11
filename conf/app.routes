@@ -86,3 +86,5 @@ GET        /contact-us                                  controllers.ContactUsToU
 GET        /change-contact/details-already-updated      controllers.DetailsAlreadyUpdatedController.onPageLoad()
 GET        /change-contact/details-not-updated          controllers.DetailsNotUpdatedController.onPageLoad()
 GET        /change-contact/details-updated              controllers.DetailsUpdatedController.onPageLoad()
+
+GET        /disclosure-already-sent                     controllers.DisclosureAlreadySentController.onPageLoad()

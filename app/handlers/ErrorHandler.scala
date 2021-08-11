@@ -69,7 +69,7 @@ class ErrorHandler @Inject() (
     logError(request, exception)
     exception match {
       case _: SubmissionAlreadySentException =>
-        renderer.render("disclosureAlreadySent.njk").map(Ok(_))
+        Future.successful(Redirect(controllers.routes.DisclosureAlreadySentController.onPageLoad()))
       case ApplicationException(result, _) =>
         Future.successful(result)
       case _ =>
