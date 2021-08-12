@@ -33,9 +33,6 @@ import uk.gov.hmrc.play.bootstrap.frontend.http.ApplicationException
 import controllers.exceptions.SubmissionAlreadySentException
 
 import scala.concurrent.{ExecutionContext, Future}
-import controllers.exceptions.UpscanTimeoutException
-
-import java.net.ConnectException
 
 // NOTE: There should be changes to bootstrap to make this easier, the API in bootstrap should allow a `Future[Html]` rather than just an `Html`
 @Singleton
