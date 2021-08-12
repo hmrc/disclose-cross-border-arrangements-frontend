@@ -1,17 +1,9 @@
 {% extends "includes/layout.njk" %}
 
 {% from "macros/title.njk"                         import title %}
-{% from "govuk/components/back-link/macro.njk"     import govukBackLink %}
-
 
 {% block pageTitle %}
   {{ title(messages("fileError.title")) }}
-{% endblock %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-      text: messages("site.back")
-      }) }}
 {% endblock %}
 
 {% block mainContent %}
