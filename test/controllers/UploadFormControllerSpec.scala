@@ -102,7 +102,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
       verifyResult(InProgress, OK, "upload-result.njk")
       verifyResult(Quarantined)
       verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK, "upload-form.njk")
-      verifyResult(Failed, OK, "serviceError.njk")
+      verifyResult(Failed, INTERNAL_SERVER_ERROR, "serviceError.njk")
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
     }
@@ -119,7 +119,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 
-      status(result) mustBe OK
+      status(result) mustBe INTERNAL_SERVER_ERROR
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
       templateCaptor.getValue mustEqual "serviceError.njk"
     }
