@@ -106,7 +106,7 @@ class UploadFormController @Inject() (
           toResponse(formWithErrors)
         case _ =>
           logger.error(s"Upscan error $errorCode: $errorMessage, requestId is $errorRequestId")
-          renderer.render("serviceError.njk").map(Ok(_))
+          renderer.render("serviceError.njk").map(InternalServerError(_))
       }
   }
 
@@ -130,14 +130,14 @@ class UploadFormController @Inject() (
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(Failed) =>
-              renderer.render("serviceError.njk").map(Ok(_))
+              renderer.render("serviceError.njk").map(InternalServerError(_))
             case Some(_) =>
               renderer.render("upload-result.njk").map(Ok(_))
             case None =>
-              renderer.render("serviceError.njk").map(Ok(_))
+              renderer.render("serviceError.njk").map(InternalServerError(_))
           }
         case None =>
-          renderer.render("serviceError.njk").map(Ok(_))
+          renderer.render("serviceError.njk").map(InternalServerError(_))
       }
   }
 
