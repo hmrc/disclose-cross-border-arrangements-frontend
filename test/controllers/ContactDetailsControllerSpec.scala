@@ -163,7 +163,7 @@ class ContactDetailsControllerSpec extends SpecBase with ScalaCheckPropertyCheck
       application.stop()
     }
 
-    "must display the InternalServerError page if display subscription details isn't available" in {
+    "must display the ServiceError page if display subscription details isn't available" in {
 
       when(mockRenderer.render(any(), any())(any()))
         .thenReturn(Future.successful(Html("")))
@@ -185,7 +185,7 @@ class ContactDetailsControllerSpec extends SpecBase with ScalaCheckPropertyCheck
 
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), any())(any())
 
-      templateCaptor.getValue mustEqual "internalServerError.njk"
+      templateCaptor.getValue mustEqual "serviceError.njk"
 
       application.stop()
     }

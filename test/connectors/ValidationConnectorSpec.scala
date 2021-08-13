@@ -19,9 +19,11 @@ package connectors
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import controllers.exceptions.UpscanTimeoutException
 import generators.Generators
 import helpers.JsonFixtures
 import models.{Dac6MetaData, GenericError, ValidationErrors}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
 import play.api.http.Status.{BAD_REQUEST, OK}
@@ -30,8 +32,9 @@ import play.api.libs.json.JsString
 import utils.WireMockHelper
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class ValidationConnectorSpec extends SpecBase with WireMockHelper with Generators with ScalaCheckPropertyChecks {
+class ValidationConnectorSpec extends SpecBase with WireMockHelper with Generators with ScalaCheckPropertyChecks with ScalaFutures {
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(
@@ -75,12 +78,12 @@ class ValidationConnectorSpec extends SpecBase with WireMockHelper with Generato
       result.futureValue mustBe Some(Left(failurePayloadResult))
     }
 
-    "must return None when validation returns a 400 (BAD_REQUEST) status" in {
+    "must throw an exception when validation returns a 400 (BAD_REQUEST) status" in {
       stubResponse(validationUrl, BAD_REQUEST, "Some error")
 
       val result = connector.sendForValidation("SomeUrl")
 
-      result.futureValue mustBe None
+      whenReady(result.failed)(_ mustBe a[UpscanTimeoutException])
     }
   }
 

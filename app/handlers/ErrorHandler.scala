@@ -54,6 +54,8 @@ class ErrorHandler @Inject() (
         renderer.render("badRequest.njk").map(BadRequest(_))
       case NOT_FOUND =>
         renderer.render("notFound.njk", Json.obj()).map(NotFound(_))
+      case REQUEST_TIMEOUT =>
+        renderer.render("serviceError.njk", Json.obj()).map(RequestTimeout(_))
       case _ =>
         renderer.render("error.njk", Json.obj()).map {
           content =>
@@ -73,7 +75,7 @@ class ErrorHandler @Inject() (
       case ApplicationException(result, _) =>
         Future.successful(result)
       case _ =>
-        renderer.render("internalServerError.njk").map {
+        renderer.render("serviceError.njk").map {
           content =>
             InternalServerError(content).withHeaders(CACHE_CONTROL -> "no-cache")
         }

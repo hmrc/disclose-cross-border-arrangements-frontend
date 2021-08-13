@@ -17,11 +17,11 @@
 package controllers
 
 import base.SpecBase
-import connectors.UpscanConnector
+import connectors.{UpscanConnector, ValidationConnector}
 import generators.Generators
 import helpers.FakeUpscanConnector
 import matchers.JsonMatchers
-import models.UserAnswers
+import models.{Dac6MetaData, UserAnswers}
 import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -39,8 +39,9 @@ import scala.concurrent.Future
 
 class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaCheckPropertyChecks with JsonMatchers with Generators {
 
-  val fakeUpscanConnector   = app.injector.instanceOf[FakeUpscanConnector]
-  val mockSessionRepository = mock[SessionRepository]
+  val fakeUpscanConnector     = app.injector.instanceOf[FakeUpscanConnector]
+  val mockSessionRepository   = mock[SessionRepository]
+  val mockValidationConnector = mock[ValidationConnector]
 
   val userAnswers = UserAnswers(userAnswersId)
     .set(UploadIDPage, UploadId("uploadId"))
@@ -101,7 +102,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
       verifyResult(InProgress, OK, "upload-result.njk")
       verifyResult(Quarantined)
       verifyResult(UploadRejected(ErrorDetails("REJECTED", "message")), OK, "upload-form.njk")
-      verifyResult(Failed, INTERNAL_SERVER_ERROR)
+      verifyResult(Failed, INTERNAL_SERVER_ERROR, "serviceError.njk")
       verifyResult(UploadedSuccessfully("name", "downloadUrl"))
 
     }
@@ -118,13 +119,9 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
       val result = controller.showError("errorCode", "errorMessage", "errorReqId")(FakeRequest("", ""))
 
-      status(result) mustBe OK
+      status(result) mustBe INTERNAL_SERVER_ERROR
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), argumentCaptor.capture())(any())
-      templateCaptor.getValue mustEqual "error.njk"
-      val captured = argumentCaptor.getValue
-      (captured \\ "pageTitle").head.as[String] mustEqual "Upload Error"
-      (captured \\ "heading").head.as[String] mustEqual "errorMessage"
-      (captured \\ "message").head.as[String] mustEqual "Code: errorCode, RequestId: errorReqId"
+      templateCaptor.getValue mustEqual "serviceError.njk"
     }
 
     "must show File to large error when the errorCode is EntityTooLarge" in {

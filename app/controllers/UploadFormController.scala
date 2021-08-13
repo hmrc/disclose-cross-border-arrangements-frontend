@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import connectors.UpscanConnector
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
+import controllers.exceptions.UpscanTimeoutException
 import forms.mappings.Mappings
 import handlers.ErrorHandler
 import models.UserAnswers
@@ -78,7 +79,11 @@ class UploadFormController @Inject() (
       updatedAnswers         <- Future.fromTry(UserAnswers(request.internalId).set(UploadIDPage, uploadId))
       _                      <- sessionRepository.set(updatedAnswers)
       html                   <- renderer.render("upload-form.njk", json(upscanInitiateResponse))
-    } yield html).map(Ok(_))
+    } yield html)
+      .recover {
+        case _: Exception => throw new UpscanTimeoutException
+      }
+      .map(Ok(_))
   }
 
   def showResult: Action[AnyContent] = Action.async {
@@ -100,12 +105,8 @@ class UploadFormController @Inject() (
           val formWithErrors: Form[String] = form.withError("file", "upload_form.error.file.empty")
           toResponse(formWithErrors)
         case _ =>
-          renderer
-            .render(
-              "error.njk",
-              Json.obj("pageTitle" -> "Upload Error", "heading" -> errorMessage, "message" -> s"Code: $errorCode, RequestId: $errorRequestId")
-            )
-            .map(Ok(_))
+          logger.error(s"Upscan error $errorCode: $errorMessage, requestId is $errorRequestId")
+          renderer.render("serviceError.njk").map(InternalServerError(_))
       }
   }
 
@@ -129,14 +130,14 @@ class UploadFormController @Inject() (
             case Some(Quarantined) =>
               Future.successful(Redirect(routes.VirusErrorController.onPageLoad()))
             case Some(Failed) =>
-              errorHandler.onServerError(request, new Throwable("Upload to upscan failed"))
+              renderer.render("serviceError.njk").map(InternalServerError(_))
             case Some(_) =>
               renderer.render("upload-result.njk").map(Ok(_))
             case None =>
-              errorHandler.onServerError(request, new Throwable(s"Upload with id $uploadId not found"))
+              renderer.render("serviceError.njk").map(InternalServerError(_))
           }
         case None =>
-          errorHandler.onServerError(request, new Throwable("UploadId not found"))
+          renderer.render("serviceError.njk").map(InternalServerError(_))
       }
   }
 
