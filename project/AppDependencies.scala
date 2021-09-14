@@ -9,7 +9,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "logback-json-logger"           % "5.1.0",
     "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.9.0-play-28",
     "uk.gov.hmrc"       %% "bootstrap-health-play-28"      % "5.3.0",
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "5.8.0",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "5.12.0",
     "uk.gov.hmrc"       %% "play-nunjucks"                 % "0.29.0-play-27",
     "uk.gov.hmrc"       %% "play-nunjucks-viewmodel"       % "0.14.0-play-27",
     "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "0.71.0-play-28",
