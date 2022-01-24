@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,12 @@ object SourceFaultDetail {
   implicit val format: OFormat[SourceFaultDetail] = Json.format[SourceFaultDetail]
 }
 
-case class ErrorDetail(timestamp: String, correlationId: String, errorCode: String, errorMessage: String, source: String, sourceFaultDetail: SourceFaultDetail)
+case class ErrorDetail(timestamp: String,
+                       correlationId: Option[String],
+                       errorCode: String,
+                       errorMessage: String,
+                       source: String,
+                       sourceFaultDetail: SourceFaultDetail)
 
 object ErrorDetail {
   implicit val format: OFormat[ErrorDetail] = Json.format[ErrorDetail]
