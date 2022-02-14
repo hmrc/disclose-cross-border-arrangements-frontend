@@ -12,7 +12,7 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "5.12.0",
     "uk.gov.hmrc"       %% "play-nunjucks"                 % "0.29.0-play-27",
     "uk.gov.hmrc"       %% "play-nunjucks-viewmodel"       % "0.14.0-play-27",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "0.71.0-play-28",
+    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "3.0.0-play-28",
     "uk.gov.hmrc"       %% "emailaddress"                  % "3.5.0",
     "org.webjars.npm"   %  "govuk-frontend"                % "3.12.0",
     "org.webjars.npm"   %  "hmrc-frontend"                 % "1.35.0",
