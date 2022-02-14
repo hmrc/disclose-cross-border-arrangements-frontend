@@ -29,7 +29,8 @@ case class ErrorDetail(timestamp: String,
                        errorCode: String,
                        errorMessage: String,
                        source: String,
-                       sourceFaultDetail: SourceFaultDetail)
+                       sourceFaultDetail: SourceFaultDetail
+)
 
 object ErrorDetail {
   implicit val format: OFormat[ErrorDetail] = Json.format[ErrorDetail]
