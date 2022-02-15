@@ -4,6 +4,7 @@ $hmrc-assets-path: "/disclose-cross-border-arrangements/upload/assets/lib/hmrc-f
 @import "lib/govuk-frontend/govuk/all";
 @import "lib/hmrc-frontend/hmrc/components/header/header";
 @import "partials/header";
+@import "partials/summary";
 @import "partials/file_upload";
 @import "partials/spinner";
 @import "partials/overflow";
