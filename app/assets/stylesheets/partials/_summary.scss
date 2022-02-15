@@ -1,0 +1,8 @@
+.govuk-summary-list__value {
+  @include govuk-media-query($until: tablet) {
+    margin-bottom: govuk-spacing(3);
+  }
+  @include govuk-media-query($from: tablet) {
+    width: 50%;
+  }
+}
