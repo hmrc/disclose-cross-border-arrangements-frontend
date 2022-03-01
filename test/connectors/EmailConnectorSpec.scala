@@ -25,7 +25,7 @@ import models.EmailRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 
 class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Generators with ScalaCheckPropertyChecks {
@@ -69,6 +69,17 @@ class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Genera
 
           val result = connector.sendEmail(emailRequest)
           result.futureValue.status mustBe NOT_FOUND
+      }
+    }
+
+    "must return status as BadGateway when service not availbe" in {
+
+      forAll(arbitrary[EmailRequest]) {
+        emailRequest =>
+          stubResponse(s"/hmrc/email", BAD_GATEWAY)
+
+          val result = connector.sendEmail(emailRequest)
+          result.futureValue.status mustBe BAD_GATEWAY
       }
     }
   }
