@@ -20,7 +20,7 @@ import config.FrontendAppConfig
 import models.EmailRequest
 import play.api.Logging
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import play.api.http.Status.INTERNAL_SERVER_ERROR
+import play.api.http.Status.{ACCEPTED, BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
@@ -30,7 +30,16 @@ import scala.concurrent.{ExecutionContext, Future}
 class EmailConnector @Inject() (val config: FrontendAppConfig, http: HttpClient)(implicit ex: ExecutionContext) extends Logging {
 
   def sendEmail(emailRequest: EmailRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    http.POST[EmailRequest, HttpResponse](s"${config.sendEmailUrl}/hmrc/email", emailRequest) recoverWith {
+    http.POST[EmailRequest, HttpResponse](s"${config.sendEmailUrl}/hmrc/email", emailRequest) map {
+      resp =>
+        resp.status match {
+          case NOT_FOUND   => logger.warn("The template cannot be found within the email service")
+          case BAD_REQUEST => logger.warn("Missing email or name parameter")
+          case ACCEPTED    => logger.info("Email queued")
+          case _           => logger.warn(s"Unhandled status received from email service ${resp.status}")
+        }
+        resp
+    } recoverWith {
       case e: Exception =>
         logger.warn(s"${config.emailFailureAlertMessage}")
         logger.warn(s"${e.getMessage}")
