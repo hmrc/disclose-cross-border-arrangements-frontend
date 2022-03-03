@@ -23,7 +23,7 @@ import models.{ContactDetails, GeneratedIDs}
 import org.mockito.ArgumentMatchers.any
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.BAD_GATEWAY
+import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers.OK
@@ -103,12 +103,12 @@ class EmailServiceSpec extends SpecBase with Generators with ScalaCheckPropertyC
       }
     }
 
-    "must return None when email service is not available" in {
+    "must return None when the email connector returns an internal server error" in {
       val contactDetails = ContactDetails(Some("Test Testing"), Some("test"), None, None)
 
       when(mockEmailConnector.sendEmail(any())(any()))
         .thenReturn(
-          Future.successful(HttpResponse(BAD_GATEWAY, ""))
+          Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, ""))
         )
 
       val result = emailService.sendEmail(Some(contactDetails), ids, importInstruction, messageRefID)

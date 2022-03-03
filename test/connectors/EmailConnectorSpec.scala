@@ -18,6 +18,7 @@ package connectors
 
 import base.SpecBase
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import generators.Generators
 import helpers.WireMockServerHandler
@@ -25,7 +26,7 @@ import models.EmailRequest
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.Application
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, NOT_FOUND, OK}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 
 class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Generators with ScalaCheckPropertyChecks {
@@ -72,14 +73,14 @@ class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Genera
       }
     }
 
-    "must return status as BadGateway when service not availbe" in {
+    "must return status as Internal Server Error when a fault occurs" in {
 
       forAll(arbitrary[EmailRequest]) {
         emailRequest =>
-          stubResponse(s"/hmrc/email", BAD_GATEWAY)
-
+          stubFailure(s"/hmrc/email")
           val result = connector.sendEmail(emailRequest)
-          result.futureValue.status mustBe BAD_GATEWAY
+          result.futureValue.status mustBe INTERNAL_SERVER_ERROR
+
       }
     }
   }
@@ -90,6 +91,15 @@ class EmailConnectorSpec extends SpecBase with WireMockServerHandler with Genera
         .willReturn(
           aResponse()
             .withStatus(expectedStatus)
+        )
+    )
+
+  private def stubFailure(expectedUrl: String): StubMapping =
+    server.stubFor(
+      post(urlEqualTo(expectedUrl))
+        .willReturn(
+          aResponse()
+            .withFault(Fault.CONNECTION_RESET_BY_PEER)
         )
     )
 }

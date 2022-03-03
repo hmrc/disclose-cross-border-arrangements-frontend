@@ -19,7 +19,8 @@ package connectors
 import config.FrontendAppConfig
 import models.EmailRequest
 import play.api.Logging
-import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
@@ -31,8 +32,9 @@ class EmailConnector @Inject() (val config: FrontendAppConfig, http: HttpClient)
   def sendEmail(emailRequest: EmailRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     http.POST[EmailRequest, HttpResponse](s"${config.sendEmailUrl}/hmrc/email", emailRequest) recoverWith {
       case e: Exception =>
-        logger.warn(s"The Email could not be sent ${e.getMessage}")
-        Future.successful(HttpResponse(500, "Error Email service is not available"))
+        logger.warn(s"${config.emailFailureAlertMessage}")
+        logger.warn(s"${e.getMessage}")
+        Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, config.emailFailureAlertMessage))
     }
 
 }
