@@ -21,7 +21,6 @@ import models.{ContactDetails, EmailRequest, GeneratedIDs}
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
