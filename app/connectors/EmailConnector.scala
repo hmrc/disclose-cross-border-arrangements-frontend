@@ -41,9 +41,9 @@ class EmailConnector @Inject() (val config: FrontendAppConfig, http: HttpClient)
         resp
     } recoverWith {
       case e: Exception =>
-        logger.warn(s"${config.emailFailureAlertMessage}")
+        logger.warn(s"The email could not be sent to the EMAIL service")
         logger.warn(s"${e.getMessage}")
-        Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, config.emailFailureAlertMessage))
+        Future.successful(HttpResponse(INTERNAL_SERVER_ERROR, "The email could not be sent to the EMAIL service"))
     }
 
 }
