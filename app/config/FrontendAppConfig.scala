@@ -64,8 +64,6 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
 
-  lazy val emailFailureAlertMessage = "The email could not be sent to the EMAIL service"
-
   lazy val sendEmailToggle: Boolean       = configuration.get[Boolean]("features.send-email")
   lazy val contactDetailsToggle: Boolean  = configuration.get[Boolean]("contactDetailsToggle")
   lazy val manualJourneyToggle: Boolean   = configuration.get[Boolean]("manualJourneyToggle")
