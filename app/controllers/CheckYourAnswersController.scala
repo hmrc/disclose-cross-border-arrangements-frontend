@@ -85,7 +85,7 @@ class CheckYourAnswersController @Inject() (
 
         case _ =>
           logger.warn("Dac6MetaData can't be retrieved. Redirecting to /upload page.")
-          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad.url))
       }
   }
 
@@ -133,11 +133,11 @@ class CheckYourAnswersController @Inject() (
             case "DAC6NEW" => Redirect(routes.CreateConfirmationController.onPageLoad())
             case "DAC6ADD" => Redirect(routes.UploadConfirmationController.onPageLoad())
             case "DAC6REP" => Redirect(routes.ReplaceConfirmationController.onPageLoad())
-            case _         => Redirect(routes.UploadFormController.onPageLoad().url)
+            case _         => Redirect(routes.UploadFormController.onPageLoad.url)
           }
         case _ =>
           logger.warn("XML url or XML is missing. Redirecting to /upload page.")
-          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad.url))
       }
 
   }

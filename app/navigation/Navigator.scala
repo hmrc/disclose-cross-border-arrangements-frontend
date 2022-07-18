@@ -28,8 +28,8 @@ import javax.inject.{Inject, Singleton}
 class Navigator @Inject() () {
 
   private val normalRoutes: Page => UserAnswers => Call = {
-    case InvalidXMLPage => _ => routes.InvalidXMLController.onPageLoad()
-    case ValidXMLPage   => _ => routes.CheckYourAnswersController.onPageLoad()
+    case InvalidXMLPage => _ => routes.InvalidXMLController.onPageLoad
+    case ValidXMLPage   => _ => routes.CheckYourAnswersController.onPageLoad
     case HistoryPage    => _ => routes.SearchHistoryResultsController.onPageLoad()
 
     case ContactNamePage                     => _ => controllers.contactdetails.routes.ContactEmailAddressController.onPageLoad()
@@ -42,11 +42,11 @@ class Navigator @Inject() () {
     case HaveSecondaryContactPhonePage       => haveSecondaryContactPhoneRoutes
     case SecondaryContactTelephoneNumberPage => _ => routes.ContactDetailsController.onPageLoad()
 
-    case _ => _ => routes.IndexController.onPageLoad()
+    case _ => _ => routes.IndexController.onPageLoad
   }
 
   private val checkRouteMap: Page => UserAnswers => Call = {
-    case _ => _ => routes.CheckYourAnswersController.onPageLoad()
+    case _ => _ => routes.CheckYourAnswersController.onPageLoad
   }
 
   private def haveSecondContactRoutes(ua: UserAnswers): Call =

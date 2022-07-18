@@ -23,7 +23,7 @@ import models.requests.{DataRequest, DataRequestWithContacts}
 import models.subscription.{ContactInformationForIndividual, ContactInformationForOrganisation, DisplaySubscriptionForDACResponse}
 import play.api.mvc.ActionTransformer
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +34,7 @@ class ContactRetrievalActionImpl @Inject() (frontendAppConfig: FrontendAppConfig
 
   override protected def transform[A](request: DataRequest[A]): Future[DataRequestWithContacts[A]] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     if (!frontendAppConfig.sendEmailToggle) {
       Future.successful(DataRequestWithContacts(request.request, request.internalId, request.enrolmentID, request.userAnswers, None))

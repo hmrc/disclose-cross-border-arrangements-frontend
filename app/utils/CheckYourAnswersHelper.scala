@@ -35,7 +35,7 @@ class CheckYourAnswersHelper(userAnswers: UserAnswers)(implicit messages: Messag
         actions = List(
           Action(
             content = msg"site.edit",
-            href = routes.UploadFormController.onPageLoad().url,
+            href = routes.UploadFormController.onPageLoad.url,
             visuallyHiddenText = Some(msg"site.edit.hidden".withArgs(msg"checkYourAnswers.uploadedFile")),
             attributes = Map("id" -> "change-link")
           )
