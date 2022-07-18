@@ -38,7 +38,7 @@ class SessionExpiredControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = None).build()
 
-      val request = FakeRequest(GET, routes.SessionExpiredController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.SessionExpiredController.onPageLoad.url)
 
       val result = route(application, request).value
 

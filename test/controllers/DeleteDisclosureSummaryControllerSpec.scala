@@ -61,7 +61,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
       val application = applicationBuilder(Some(userAnswers)).build()
 
-      val request        = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad.url)
       val result         = route(application, request).value
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
@@ -82,13 +82,13 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad.url)
 
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
 
-      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad.url
 
       application.stop()
 
@@ -98,13 +98,13 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = None).build()
 
-      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad.url)
 
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
 
-      redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad.url
 
       application.stop()
     }
@@ -116,12 +116,12 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.DeleteDisclosureSummaryController.onPageLoad.url)
       val result  = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
 
-      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.UploadFormController.onPageLoad.url
 
       application.stop()
 
@@ -165,7 +165,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
-      val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
+      val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit.url)
 
       val result = route(application, request).value
 
@@ -212,7 +212,7 @@ class DeleteDisclosureSummaryControllerSpec extends SpecBase {
       when(mockSubscriptionConnector.displaySubscriptionDetails(any())(any(), any()))
         .thenReturn(Future.successful(DisplaySubscriptionDetailsAndStatus(None)))
 
-      val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit().url)
+      val request = FakeRequest(POST, routes.DeleteDisclosureSummaryController.onSubmit.url)
 
       val result = route(application, request).value
 

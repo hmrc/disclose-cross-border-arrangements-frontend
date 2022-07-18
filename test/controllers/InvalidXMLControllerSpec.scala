@@ -49,7 +49,7 @@ class InvalidXMLControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
 
-      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad.url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
 
@@ -71,7 +71,7 @@ class InvalidXMLControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.InvalidXMLController.onPageLoad.url)
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
       val result         = route(application, request).value
 

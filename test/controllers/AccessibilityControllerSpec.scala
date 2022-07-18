@@ -36,7 +36,7 @@ class AccessibilityControllerSpec extends SpecBase {
 
       val application = applicationBuilder(userAnswers = None).build()
 
-      val request = FakeRequest(GET, controllers.routes.AccessibilityController.onPageLoad().url)
+      val request = FakeRequest(GET, controllers.routes.AccessibilityController.onPageLoad.url)
 
       val result = route(application, request).value
 

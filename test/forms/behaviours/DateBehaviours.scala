@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 
 import org.scalacheck.Gen
 import play.api.data.{Form, FormError}
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class DateBehaviours extends FieldBehaviours {
 

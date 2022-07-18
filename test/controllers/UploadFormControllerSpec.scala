@@ -21,7 +21,7 @@ import connectors.{UpscanConnector, ValidationConnector}
 import generators.Generators
 import helpers.FakeUpscanConnector
 import matchers.JsonMatchers
-import models.{Dac6MetaData, UserAnswers}
+import models.UserAnswers
 import models.upscan._
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
@@ -61,7 +61,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
       when(mockRenderer.render(any(), any())(any())).thenReturn(Future.successful(Html("")))
 
       val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val request        = FakeRequest(GET, routes.UploadFormController.onPageLoad().url)
+      val request        = FakeRequest(GET, routes.UploadFormController.onPageLoad.url)
       val result         = route(application, request).value
 
       status(result) mustBe OK
@@ -71,7 +71,7 @@ class UploadFormControllerSpec extends SpecBase with NunjucksSupport with ScalaC
 
     "must read the progress of the upload from the backend" in {
 
-      val request = FakeRequest(GET, routes.UploadFormController.getStatus().url)
+      val request = FakeRequest(GET, routes.UploadFormController.getStatus.url)
 
       def verifyResult(uploadStatus: UploadStatus, expectedResult: Int = SEE_OTHER, expectedUI: String = ""): Unit = {
 
