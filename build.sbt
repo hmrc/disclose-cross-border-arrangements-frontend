@@ -6,7 +6,7 @@ import uk.gov.hmrc.DefaultBuildSettings.addTestReportOption
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 lazy val appName: String = "disclose-cross-border-arrangements-frontend"
-val silencerVersion = "1.7.6"
+val silencerVersion = "1.7.0"
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
