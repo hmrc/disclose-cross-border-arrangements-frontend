@@ -81,11 +81,11 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockSessionRepository.set(any())).thenReturn(Future.successful(true))
       fakeUpscanConnector.setDetails(uploadDetails)
 
-      val request                = FakeRequest(GET, routes.FileValidationController.onPageLoad().url)
+      val request                = FakeRequest(GET, routes.FileValidationController.onPageLoad.url)
       val result: Future[Result] = route(application, request).value
 
       status(result) mustBe SEE_OTHER
-      redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.CheckYourAnswersController.onPageLoad.url
 
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
       userAnswersCaptor.getValue.data mustEqual expectedData
@@ -111,7 +111,7 @@ class FileValidationControllerSpec extends SpecBase with BeforeAndAfterEach {
       val result: Future[Result] = controller.onPageLoad()(FakeRequest("", ""))
 
       status(result) mustBe SEE_OTHER
-      redirectLocation(result).value mustEqual routes.DeleteDisclosureSummaryController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.DeleteDisclosureSummaryController.onPageLoad.url
 
       verify(mockSessionRepository, times(1)).set(userAnswersCaptor.capture())
       userAnswersCaptor.getValue.data mustEqual expectedData

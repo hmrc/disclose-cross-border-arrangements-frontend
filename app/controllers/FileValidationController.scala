@@ -19,7 +19,7 @@ package controllers
 import connectors.{UpscanConnector, ValidationConnector}
 import controllers.actions.{DataRequiredAction, DataRetrievalAction, IdentifierAction}
 import models.upscan.{UploadId, UploadSessionDetails, UploadedSuccessfully}
-import models.{Dac6MetaData, GenericError, NormalMode, UserAnswers, ValidationErrors}
+import models.{Dac6MetaData, NormalMode, UserAnswers, ValidationErrors}
 import navigation.Navigator
 import pages._
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -62,7 +62,7 @@ class FileValidationController @Inject() (
               updatedAnswersWithMetaData <- Future.fromTry(updatedAnswersWithURL.set(Dac6MetaDataPage, metaData))
               _                          <- sessionRepository.set(updatedAnswersWithMetaData)
             } yield metaData.importInstruction match {
-              case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad())
+              case "DAC6DEL" => Redirect(routes.DeleteDisclosureSummaryController.onPageLoad)
               case _         => Redirect(navigator.nextPage(ValidXMLPage, NormalMode, updatedAnswers))
             }
 

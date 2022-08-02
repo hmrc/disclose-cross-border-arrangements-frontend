@@ -52,7 +52,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         )
         .build()
 
-      val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
 
       val result = route(application, request).value
 
@@ -92,7 +92,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         )
         .build()
 
-      val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
 
       val result = route(application, request).value
 
@@ -132,7 +132,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
         )
         .build()
 
-      val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
 
       val result = route(application, request).value
 

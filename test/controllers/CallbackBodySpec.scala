@@ -17,14 +17,15 @@
 package controllers
 
 import java.time.Instant
-
 import models.upscan._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 
-class CallbackBodySpec extends WordSpec with Matchers {
+class CallbackBodySpec extends AnyWordSpec with Matchers {
 
-  "CallbackBody JSON reader" should {
+  "CallbackBody JSON reader" must {
     "be able to deserialize successful body" in {
 
       val body =

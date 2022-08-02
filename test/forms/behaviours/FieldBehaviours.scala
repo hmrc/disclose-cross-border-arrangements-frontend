@@ -21,6 +21,7 @@ import generators.Generators
 import org.scalacheck.Gen
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.{Form, FormError}
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 trait FieldBehaviours extends FormSpec with ScalaCheckPropertyChecks with Generators {
 

@@ -41,7 +41,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
           answers =>
             navigator
               .nextPage(UnknownPage, NormalMode, answers)
-              .mustBe(routes.IndexController.onPageLoad())
+              .mustBe(routes.IndexController.onPageLoad)
         }
       }
 
@@ -56,7 +56,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .value
             navigator
               .nextPage(InvalidXMLPage, NormalMode, updatedAnswers)
-              .mustBe(routes.InvalidXMLController.onPageLoad())
+              .mustBe(routes.InvalidXMLController.onPageLoad)
         }
       }
 
@@ -71,7 +71,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
                 .value
             navigator
               .nextPage(ValidXMLPage, NormalMode, updatedAnswers)
-              .mustBe(routes.CheckYourAnswersController.onPageLoad())
+              .mustBe(routes.CheckYourAnswersController.onPageLoad)
         }
       }
 
@@ -260,7 +260,7 @@ class NavigatorSpec extends SpecBase with ScalaCheckPropertyChecks with Generato
           answers =>
             navigator
               .nextPage(UnknownPage, CheckMode, answers)
-              .mustBe(routes.CheckYourAnswersController.onPageLoad())
+              .mustBe(routes.CheckYourAnswersController.onPageLoad)
         }
       }
     }

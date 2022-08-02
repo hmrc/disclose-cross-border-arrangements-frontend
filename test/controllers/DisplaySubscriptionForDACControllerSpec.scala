@@ -138,7 +138,7 @@ class DisplaySubscriptionForDACControllerSpec extends SpecBase with ScalaCheckPr
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad.url
 
       application.stop()
     }

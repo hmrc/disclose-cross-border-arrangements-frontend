@@ -86,7 +86,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(Some(userAnswers)).build()
 
-      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
 
       val result = route(application, request).value
 
@@ -107,7 +107,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
 
-      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
 
       val result = route(application, request).value
 
@@ -122,13 +122,13 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
 
       val application = applicationBuilder(userAnswers = None).build()
 
-      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+      val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad.url)
 
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
 
-      redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad().url
+      redirectLocation(result).value mustEqual routes.SessionExpiredController.onPageLoad.url
 
       application.stop()
     }
@@ -148,12 +148,12 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockXmlValidationService.loadXML(any[String]())).thenReturn(<test><value>Success</value></test>)
       when(mockCrossBorderArrangementsConnector.submitDocument(any(), any(), any())(any())).thenReturn(Future.successful(GeneratedIDs(None, None)))
 
-      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit.url)
 
       val result = route(application, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustBe routes.UploadFormController.onPageLoad().url
+      redirectLocation(result).value mustBe routes.UploadFormController.onPageLoad.url
       verify(mockCrossBorderArrangementsConnector, times(1))
         .submitDocument(any(), any(), any())(any())
       verify(mockEmailService, times(0)).sendEmail(any(), any(), any(), any())(any())
@@ -189,7 +189,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
-      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit.url)
 
       val result = route(application, request).value
 
@@ -228,7 +228,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
-      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit.url)
 
       val result = route(application, request).value
 
@@ -267,7 +267,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with BeforeAndAfterEach {
       when(mockEmailService.sendEmail(any(), any(), any(), any())(any()))
         .thenReturn(Future.successful(Some(HttpResponse(ACCEPTED, ""))))
 
-      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit().url)
+      val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit.url)
 
       val result = route(application, request).value
 

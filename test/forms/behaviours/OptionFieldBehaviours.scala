@@ -17,6 +17,7 @@
 package forms.behaviours
 
 import play.api.data.{Form, FormError}
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class OptionFieldBehaviours extends FieldBehaviours {
 

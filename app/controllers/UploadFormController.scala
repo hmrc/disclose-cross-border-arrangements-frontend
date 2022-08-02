@@ -117,7 +117,7 @@ class UploadFormController @Inject() (
         case Some(uploadId) =>
           upscanConnector.getUploadStatus(uploadId) flatMap {
             case Some(_: UploadedSuccessfully) =>
-              Future.successful(Redirect(routes.FileValidationController.onPageLoad()))
+              Future.successful(Redirect(routes.FileValidationController.onPageLoad))
             case Some(r: UploadRejected) =>
               val errorMessage = if (r.details.message.contains("octet-stream")) {
                 "upload_form.error.file.empty"

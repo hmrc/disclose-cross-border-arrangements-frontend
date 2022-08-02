@@ -59,7 +59,7 @@ class DisplaySubscriptionForDACController @Inject() (
 
             renderer.render("displaySubscriptionForDAC.njk", displaySubscription).map(Ok(_))
           } else {
-            Future.successful(Redirect(routes.IndexController.onPageLoad()))
+            Future.successful(Redirect(routes.IndexController.onPageLoad))
           }
       }
   }

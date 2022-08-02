@@ -80,7 +80,7 @@ class DeleteDisclosureSummaryController @Inject() (
 
         case _ =>
           logger.warn("Dac6MetaData can't be retrieved for DAC6DEL. Redirecting to /upload page.")
-          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad.url))
       }
   }
 
@@ -108,7 +108,7 @@ class DeleteDisclosureSummaryController @Inject() (
           } yield Redirect(routes.DeleteDisclosureConfirmationController.onPageLoad().url)
         case _ =>
           logger.warn("XML url or XML is missing for DAC6DEL. Redirecting to /upload page.")
-          Future.successful(Redirect(routes.UploadFormController.onPageLoad().url))
+          Future.successful(Redirect(routes.UploadFormController.onPageLoad.url))
       }
   }
 }
