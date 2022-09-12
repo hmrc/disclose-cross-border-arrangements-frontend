@@ -16,8 +16,6 @@ POST       /send-disclosure/delete-disclosure           controllers.DeleteDisclo
 
 GET        /unauthorised                                controllers.UnauthorisedController.onPageLoad
 
-GET        /accessibility-statement                     controllers.AccessibilityController.onPageLoad
-
 GET        /success                                     controllers.UploadFormController.showResult
 
 GET        /status                                      controllers.UploadFormController.getStatus
