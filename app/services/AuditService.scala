@@ -107,32 +107,28 @@ class AuditService @Inject() (appConfig: FrontendAppConfig, auditConnector: Audi
       "errors" -> buildErrorMessagePayload(errors)
     )
 
-    if (appConfig.validationAuditToggle) {
-      auditConnector.sendExtendedEvent(
-        ExtendedDataEvent(
-          auditSource = appConfig.appName,
-          auditType = validationFailureType,
-          detail = auditMap,
-          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
-        )
-      ) map {
-        ar: AuditResult =>
-          ar match {
-            case Failure(msg, ex) =>
-              ex match {
-                case Some(throwable) =>
-                  logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg", throwable)
-                case None =>
-                  logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg")
-              }
-              ar
-            case Disabled =>
-              logger.warn(s"The attempt to issue audit event $validationFailureType was unsuccessful, as auditing is currently disabled in config"); ar
-            case _ => logger.debug(s"Audit event $validationFailureType issued successfully."); ar
-          }
-      }
-    } else {
-      logger.warn(s"Validation has failed and auditing currently disabled for this event type")
+    auditConnector.sendExtendedEvent(
+      ExtendedDataEvent(
+        auditSource = appConfig.appName,
+        auditType = validationFailureType,
+        detail = auditMap,
+        tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+      )
+    ) map {
+      ar: AuditResult =>
+        ar match {
+          case Failure(msg, ex) =>
+            ex match {
+              case Some(throwable) =>
+                logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg", throwable)
+              case None =>
+                logger.warn(s"The attempt to issue audit event $validationFailureType failed with message : $msg")
+            }
+            ar
+          case Disabled =>
+            logger.warn(s"The attempt to issue audit event $validationFailureType was unsuccessful, as auditing is currently disabled in config"); ar
+          case _ => logger.debug(s"Audit event $validationFailureType issued successfully."); ar
+        }
     }
   }
 
@@ -160,32 +156,28 @@ class AuditService @Inject() (appConfig: FrontendAppConfig, auditConnector: Audi
 
     val auditMap: JsObject = Json.obj("errorMessage" -> error.messageKey)
 
-    if (appConfig.validationAuditToggle) {
-      auditConnector.sendExtendedEvent(
-        ExtendedDataEvent(
-          auditSource = appConfig.appName,
-          auditType = errorMessageType,
-          detail = auditMap,
-          tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
-        )
-      ) map {
-        ar: AuditResult =>
-          ar match {
-            case Failure(msg, ex) =>
-              ex match {
-                case Some(throwable) =>
-                  logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg", throwable)
-                case None =>
-                  logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg")
-              }
-              ar
-            case Disabled =>
-              logger.warn(s"The attempt to issue audit event $errorMessageType was unsuccessful, as auditing is currently disabled in config"); ar
-            case _ => logger.debug(s"Audit event $errorMessageType issued successfully."); ar
-          }
-      }
-    } else {
-      logger.warn(s"Validation has failed and auditing currently disabled for this event type")
+    auditConnector.sendExtendedEvent(
+      ExtendedDataEvent(
+        auditSource = appConfig.appName,
+        auditType = errorMessageType,
+        detail = auditMap,
+        tags = AuditExtensions.auditHeaderCarrier(hc).toAuditDetails()
+      )
+    ) map {
+      ar: AuditResult =>
+        ar match {
+          case Failure(msg, ex) =>
+            ex match {
+              case Some(throwable) =>
+                logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg", throwable)
+              case None =>
+                logger.warn(s"The attempt to issue audit event $errorMessageType failed with message : $msg")
+            }
+            ar
+          case Disabled =>
+            logger.warn(s"The attempt to issue audit event $errorMessageType was unsuccessful, as auditing is currently disabled in config"); ar
+          case _ => logger.debug(s"Audit event $errorMessageType issued successfully."); ar
+        }
     }
   }
 }
