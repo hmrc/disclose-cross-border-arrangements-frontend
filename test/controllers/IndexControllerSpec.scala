@@ -43,8 +43,6 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
         .thenReturn(Future.successful(0L))
 
-      when(mockAppConfig.contactDetailsToggle).thenReturn(false)
-
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
@@ -64,8 +62,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions"       -> false,
-        "contactDetailsToggle" -> false
+        "hasSubmissions" -> false
       )
 
       templateCaptor.getValue mustEqual "index.njk"
@@ -83,8 +80,6 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
         .thenReturn(Future.successful(2L))
 
-      when(mockAppConfig.contactDetailsToggle).thenReturn(true)
-
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
@@ -104,8 +99,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions"       -> true,
-        "contactDetailsToggle" -> true
+        "hasSubmissions" -> true
       )
 
       templateCaptor.getValue mustEqual "index.njk"

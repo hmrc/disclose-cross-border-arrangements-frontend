@@ -60,10 +60,9 @@ class IndexController @Inject() (
           }
 
           val context = Json.obj(
-            "hasSubmissions"       -> (noOfPreviousSubmissions > 0),
-            "contactDetailsToggle" -> frontendAppConfig.contactDetailsToggle,
-            "enterUrl"             -> enterUrl,
-            "manualJourneyToggle"  -> frontendAppConfig.manualJourneyToggle
+            "hasSubmissions"      -> (noOfPreviousSubmissions > 0),
+            "enterUrl"            -> enterUrl,
+            "manualJourneyToggle" -> frontendAppConfig.manualJourneyToggle
           )
           renderer.render("index.njk", context).map(Ok(_))
         }
