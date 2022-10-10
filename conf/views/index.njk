@@ -30,18 +30,16 @@
           </p>
 
           <ul class="govuk-list govuk-list--bullet">
-            {% if manualJourneyToggle %}
-              <li>
-                <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
-              </li>
-            {% endif %}
+            <li>
+               <a href="{{enterUrl}}" class="govuk-link">{{messages("index.submission.paragraph.link")}}</a>
+            </li>
             {% if hasSubmissions %}
               <li>
                 <a href="{{routes.controllers.HistoryController.onPageLoad().url}}" class="govuk-link">{{messages("history.link")}}</a>
               </li>
             {% endif %}
             <li id="contactDetails">
-                <a href="{{routes.controllers.ContactDetailsController.onPageLoad().url}}" class="govuk-link">{{messages("contactDetails.link")}}</a>
+               <a href="{{routes.controllers.ContactDetailsController.onPageLoad().url}}" class="govuk-link">{{messages("contactDetails.link")}}</a>
             </li>
           </ul>
 

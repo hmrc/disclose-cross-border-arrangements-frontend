@@ -61,9 +61,8 @@ class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig:
 
   lazy val sendEmailUrl: String = configuration.get[Service]("microservice.services.email").baseUrl
 
-  lazy val sendEmailToggle: Boolean     = configuration.get[Boolean]("features.send-email")
-  lazy val manualJourneyToggle: Boolean = configuration.get[Boolean]("manualJourneyToggle")
-  lazy val contactUsToggle: Boolean     = configuration.get[Boolean]("contactUsToggle")
+  lazy val sendEmailToggle: Boolean = configuration.get[Boolean]("features.send-email")
+  lazy val contactUsToggle: Boolean = configuration.get[Boolean]("contactUsToggle")
 
   val upscanUseSSL: Boolean = upscanProtocol == "https"
 }
