@@ -53,15 +53,9 @@ class IndexController @Inject() (
           _                       <- sessionRepository.set(userAnswers)
         } yield {
 
-          val enterUrl = if (frontendAppConfig.contactUsToggle) {
-            routes.ContactUsToUseManualServiceController.onPageLoad().url
-          } else {
-            frontendAppConfig.dacManualUrl
-          }
-
           val context = Json.obj(
             "hasSubmissions" -> (noOfPreviousSubmissions > 0),
-            "enterUrl"       -> enterUrl
+            "enterUrl"       -> frontendAppConfig.dacManualUrl
           )
           renderer.render("index.njk", context).map(Ok(_))
         }
