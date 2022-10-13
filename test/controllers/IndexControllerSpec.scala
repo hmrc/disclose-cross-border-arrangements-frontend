@@ -43,8 +43,6 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
         .thenReturn(Future.successful(0L))
 
-      when(mockAppConfig.contactDetailsToggle).thenReturn(false)
-
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
@@ -64,8 +62,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions"       -> false,
-        "contactDetailsToggle" -> false
+        "hasSubmissions" -> false
       )
 
       templateCaptor.getValue mustEqual "index.njk"
@@ -83,8 +80,6 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
         .thenReturn(Future.successful(2L))
 
-      when(mockAppConfig.contactDetailsToggle).thenReturn(true)
-
       val application = applicationBuilder(userAnswers = None)
         .overrides(
           bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
@@ -104,47 +99,7 @@ class IndexControllerSpec extends SpecBase with JsonMatchers {
       verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
 
       val expectedJson = Json.obj(
-        "hasSubmissions"       -> true,
-        "contactDetailsToggle" -> true
-      )
-
-      templateCaptor.getValue mustEqual "index.njk"
-      jsonCaptor.getValue must containJson(expectedJson)
-
-      application.stop()
-    }
-
-    "must return OK and the correct view for a GET with the correct enterUrl if /contact-us page toggle is true" in {
-      val mockCrossBorderArrangementsConnector = mock[CrossBorderArrangementsConnector]
-
-      when(mockRenderer.render(any(), any())(any()))
-        .thenReturn(Future.successful(Html("foo")))
-
-      when(mockCrossBorderArrangementsConnector.findNoOfPreviousSubmissions(any())(any()))
-        .thenReturn(Future.successful(2L))
-
-      when(mockAppConfig.contactUsToggle).thenReturn(true)
-
-      val application = applicationBuilder(userAnswers = None)
-        .overrides(
-          bind[CrossBorderArrangementsConnector].toInstance(mockCrossBorderArrangementsConnector),
-          bind[FrontendAppConfig].toInstance(mockAppConfig)
-        )
-        .build()
-
-      val request = FakeRequest(GET, routes.IndexController.onPageLoad.url)
-
-      val result = route(application, request).value
-
-      status(result) mustEqual OK
-
-      val templateCaptor = ArgumentCaptor.forClass(classOf[String])
-      val jsonCaptor     = ArgumentCaptor.forClass(classOf[JsObject])
-
-      verify(mockRenderer, times(1)).render(templateCaptor.capture(), jsonCaptor.capture())(any())
-
-      val expectedJson = Json.obj(
-        "enterUrl" -> "/disclose-cross-border-arrangements/upload/contact-us"
+        "hasSubmissions" -> true
       )
 
       templateCaptor.getValue mustEqual "index.njk"
