@@ -15,3 +15,10 @@ $hmrc-assets-path: "/disclose-cross-border-arrangements/upload/assets/lib/hmrc-f
 .breakString {
   word-break: break-all;
 }
+
+body:not(.js-enabled) .js-enabled {
+  display: none;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
