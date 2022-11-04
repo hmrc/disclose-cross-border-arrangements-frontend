@@ -14,6 +14,7 @@
 {% block beforeContent %}
   {{ govukBackLink({
       text: messages("site.back"),
+     classes: "js-enabled",
       href: routes.controllers.IndexController.onPageLoad().url
     })
   }}
