@@ -5,15 +5,13 @@ object AppDependencies {
 
   val compile = Seq(
     play.sbt.PlayImport.ws,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"            % "0.68.0",
-    "uk.gov.hmrc"       %% "logback-json-logger"           % "5.1.0",
-    "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.9.0-play-28",
-    "uk.gov.hmrc"       %% "bootstrap-health-play-28"      % "5.3.0",
-    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "5.24.0",
-    "uk.gov.hmrc"       %% "play-nunjucks"                 % "0.29.0-play-27",
-    "uk.gov.hmrc"       %% "play-nunjucks-viewmodel"       % "0.14.0-play-27",
-    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "3.0.0-play-28",
-    "uk.gov.hmrc"       %% "emailaddress"                  % "3.5.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"            % "0.73.0",
+    "uk.gov.hmrc"       %% "logback-json-logger"           % "5.2.0",
+    "uk.gov.hmrc"       %% "play-conditional-form-mapping" % "1.12.0-play-28",
+    "uk.gov.hmrc"       %% "bootstrap-frontend-play-28"    % "7.11.0",
+    "uk.gov.hmrc"       %% "play-nunjucks"                 % "0.40.0-play-28",
+    "uk.gov.hmrc"       %% "play-nunjucks-viewmodel"       % "0.16.0-play-28",
+    "uk.gov.hmrc"       %% "play-frontend-hmrc"            % "3.26.0-play-28",
     "org.webjars.npm"   %  "govuk-frontend"                % "3.12.0",
     "org.webjars.npm"   %  "hmrc-frontend"                 % "1.35.0",
     "com.typesafe.play" %% "play-json-joda"                % "2.9.2"

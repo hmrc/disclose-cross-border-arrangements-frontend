@@ -132,8 +132,7 @@ trait Generators extends UserAnswersGenerator with PageGenerators with ModelGene
   def validOrganisationName: Gen[String] = RegexpGen.from(apiOrganisationNameRegex)
 
   def validEmailAddress: Gen[String] = {
-    val emailRegexWithQuantifier = "^(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,50}))" +
-      "@(?:[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,20}(?:\\.[a-zA-Z0-9!#$%&*+\\/=?^_`{|}~-]{1,42}))$"
+    val emailRegexWithQuantifier = "^([a-zA-Z0-9.!#$%&’'*+/=?^_`{|}~-]{1,70})@([a-zA-Z0-9-]{1,20}(?:\\.[a-zA-Z0-9-]{1,42}))$"
 
     RegexpGen.from(emailRegexWithQuantifier)
   }
