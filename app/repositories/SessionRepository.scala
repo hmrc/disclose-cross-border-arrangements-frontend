@@ -28,6 +28,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.Singleton
 
 object DefaultSessionRepository {
 
@@ -38,6 +39,7 @@ object DefaultSessionRepository {
   )
 }
 
+@Singleton
 class DefaultSessionRepository @Inject() (mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[UserAnswers](
       mongoComponent = mongo,
