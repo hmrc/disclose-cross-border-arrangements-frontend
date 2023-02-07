@@ -1,6 +1,7 @@
 <!--[if !IE]>-->
   <script
-     src="{{ config.trackingConsentScriptUrl }}"
+    nonce={{ config.nonce }}
+    src="{{ config.trackingConsentScriptUrl }}"
     id="tracking-consent-script-tag"
     data-gtm-container="{{ config.gtmContainer }}"
     data-language="{{ messages.lang.code }}"

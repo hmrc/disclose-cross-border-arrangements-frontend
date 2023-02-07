@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 @Singleton
 class FrontendAppConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
 
-  lazy val appName: String                 = configuration.get[String]("appName")
-  private val contactHost                  = configuration.get[String]("contact-frontend.host")
-  private val contactFormServiceIdentifier = "DAC6"
+  lazy val appName: String         = configuration.get[String]("appName")
+  val contactHost                  = configuration.get[String]("contact-frontend.host")
+  val contactFormServiceIdentifier = "DAC6"
 
   val analyticsToken: String         = configuration.get[String](s"google-analytics.token")
   val analyticsHost: String          = configuration.get[String](s"google-analytics.host")

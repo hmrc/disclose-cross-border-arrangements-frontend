@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package renderer
 
 import config.FrontendAppConfig
-import play.api.libs.json.{JsObject, Json, OWrites}
+import play.api.libs.json.{JsObject, JsString, Json, OWrites}
 import play.api.mvc.RequestHeader
 import play.twirl.api.Html
 import uk.gov.hmrc.hmrcfrontend.config.TrackingConsentConfig
 import uk.gov.hmrc.nunjucks.NunjucksRenderer
+import views.html.helper.CSPNonce
 
 import javax.inject.Inject
 import scala.concurrent.Future
@@ -38,7 +39,7 @@ class Renderer @Inject() (appConfig: FrontendAppConfig, trackingConfig: Tracking
     renderTemplate(template, ctx)
 
   private def renderTemplate(template: String, ctx: JsObject)(implicit request: RequestHeader): Future[Html] =
-    renderer.render(template, ctx ++ Json.obj("config" -> config))
+    renderer.render(template, ctx ++ Json.obj("config" -> config.+("nonce" -> JsString(CSPNonce.get.getOrElse("")))))
 
   private lazy val config: JsObject = Json.obj(
     "betaFeedbackUnauthenticatedUrl" -> appConfig.betaFeedbackUnauthenticatedUrl,
@@ -49,6 +50,8 @@ class Renderer @Inject() (appConfig: FrontendAppConfig, trackingConfig: Tracking
     "timeout"                        -> appConfig.timeoutSeconds,
     "countdown"                      -> appConfig.countdownSeconds,
     "trackingConsentScriptUrl"       -> trackingConfig.trackingUrl().get,
-    "gtmContainer"                   -> trackingConfig.gtmContainer.get
+    "gtmContainer"                   -> trackingConfig.gtmContainer.get,
+    "serviceIdentifier"              -> appConfig.contactFormServiceIdentifier,
+    "contactHost"                    -> appConfig.contactHost
   )
 }
