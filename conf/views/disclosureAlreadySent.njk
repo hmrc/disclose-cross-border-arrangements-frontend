@@ -13,8 +13,12 @@
       <div class="govuk-grid-column-two-thirds">
 
         <h1 class="govuk-heading-xl">
-          {{ messages("disclosureAlreadySent.heading") }}
+          {{ messages("informationSent.heading") }}
         </h1>
+
+         <div>
+          <p class="govuk-body">{{ messages("informationSent.p1") }}
+          </div>
 
         <p class="govuk-body">
           <a class="govuk-link" href="{{ routes.controllers.IndexController.onPageLoad().url }}">{{ messages("disclosureAlreadySent.link") }}</a>
