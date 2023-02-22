@@ -41,6 +41,7 @@ class ContactDetailsController @Inject() (
   override val messagesApi: MessagesApi,
   sessionRepository: SessionRepository,
   subscriptionConnector: SubscriptionConnector,
+  checkForSubmission: CheckForSubmissionAction,
   appConfig: FrontendAppConfig,
   errorHandler: ErrorHandler,
   viewHelper: ViewHelper,
@@ -53,7 +54,7 @@ class ContactDetailsController @Inject() (
     extends FrontendBaseController
     with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData andThen checkForSubmission()).async {
     implicit request =>
       subscriptionConnector.displaySubscriptionDetails(request.enrolmentID).flatMap {
         details =>

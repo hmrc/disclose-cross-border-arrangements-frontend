@@ -17,9 +17,10 @@
 package repositories
 
 import models.UserAnswers
+import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
-import org.mongodb.scala.model.{IndexModel, IndexOptions, ReplaceOptions}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, ReplaceOptions}
 import play.api.Configuration
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -49,6 +50,7 @@ class DefaultSessionRepository @Inject() (mongo: MongoComponent, config: Configu
       replaceIndexes = true
     )
     with SessionRepository {
+  private def byId(id: String): Bson = Filters.equal("_id", id)
 
   override def get(id: String): Future[Option[UserAnswers]] =
     collection.find(equal("_id", id)).first().toFutureOption()
@@ -66,6 +68,19 @@ class DefaultSessionRepository @Inject() (mongo: MongoComponent, config: Configu
         _ => true
       )
   }
+
+  override def clear(id: String): Future[Boolean] =
+    collection
+      .deleteOne(byId(id))
+      .toFuture
+      .map(
+        _ => true
+      )
+
+  override def reset(id: String): Future[Boolean] =
+    clear(id).flatMap(
+      _ => set(UserAnswers(id))
+    )
 }
 
 trait SessionRepository {
@@ -73,4 +88,8 @@ trait SessionRepository {
   def get(id: String): Future[Option[UserAnswers]]
 
   def set(userAnswers: UserAnswers): Future[Boolean]
+
+  def reset(id: String): Future[Boolean]
+
+  def clear(id: String): Future[Boolean]
 }
