@@ -36,6 +36,6 @@ class DisclosureAlreadySentController @Inject() (
 
   def onPageLoad(): Action[AnyContent] = identify.async {
     implicit request =>
-      renderer.render("disclosureAlreadySent.njk").map(Ok(_))
+      renderer.render("informationSent.njk").map(Ok(_))
   }
 }

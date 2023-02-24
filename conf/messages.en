@@ -404,3 +404,7 @@ detailsUpdated.p = We will use your new details if we need to contact you.
 disclosureAlreadySent.title = You have already sent your disclosure
 disclosureAlreadySent.heading = You have already sent your disclosure
 disclosureAlreadySent.link = Back to disclosure cross-border arrangements
+
+informationSent.title = Information sent
+informationSent.heading = Information sent
+informationSent.p1 = We will contact you if we have any questions about the details you have provided.

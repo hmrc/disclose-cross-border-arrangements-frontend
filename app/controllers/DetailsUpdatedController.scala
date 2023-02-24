@@ -18,14 +18,17 @@ package controllers
 
 import config.FrontendAppConfig
 import controllers.actions._
+import pages.{GeneratedIDPage, JourneyInProgressPage, UploadIDPage}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import renderer.Renderer
+import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future.{filterFailure, never}
 
 class DetailsUpdatedController @Inject() (
   override val messagesApi: MessagesApi,
@@ -33,6 +36,8 @@ class DetailsUpdatedController @Inject() (
   getData: DataRetrievalAction,
   requireData: DataRequiredAction,
   val controllerComponents: MessagesControllerComponents,
+  contactRetrievalAction: ContactRetrievalAction,
+  sessionRepository: SessionRepository,
   renderer: Renderer,
   appConfig: FrontendAppConfig
 )(implicit ec: ExecutionContext)
@@ -44,7 +49,11 @@ class DetailsUpdatedController @Inject() (
       val json = Json.obj(
         "homePageLink" -> appConfig.discloseArrangeLink
       )
-
-      renderer.render("detailsUpdated.njk", json).map(Ok(_))
+      Future.fromTry(request.userAnswers.remove(JourneyInProgressPage)).flatMap {
+        updatedAnswers =>
+          sessionRepository.set(updatedAnswers).flatMap {
+            _ => renderer.render("detailsUpdated.njk", json).map(Ok(_))
+          }
+      }
   }
 }

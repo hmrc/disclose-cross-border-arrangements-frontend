@@ -19,8 +19,10 @@ package controllers
 import config.FrontendAppConfig
 import connectors.CrossBorderArrangementsConnector
 import controllers.actions.{DataRetrievalAction, IdentifierAction}
+
 import javax.inject.Inject
 import models.UserAnswers
+import pages.JourneyInProgressPage
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -28,7 +30,7 @@ import renderer.Renderer
 import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class IndexController @Inject() (
   sessionRepository: SessionRepository,
@@ -44,21 +46,22 @@ class IndexController @Inject() (
 
   def onPageLoad: Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
-      {
+      val userAnswers = request.userAnswers.getOrElse[UserAnswers](UserAnswers(request.internalId))
 
-        val userAnswers = request.userAnswers.getOrElse[UserAnswers](UserAnswers(request.internalId))
+      crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID).flatMap {
+        noOfPreviousSubmissions =>
+          Future.fromTry(userAnswers.set(JourneyInProgressPage, true)).flatMap {
 
-        for {
-          noOfPreviousSubmissions <- crossBorderArrangementsConnector.findNoOfPreviousSubmissions(request.enrolmentID)
-          _                       <- sessionRepository.set(userAnswers)
-        } yield {
-
-          val context = Json.obj(
-            "hasSubmissions" -> (noOfPreviousSubmissions > 0),
-            "enterUrl"       -> frontendAppConfig.dacManualUrl
-          )
-          renderer.render("index.njk", context).map(Ok(_))
-        }
-      }.flatten
+            updatedAnswers =>
+              sessionRepository.set(updatedAnswers).flatMap {
+                _ =>
+                  val context = Json.obj(
+                    "hasSubmissions" -> (noOfPreviousSubmissions > 0),
+                    "enterUrl"       -> frontendAppConfig.dacManualUrl
+                  )
+                  renderer.render("index.njk", context).map(Ok(_))
+              }
+          }
+      }
   }
 }

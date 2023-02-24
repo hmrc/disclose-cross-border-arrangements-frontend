@@ -74,6 +74,7 @@ trait SpecBase
         bind[DataRequiredAction].to[DataRequiredActionImpl],
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
-        bind[NunjucksRenderer].toInstance(mockRenderer)
+        bind[NunjucksRenderer].toInstance(mockRenderer),
+        bind[CheckForSubmissionAction].toInstance(new FakeCheckForSubmissionActionProvider)
       )
 }
